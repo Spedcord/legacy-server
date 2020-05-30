@@ -55,7 +55,7 @@ public abstract class Endpoint extends dev.lukaesebrot.jal.endpoints.Endpoint {
     }
 
     protected Optional<String> getQueryParam(String key, Context context) {
-        return Optional.of(context.pathParam(key));
+        return Optional.ofNullable(context.queryParam(key));
     }
 
     protected Optional<Integer> getQueryParamAsInt(String key, Context context) {
