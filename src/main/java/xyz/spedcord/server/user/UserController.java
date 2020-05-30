@@ -4,10 +4,8 @@ import xyz.spedcord.common.sql.MySqlService;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class UserController {
 
@@ -22,7 +20,8 @@ public class UserController {
 
     private void init() {
         try {
-            mySqlService.update("CREATE TABLE IF NOT EXISTS users (id BIGINT AUTO_INCREMENT, discordId BIGINT, ukey VARCHAR(64), companyId VARCHAR(64), PRIMARY KEY (id))");
+            mySqlService.update("CREATE TABLE IF NOT EXISTS users (id BIGINT AUTO_INCREMENT, discordId BIGINT, " +
+                    "ukey VARCHAR(64), companyId VARCHAR(64), jobs MEDIUMTEXT, PRIMARY KEY (id))");
             loadUsers();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -38,19 +37,11 @@ public class UserController {
                     resultSet.getInt("id"),
                     resultSet.getLong("discordId"),
                     resultSet.getString("ukey"),
-                    resultSet.getString("companyId")
-            ));
-        }
-    }
-
-    private void loadUser(long discordId) throws SQLException {
-        ResultSet resultSet = mySqlService.execute(String.format("SELECT * FROM users WHERE discordId = %d", discordId));
-        while (resultSet.next()) {
-            users.add(new User(
-                    resultSet.getInt("id"),
-                    resultSet.getLong("discordId"),
-                    resultSet.getString("key"),
-                    resultSet.getString("companyId")
+                    resultSet.getString("companyId"),
+                    Arrays.stream(resultSet.getString("jobs").split(";"))
+                            .filter(s -> !s.matches("\\s+") && !s.equals(""))
+                            .map(Integer::parseInt)
+                            .collect(Collectors.toList())
             ));
         }
     }
@@ -61,7 +52,20 @@ public class UserController {
 
     public void createUser(long discordId) {
         try {
-            mySqlService.update(String.format("INSERT INTO users (discordId, key, companyId) VALUES (%d, '%s', '')", discordId, generateKey()));
+            mySqlService.update(String.format("INSERT INTO users (discordId, key, companyId, jobs) " +
+                    "VALUES (%d, '%s', '', '')", discordId, generateKey()));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void updateUser(User user) {
+        try {
+            mySqlService.update(String.format("UPDATE users SET companyId = '%s', jobs = '%s' WHERE discordId = %d",
+                    user.getCompanyId(), user.getJobList().stream()
+                            .map(Object::toString)
+                            .collect(Collectors.joining(";")),
+                    user.getDiscordId()));
         } catch (SQLException e) {
             e.printStackTrace();
         }
