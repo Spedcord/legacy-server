@@ -1,6 +1,7 @@
 package xyz.spedcord.server.job;
 
 import xyz.spedcord.common.sql.MySqlService;
+import xyz.spedcord.server.util.MySqlUtil;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -56,8 +57,9 @@ public class JobController {
         try {
             mySqlService.update(String.format("INSERT INTO jobs (startedAt, endedAt, cargoWeight, " +
                             "pay, fromCity, toCity, cargo, truck) VALUES (%d, %d, %f, %f, '%s', '%s', '%s', '%s')",
-                    job.getStartedAt(), job.getEndedAt(), job.getCargoWeight(), job.getPay(), job.getFromCity(),
-                    job.getToCity(), job.getCargo(), job.getTruck()));
+                    job.getStartedAt(), job.getEndedAt(), job.getCargoWeight(), job.getPay(),
+                    MySqlUtil.escapeString(job.getFromCity()), MySqlUtil.escapeString(job.getToCity()),
+                    MySqlUtil.escapeString(job.getCargo()), MySqlUtil.escapeString(job.getTruck())));
         } catch (SQLException e) {
             e.printStackTrace();
         }
