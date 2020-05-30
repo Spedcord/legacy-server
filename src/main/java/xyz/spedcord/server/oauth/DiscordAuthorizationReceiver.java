@@ -11,7 +11,7 @@ public class DiscordAuthorizationReceiver {
     private String clientId;
     private String clientSecret;
     private Map<String, OAuthBuilder> authMap;
-    private Map<String, String> companyIdMap;
+    private Map<String, Integer> companyIdMap;
     private Map<String, String> joinIdMap;
 
     public DiscordAuthorizationReceiver(String clientId, String clientSecret) {
@@ -22,7 +22,7 @@ public class DiscordAuthorizationReceiver {
         this.joinIdMap = new HashMap<>();
     }
 
-    public String getNewAuthLink(String companyId, String joinId) {
+    public String getNewAuthLink(int companyId, String joinId) {
         OAuthBuilder oAuthBuilder = new OAuthBuilder(clientId, clientSecret)
                 .setScopes(new String[]{"identify"})
                 .setRedirectURI("http://localhost/discord");
@@ -37,7 +37,7 @@ public class DiscordAuthorizationReceiver {
 
     public AuthResult exchangeCode(String code, String state) {
         OAuthBuilder oAuthBuilder = authMap.remove(state);
-        String companyId = companyIdMap.remove(state);
+        Integer companyId = companyIdMap.remove(state);
         String joinId = joinIdMap.remove(state);
         if (oAuthBuilder == null || companyId == null || joinId == null) {
             return AuthResult.ERROR;

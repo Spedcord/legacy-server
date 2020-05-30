@@ -5,14 +5,14 @@ import bell.oauth.discord.main.Response;
 
 public class AuthResult {
 
-    public static final AuthResult ERROR = new AuthResult(Response.ERROR, null, null, null);
+    public static final AuthResult ERROR = new AuthResult(Response.ERROR, null, -1, null);
 
     private final Response response;
     private final User user;
-    private final String companyId;
+    private final int companyId;
     private final String joinId;
 
-    public AuthResult(Response response, User user, String companyId, String joinId) {
+    public AuthResult(Response response, User user, int companyId, String joinId) {
         this.response = response;
         this.user = user;
         this.companyId = companyId;
@@ -27,7 +27,7 @@ public class AuthResult {
         return user;
     }
 
-    public String getCompanyId() {
+    public int getCompanyId() {
         return companyId;
     }
 
