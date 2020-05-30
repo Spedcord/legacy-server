@@ -1,7 +1,11 @@
 package xyz.spedcord.server.job;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import xyz.spedcord.common.sql.MySqlService;
+import xyz.spedcord.server.SpedcordServer;
 import xyz.spedcord.server.util.MySqlUtil;
+import xyz.spedcord.server.util.WebhookUtil;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -43,6 +47,10 @@ public class JobController {
                 truck,
                 new ArrayList<>()
         ));
+
+        JsonObject jsonObject = SpedcordServer.GSON.toJsonTree(pendingJobs.get(discordId)).getAsJsonObject();
+        jsonObject.addProperty("state", "START");
+        WebhookUtil.callWebhooks(discordId, jsonObject);
     }
 
     public void endJob(long discordId, double pay) {
@@ -62,7 +70,22 @@ public class JobController {
                     MySqlUtil.escapeString(job.getCargo()), MySqlUtil.escapeString(job.getTruck())));
         } catch (SQLException e) {
             e.printStackTrace();
+            return;
         }
+
+        JsonObject jsonObject = SpedcordServer.GSON.toJsonTree(job).getAsJsonObject();
+        jsonObject.addProperty("state", "END");
+        WebhookUtil.callWebhooks(discordId, jsonObject);
+    }
+
+    public void cancelJob(long discordId) {
+        Job job = pendingJobs.remove(discordId);
+        JsonObject jsonObject = SpedcordServer.GSON.toJsonTree(job).getAsJsonObject();
+        jsonObject.addProperty("state", "CANCEL");
+    }
+
+    public Job getPendingJob(long discordId) {
+        return pendingJobs.get(discordId);
     }
 
     public Job getJob(int id) {
