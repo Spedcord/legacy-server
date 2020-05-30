@@ -1,6 +1,7 @@
 package xyz.spedcord.server.endpoint.user;
 
 import com.google.gson.Gson;
+import xyz.spedcord.server.SpedcordServer;
 import xyz.spedcord.server.endpoint.Endpoint;
 import io.javalin.http.Context;
 import xyz.spedcord.server.job.Job;
@@ -45,6 +46,6 @@ public class UserJobsEndpoint extends Endpoint {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
-        context.result(new Gson().toJson(jobs)).status(200);
+        context.result(SpedcordServer.GSON.toJson(jobs)).status(200);
     }
 }

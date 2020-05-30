@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import dev.lukaesebrot.jal.endpoints.Endpoint;
 import io.javalin.http.Context;
+import xyz.spedcord.server.SpedcordServer;
 import xyz.spedcord.server.endpoint.RestrictedEndpoint;
 import xyz.spedcord.server.response.Responses;
 import xyz.spedcord.server.user.User;
@@ -34,6 +35,6 @@ public class UserGetEndpoint extends RestrictedEndpoint {
             return;
         }
 
-        context.result(new Gson().toJson(optional.get())).status(200);
+        context.result(SpedcordServer.GSON.toJson(optional.get())).status(200);
     }
 }

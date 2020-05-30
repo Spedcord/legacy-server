@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.javalin.http.Context;
+import xyz.spedcord.server.SpedcordServer;
 import xyz.spedcord.server.company.Company;
 import xyz.spedcord.server.company.CompanyController;
 import xyz.spedcord.server.endpoint.RestrictedEndpoint;
@@ -29,7 +30,7 @@ public class CompanyRegisterEndpoint extends RestrictedEndpoint {
         try {
             JsonObject jsonObject = JsonParser.parseString(context.body()).getAsJsonObject();
             jsonObject.addProperty("id", -1);
-            company = new Gson().fromJson(jsonObject, Company.class);
+            company = SpedcordServer.GSON.fromJson(jsonObject, Company.class);
         } catch (Exception ignored) {
             Responses.error("Invalid request body").respondTo(context);
             return;

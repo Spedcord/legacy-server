@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import io.javalin.http.Context;
+import xyz.spedcord.server.SpedcordServer;
 import xyz.spedcord.server.company.Company;
 import xyz.spedcord.server.company.CompanyController;
 import xyz.spedcord.server.endpoint.Endpoint;
@@ -42,9 +43,8 @@ public class CompanyInfoEndpoint extends Endpoint {
             return;
         }
 
-        Gson gson = new Gson();
         Company company = optional.get();
-        JsonObject jsonObj = gson.toJsonTree(company).getAsJsonObject();
+        JsonObject jsonObj = SpedcordServer.GSON.toJsonTree(company).getAsJsonObject();
         JsonObject logbook = new JsonObject();
         for (Long memberDiscordId : company.getMemberDiscordIds()) {
             Optional<User> userOptional = userController.getUser(memberDiscordId);
@@ -56,12 +56,12 @@ public class CompanyInfoEndpoint extends Endpoint {
             JsonArray array = new JsonArray();
             for (int jobId : user.getJobList()) {
                 Job job = jobController.getJob(jobId);
-                array.add(gson.toJson(job));
+                array.add(SpedcordServer.GSON.toJson(job));
             }
             logbook.add(String.valueOf(user.getDiscordId()), array);
         }
         jsonObj.add("logbook", logbook);
 
-        context.result(gson.toJson(jsonObj)).status(200);
+        context.result(SpedcordServer.GSON.toJson(jsonObj)).status(200);
     }
 }

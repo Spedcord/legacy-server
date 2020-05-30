@@ -2,6 +2,7 @@ package xyz.spedcord.server.endpoint.user;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import xyz.spedcord.server.SpedcordServer;
 import xyz.spedcord.server.endpoint.Endpoint;
 import io.javalin.http.Context;
 import xyz.spedcord.server.response.Responses;
@@ -33,7 +34,7 @@ public class UserInfoEndpoint extends Endpoint {
             return;
         }
 
-        JsonObject jsonObj = new Gson().toJsonTree(optional.get()).getAsJsonObject();
+        JsonObject jsonObj = SpedcordServer.GSON.toJsonTree(optional.get()).getAsJsonObject();
         jsonObj.remove("key");
         jsonObj.remove("jobList");
 

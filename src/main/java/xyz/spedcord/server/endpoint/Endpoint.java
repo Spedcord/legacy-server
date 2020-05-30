@@ -84,6 +84,19 @@ public abstract class Endpoint extends dev.lukaesebrot.jal.endpoints.Endpoint {
         }
     }
 
+    protected Optional<Double> getQueryParamAsDouble(String key, Context context) {
+        Optional<String> param = getQueryParam(key, context);
+        if (param.isEmpty()) {
+            return Optional.empty();
+        }
+
+        try {
+            return Optional.of(Double.parseDouble(param.get()));
+        } catch (NumberFormatException ignored) {
+            return Optional.empty();
+        }
+    }
+
     protected Optional<Boolean> getQueryParamAsBoolean(String key, Context context) {
         Optional<String> param = getQueryParam(key, context);
         if (param.isEmpty()) {
