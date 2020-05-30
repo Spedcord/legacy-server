@@ -23,6 +23,7 @@ public abstract class RestrictedEndpoint extends Endpoint {
             return;
         }
 
+        System.out.println(String.format("[INFO] Restricted endpoint connection from %s", context.ip()));
         handleFurther(context);
     }
 

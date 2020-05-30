@@ -39,9 +39,10 @@ public class SpedcordServer {
     private UserController userController;
     private JobController jobController;
     private CompanyController companyController;
+    private Config config;
 
     public void start() throws IOException {
-        Config config = new Config(new File("config.cfg"), new String[]{
+        config = new Config(new File("config.cfg"), new String[]{
                 "host", "localhost",
                 "port", "5670",
                 "requests-per-minute", "120",
@@ -95,14 +96,15 @@ public class SpedcordServer {
 
         server.endpoint("/user/register", HandlerType.GET, new RegisterEndpoint(registerAuthController));
         server.endpoint("/user/register/discord", HandlerType.GET, new RegisterDiscordEndpoint(registerAuthController, userController));
-        server.endpoint("/user/info", HandlerType.GET, new UserInfoEndpoint(userController));
-        server.endpoint("/user/get", HandlerType.GET, new UserGetEndpoint(userController));
-        server.endpoint("/user/jobs", HandlerType.GET, new UserJobsEndpoint(userController, jobController));
+        server.endpoint("/user/info/:discordId", HandlerType.GET, new UserInfoEndpoint(userController));
+        server.endpoint("/user/get/:discordId", HandlerType.GET, new UserGetEndpoint(userController));
+        server.endpoint("/user/jobs/:discordId", HandlerType.GET, new UserJobsEndpoint(userController, jobController));
         server.endpoint("/user/changekey", HandlerType.POST, new UserChangekeyEndpoint(userController));
 
         server.endpoint("/company/info/:discordServerId", HandlerType.GET, new CompanyInfoEndpoint(companyController, userController, jobController));
         server.endpoint("/company/register", HandlerType.POST, new CompanyRegisterEndpoint(companyController, userController));
-        server.endpoint("/company/createjoinlink", HandlerType.POST, new CreateJoinLinkEndpoint(joinLinkController));
+        server.endpoint("/company/createjoinlink/:companyId", HandlerType.POST, new CreateJoinLinkEndpoint(joinLinkController,
+                config.get("host"), Integer.parseInt(config.get("port"))));
     }
 
 }

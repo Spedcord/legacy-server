@@ -54,8 +54,6 @@ public class DiscordEndpoint extends Endpoint {
             return;
         }
 
-        joinLinkController.joinLinkUsed(inviteAuthResult.getJoinId());
-
         Optional<Company> optional = companyController.getCompany(inviteAuthResult.getCompanyId());
         if (optional.isEmpty()) {
             context.status(500);
@@ -70,11 +68,19 @@ public class DiscordEndpoint extends Endpoint {
             userOptional = userController.getUser(userDiscordId);
         }
         User user = userOptional.get();
+
+        if(company.getMemberDiscordIds().contains(user.getDiscordId())) {
+            Responses.error(HttpStatus.FORBIDDEN_403, "You're already a member of this company").respondTo(context);
+            return;
+        }
+
         user.setCompanyId(company.getId());
         userController.updateUser(user);
 
         company.getMemberDiscordIds().add(user.getDiscordId());
         companyController.updateCompany(company);
+
+        joinLinkController.joinLinkUsed(inviteAuthResult.getJoinId());
 
         Responses.success("You successfully joined the company").respondTo(context);
     }

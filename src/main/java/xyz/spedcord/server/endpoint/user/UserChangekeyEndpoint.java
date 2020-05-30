@@ -18,7 +18,7 @@ public class UserChangekeyEndpoint extends RestrictedEndpoint {
 
     @Override
     public void handleFurther(Context context) {
-        Optional<Long> paramOptional = getPathParamAsLong("discordId", context);
+        Optional<Long> paramOptional = getQueryParamAsLong("discordId", context);
         if(paramOptional.isEmpty()) {
             Responses.error("Invalid discordId param").respondTo(context);
             return;

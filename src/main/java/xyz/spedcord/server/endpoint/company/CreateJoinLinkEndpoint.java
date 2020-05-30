@@ -10,15 +10,23 @@ import java.util.Optional;
 public class CreateJoinLinkEndpoint extends RestrictedEndpoint {
 
     private final JoinLinkController joinLinkController;
+    private String host;
+    private final int port;
 
-    public CreateJoinLinkEndpoint(JoinLinkController joinLinkController) {
+    public CreateJoinLinkEndpoint(JoinLinkController joinLinkController, String host, int port) {
         this.joinLinkController = joinLinkController;
+        this.host = host;
+        this.port = port;
+
+        if (this.host.equals("spedcord.xyz")) {
+            this.host = "www." + this.host;
+        }
     }
 
     @Override
     protected void handleFurther(Context context) {
         Optional<Integer> paramOptional = getPathParamAsInt("companyId", context);
-        if(paramOptional.isEmpty()) {
+        if (paramOptional.isEmpty()) {
             Responses.error("Invalid companyId param").respondTo(context);
             return;
         }
@@ -36,6 +44,6 @@ public class CreateJoinLinkEndpoint extends RestrictedEndpoint {
         }
 
         String id = joinLinkController.generateNewLink(companyId, maxUses);
-        context.result(String.format("https://www.spedcord.xyz/invite/%s", id)).status(200);
+        context.result(String.format("https://%s/invite/%s", host + (port == 80 ? "" : ":" + port), id)).status(200);
     }
 }
