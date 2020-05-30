@@ -7,10 +7,10 @@ public class User {
     private final int id;
     private final long discordId;
     private String key;
-    private String companyId;
+    private int companyId;
     private final List<Integer> jobList;
 
-    public User(int id, long discordId, String key, String companyId, List<Integer> jobList) {
+    public User(int id, long discordId, String key, int companyId, List<Integer> jobList) {
         this.id = id;
         this.discordId = discordId;
         this.key = key;
@@ -30,7 +30,7 @@ public class User {
         return key;
     }
 
-    public String getCompanyId() {
+    public int getCompanyId() {
         return companyId;
     }
 
@@ -38,7 +38,7 @@ public class User {
         return jobList;
     }
 
-    public void setCompanyId(String companyId) {
+    public void setCompanyId(int companyId) {
         this.companyId = companyId;
     }
 

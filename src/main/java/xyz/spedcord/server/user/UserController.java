@@ -1,6 +1,7 @@
 package xyz.spedcord.server.user;
 
 import xyz.spedcord.common.sql.MySqlService;
+import xyz.spedcord.server.util.StringUtil;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -21,7 +22,7 @@ public class UserController {
     private void init() {
         try {
             mySqlService.update("CREATE TABLE IF NOT EXISTS users (id BIGINT AUTO_INCREMENT, discordId BIGINT, " +
-                    "ukey VARCHAR(64), companyId VARCHAR(64), jobs MEDIUMTEXT, PRIMARY KEY (id))");
+                    "ukey VARCHAR(64), companyId BIGINT, jobs MEDIUMTEXT, PRIMARY KEY (id))");
             loadUsers();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -37,7 +38,7 @@ public class UserController {
                     resultSet.getInt("id"),
                     resultSet.getLong("discordId"),
                     resultSet.getString("ukey"),
-                    resultSet.getString("companyId"),
+                    resultSet.getInt("companyId"),
                     Arrays.stream(resultSet.getString("jobs").split(";"))
                             .filter(s -> !s.matches("\\s+") && !s.equals(""))
                             .map(Integer::parseInt)
@@ -52,8 +53,21 @@ public class UserController {
 
     public void createUser(long discordId) {
         try {
-            mySqlService.update(String.format("INSERT INTO users (discordId, key, companyId, jobs) " +
-                    "VALUES (%d, '%s', '', '')", discordId, generateKey()));
+            mySqlService.update(String.format("INSERT INTO users (discordId, ukey, companyId, jobs) " +
+                    "VALUES (%d, '%s', -1, '')", discordId, StringUtil.generateKey(32)));
+            ResultSet resultSet = mySqlService.execute(String.format("SELECT * FROM users WHERE discordId = %d", discordId));
+            if (resultSet.next()) {
+                users.add(new User(
+                        resultSet.getInt("id"),
+                        resultSet.getLong("discordId"),
+                        resultSet.getString("ukey"),
+                        resultSet.getInt("companyId"),
+                        Arrays.stream(resultSet.getString("jobs").split(";"))
+                                .filter(s -> !s.matches("\\s+") && !s.equals(""))
+                                .map(Integer::parseInt)
+                                .collect(Collectors.toList())
+                ));
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -61,7 +75,7 @@ public class UserController {
 
     public void updateUser(User user) {
         try {
-            mySqlService.update(String.format("UPDATE users SET companyId = '%s', jobs = '%s' WHERE discordId = %d",
+            mySqlService.update(String.format("UPDATE users SET companyId = %d, jobs = '%s' WHERE discordId = %d",
                     user.getCompanyId(), user.getJobList().stream()
                             .map(Object::toString)
                             .collect(Collectors.joining(";")),
@@ -72,17 +86,7 @@ public class UserController {
     }
 
     public void changeKey(User user) {
-        user.setKey(generateKey());
-    }
-
-    private String generateKey() {
-        Random random = new Random();
-        StringBuilder stringBuilder = new StringBuilder();
-        String chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        for (int i = 0; i < 64; i++) {
-            stringBuilder.append(chars.toCharArray()[random.nextInt(chars.length())]);
-        }
-        return stringBuilder.toString();
+        user.setKey(StringUtil.generateKey(32));
     }
 
 }
