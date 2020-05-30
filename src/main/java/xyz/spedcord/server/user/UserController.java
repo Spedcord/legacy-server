@@ -71,6 +71,10 @@ public class UserController {
         }
     }
 
+    public void changeKey(User user) {
+        user.setKey(generateKey());
+    }
+
     private String generateKey() {
         Random random = new Random();
         StringBuilder stringBuilder = new StringBuilder();

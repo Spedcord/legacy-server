@@ -6,9 +6,9 @@ public class User {
 
     private final int id;
     private final long discordId;
-    private final String key;
-    private final String companyId;
-    private List<Integer> jobList;
+    private String key;
+    private String companyId;
+    private final List<Integer> jobList;
 
     public User(int id, long discordId, String key, String companyId, List<Integer> jobList) {
         this.id = id;
@@ -36,6 +36,14 @@ public class User {
 
     public List<Integer> getJobList() {
         return jobList;
+    }
+
+    public void setCompanyId(String companyId) {
+        this.companyId = companyId;
+    }
+
+    public void setKey(String key) {
+        this.key = key;
     }
 
 }

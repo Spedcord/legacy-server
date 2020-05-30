@@ -9,6 +9,7 @@ import xyz.spedcord.common.config.Config;
 import xyz.spedcord.common.sql.MySqlService;
 import xyz.spedcord.server.endpoint.oauth.DiscordEndpoint;
 import xyz.spedcord.server.endpoint.oauth.InviteEndpoint;
+import xyz.spedcord.server.endpoint.user.UserChangekeyEndpoint;
 import xyz.spedcord.server.endpoint.user.UserGetEndpoint;
 import xyz.spedcord.server.endpoint.user.UserInfoEndpoint;
 import xyz.spedcord.server.endpoint.user.UserJobsEndpoint;
@@ -72,6 +73,7 @@ public class SpedcordServer {
         server.endpoint("/user/info", HandlerType.GET, new UserInfoEndpoint(userController));
         server.endpoint("/user/get", HandlerType.GET, new UserGetEndpoint(userController));
         server.endpoint("/user/jobs", HandlerType.GET, new UserJobsEndpoint(userController, jobController));
+        server.endpoint("/user/changekey", HandlerType.POST, new UserChangekeyEndpoint(userController));
     }
 
 }
