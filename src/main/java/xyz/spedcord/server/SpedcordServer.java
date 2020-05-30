@@ -2,6 +2,7 @@ package xyz.spedcord.server;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.LongSerializationPolicy;
 import dev.lukaesebrot.jal.endpoints.HttpServer;
 import dev.lukaesebrot.jal.ratelimiting.RateLimiter;
 import io.javalin.Javalin;
@@ -38,7 +39,10 @@ import java.sql.SQLException;
 
 public class SpedcordServer {
 
-    public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+    public static final Gson GSON = new GsonBuilder()
+            .setPrettyPrinting()
+            .setLongSerializationPolicy(LongSerializationPolicy.STRING)
+            .create();
     public static String KEY = null;
 
     private InviteAuthController inviteAuthController;
