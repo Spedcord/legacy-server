@@ -34,23 +34,27 @@ public class DiscordEndpoint extends Endpoint {
     public void handle(Context context) {
         String code = context.queryParam("code");
         if (code == null) {
-            context.status(400);
+            //context.status(400);
+            context.redirect("https://www.spedcord.xyz/error/invite/1");
             return;
         }
 
         String state = context.queryParam("state");
         if (state == null) {
-            context.status(400);
+            //context.status(400);
+            context.redirect("https://www.spedcord.xyz/error/invite/1");
             return;
         }
 
         InviteAuthResult inviteAuthResult = auth.exchangeCode(code, state);
         if (inviteAuthResult.getResponse() == Response.ERROR) {
-            Responses.error("Failed").respondTo(context);
+            //Responses.error("Failed").respondTo(context);
+            context.redirect("https://www.spedcord.xyz/error/invite/1");
             return;
         }
         if (inviteAuthResult.getUser().isBot()) {
-            Responses.error(HttpStatus.FORBIDDEN_403, "You're a bot o.0").respondTo(context);
+            //Responses.error(HttpStatus.FORBIDDEN_403, "You're a bot o.0").respondTo(context);
+            context.redirect("https://www.spedcord.xyz/error/invite/2");
             return;
         }
 
@@ -70,7 +74,8 @@ public class DiscordEndpoint extends Endpoint {
         User user = userOptional.get();
 
         if(company.getMemberDiscordIds().contains(user.getDiscordId())) {
-            Responses.error(HttpStatus.FORBIDDEN_403, "You're already a member of this company").respondTo(context);
+            //Responses.error(HttpStatus.FORBIDDEN_403, "You're already a member of this company").respondTo(context);
+            context.redirect("https://www.spedcord.xyz/error/invite/3");
             return;
         }
 
@@ -82,6 +87,7 @@ public class DiscordEndpoint extends Endpoint {
 
         joinLinkController.joinLinkUsed(inviteAuthResult.getJoinId());
 
-        Responses.success("You successfully joined the company").respondTo(context);
+        //Responses.success("You successfully joined the company").respondTo(context);
+        context.redirect("https://www.spedcord.xyz/success/invite/1");
     }
 }

@@ -56,7 +56,7 @@ public class CompanyInfoEndpoint extends Endpoint {
             JsonArray array = new JsonArray();
             for (int jobId : user.getJobList()) {
                 Job job = jobController.getJob(jobId);
-                array.add(SpedcordServer.GSON.toJson(job));
+                array.add(SpedcordServer.GSON.toJsonTree(job));
             }
             logbook.add(String.valueOf(user.getDiscordId()), array);
         }

@@ -26,33 +26,39 @@ public class RegisterDiscordEndpoint extends Endpoint {
     public void handle(Context context) {
         String code = context.queryParam("code");
         if (code == null) {
-            context.status(400);
+            //context.status(400);
+            context.redirect("https://www.spedcord.xyz/error/user/1");
             return;
         }
 
         String state = context.queryParam("state");
         if (state == null) {
-            context.status(400);
+            //context.status(400);
+            context.redirect("https://www.spedcord.xyz/error/user/1");
             return;
         }
 
         RegisterAuthResult authResult = authController.exchangeCode(code, state);
         if(authResult.getResponse() == Response.ERROR) {
-            Responses.error("Failed").respondTo(context);
+            //Responses.error("Failed").respondTo(context);
+            context.redirect("https://www.spedcord.xyz/error/user/1");
             return;
         }
         if (authResult.getUser().isBot()) {
-            Responses.error(HttpStatus.FORBIDDEN_403, "You're a bot o.0").respondTo(context);
+            //Responses.error(HttpStatus.FORBIDDEN_403, "You're a bot o.0").respondTo(context);
+            context.redirect("https://www.spedcord.xyz/error/user/2");
             return;
         }
 
         Optional<User> optional = userController.getUser(Long.parseLong(authResult.getUser().getId()));
         if(optional.isPresent()) {
-            Responses.error("This Discord account is already registered").respondTo(context);
+            //Responses.error("This Discord account is already registered").respondTo(context);
+            context.redirect("https://www.spedcord.xyz/error/user/3");
             return;
         }
 
         userController.createUser(Long.parseLong(authResult.getUser().getId()));
-        Responses.success("Your Discord account was successfully registered").respondTo(context);
+        //Responses.success("Your Discord account was successfully registered").respondTo(context);
+        context.redirect("https://www.spedcord.xyz/success/user/1");
     }
 }

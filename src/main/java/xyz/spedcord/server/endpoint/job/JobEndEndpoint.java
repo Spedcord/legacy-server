@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import io.javalin.http.Context;
 import org.eclipse.jetty.http.HttpStatus;
 import xyz.spedcord.server.endpoint.Endpoint;
+import xyz.spedcord.server.job.Job;
 import xyz.spedcord.server.job.JobController;
 import xyz.spedcord.server.response.Responses;
 import xyz.spedcord.server.user.User;
@@ -61,7 +62,11 @@ public class JobEndEndpoint extends Endpoint {
             return;
         }
 
+        Job job = jobController.getPendingJob(discordId);
         jobController.endJob(discordId, pay);
+        user.getJobList().add(job.getId());
+        userController.updateUser(user);
+
         Responses.success("Job ended").respondTo(ctx);
     }
 
