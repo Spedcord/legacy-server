@@ -9,16 +9,20 @@ import xyz.spedcord.common.config.Config;
 import xyz.spedcord.common.sql.MySqlService;
 import xyz.spedcord.server.company.CompanyController;
 import xyz.spedcord.server.endpoint.company.CompanyInfoEndpoint;
+import xyz.spedcord.server.endpoint.company.CompanyRegisterEndpoint;
 import xyz.spedcord.server.endpoint.company.CreateJoinLinkEndpoint;
 import xyz.spedcord.server.endpoint.oauth.DiscordEndpoint;
 import xyz.spedcord.server.endpoint.oauth.InviteEndpoint;
+import xyz.spedcord.server.endpoint.oauth.RegisterDiscordEndpoint;
+import xyz.spedcord.server.endpoint.oauth.RegisterEndpoint;
 import xyz.spedcord.server.endpoint.user.UserChangekeyEndpoint;
 import xyz.spedcord.server.endpoint.user.UserGetEndpoint;
 import xyz.spedcord.server.endpoint.user.UserInfoEndpoint;
 import xyz.spedcord.server.endpoint.user.UserJobsEndpoint;
 import xyz.spedcord.server.job.JobController;
-import xyz.spedcord.server.oauth.DiscordAuthorizationReceiver;
 import xyz.spedcord.server.joinlink.JoinLinkController;
+import xyz.spedcord.server.oauth.invite.InviteAuthController;
+import xyz.spedcord.server.oauth.register.RegisterAuthController;
 import xyz.spedcord.server.response.Responses;
 import xyz.spedcord.server.user.UserController;
 
@@ -58,7 +62,11 @@ public class SpedcordServer {
             return;
         }
 
-        DiscordAuthorizationReceiver auth = new DiscordAuthorizationReceiver(
+        InviteAuthController inviteAuthController = new InviteAuthController(
+                config.get("oauth-clientid"),
+                config.get("oauth-clientsecret")
+        );
+        RegisterAuthController registerAuthController = new RegisterAuthController(
                 config.get("oauth-clientid"),
                 config.get("oauth-clientsecret")
         );
@@ -72,13 +80,16 @@ public class SpedcordServer {
                 Responses.error(HttpStatus.TOO_MANY_REQUESTS_429, "Too many requests").respondTo(ctx));
         HttpServer server = new HttpServer(app, rateLimiter);
 
-        server.endpoint("/invite/:id", HandlerType.GET, new InviteEndpoint(auth, joinLinkController));
-        server.endpoint("/discord", HandlerType.GET, new DiscordEndpoint(auth, joinLinkController, userController, companyController));
+        server.endpoint("/invite/:id", HandlerType.GET, new InviteEndpoint(inviteAuthController, joinLinkController));
+        server.endpoint("/discord", HandlerType.GET, new DiscordEndpoint(inviteAuthController, joinLinkController, userController, companyController));
+        server.endpoint("/user/register", HandlerType.GET, new RegisterEndpoint(registerAuthController));
+        server.endpoint("/user/register/discord", HandlerType.GET, new RegisterDiscordEndpoint(registerAuthController, userController));
         server.endpoint("/user/info", HandlerType.GET, new UserInfoEndpoint(userController));
         server.endpoint("/user/get", HandlerType.GET, new UserGetEndpoint(userController));
         server.endpoint("/user/jobs", HandlerType.GET, new UserJobsEndpoint(userController, jobController));
         server.endpoint("/user/changekey", HandlerType.POST, new UserChangekeyEndpoint(userController));
         server.endpoint("/company/info/:discordServerId", HandlerType.GET, new CompanyInfoEndpoint(companyController, userController, jobController));
+        server.endpoint("/company/register", HandlerType.POST, new CompanyRegisterEndpoint(companyController));
         server.endpoint("/company/createjoinlink", HandlerType.POST, new CreateJoinLinkEndpoint(joinLinkController));
     }
 

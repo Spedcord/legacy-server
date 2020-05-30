@@ -2,18 +2,16 @@ package xyz.spedcord.server.endpoint.oauth;
 
 import dev.lukaesebrot.jal.endpoints.Endpoint;
 import io.javalin.http.Context;
-import xyz.spedcord.server.oauth.DiscordAuthorizationReceiver;
+import xyz.spedcord.server.oauth.invite.InviteAuthController;
 import xyz.spedcord.server.joinlink.JoinLinkController;
 import xyz.spedcord.server.response.Responses;
 
-import java.sql.SQLException;
-
 public class InviteEndpoint extends Endpoint {
 
-    private DiscordAuthorizationReceiver auth;
+    private InviteAuthController auth;
     private JoinLinkController joinLinkController;
 
-    public InviteEndpoint(DiscordAuthorizationReceiver auth, JoinLinkController joinLinkController) {
+    public InviteEndpoint(InviteAuthController auth, JoinLinkController joinLinkController) {
         this.auth = auth;
         this.joinLinkController = joinLinkController;
     }

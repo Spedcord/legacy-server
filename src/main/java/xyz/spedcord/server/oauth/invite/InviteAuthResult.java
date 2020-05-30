@@ -1,18 +1,18 @@
-package xyz.spedcord.server.oauth;
+package xyz.spedcord.server.oauth.invite;
 
 import bell.oauth.discord.domain.User;
 import bell.oauth.discord.main.Response;
 
-public class AuthResult {
+public class InviteAuthResult {
 
-    public static final AuthResult ERROR = new AuthResult(Response.ERROR, null, -1, null);
+    public static final InviteAuthResult ERROR = new InviteAuthResult(Response.ERROR, null, -1, null);
 
     private final Response response;
     private final User user;
     private final int companyId;
     private final String joinId;
 
-    public AuthResult(Response response, User user, int companyId, String joinId) {
+    public InviteAuthResult(Response response, User user, int companyId, String joinId) {
         this.response = response;
         this.user = user;
         this.companyId = companyId;

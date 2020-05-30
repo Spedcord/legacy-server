@@ -1,4 +1,4 @@
-package xyz.spedcord.server.oauth;
+package xyz.spedcord.server.oauth.invite;
 
 import bell.oauth.discord.main.OAuthBuilder;
 
@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class DiscordAuthorizationReceiver {
+public class InviteAuthController {
 
     private String clientId;
     private String clientSecret;
@@ -14,7 +14,7 @@ public class DiscordAuthorizationReceiver {
     private Map<String, Integer> companyIdMap;
     private Map<String, String> joinIdMap;
 
-    public DiscordAuthorizationReceiver(String clientId, String clientSecret) {
+    public InviteAuthController(String clientId, String clientSecret) {
         this.clientId = clientId;
         this.clientSecret = clientSecret;
         this.authMap = new HashMap<>();
@@ -35,15 +35,15 @@ public class DiscordAuthorizationReceiver {
         return oAuthBuilder.getAuthorizationUrl(state);
     }
 
-    public AuthResult exchangeCode(String code, String state) {
+    public InviteAuthResult exchangeCode(String code, String state) {
         OAuthBuilder oAuthBuilder = authMap.remove(state);
         Integer companyId = companyIdMap.remove(state);
         String joinId = joinIdMap.remove(state);
         if (oAuthBuilder == null || companyId == null || joinId == null) {
-            return AuthResult.ERROR;
+            return InviteAuthResult.ERROR;
         }
 
-        return new AuthResult(
+        return new InviteAuthResult(
                 oAuthBuilder.exchange(code),
                 oAuthBuilder.getUser(),
                 companyId,

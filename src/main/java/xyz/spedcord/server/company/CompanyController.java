@@ -56,6 +56,18 @@ public class CompanyController {
         return companies.stream().filter(company -> company.getId() == id).findAny();
     }
 
+    public void createCompany(Company company) {
+        try {
+            mySqlService.update(String.format("INSERT INTO companies (discordServerId, name, ownerDiscordId, members) VALUES(%d, '%s', %d, '%s')",
+                    company.getDiscordServerId(), MySqlUtil.escapeString(company.getName()), company.getOwnerDiscordId(),
+                    company.getMemberDiscordIds().stream()
+                            .map(Object::toString)
+                            .collect(Collectors.joining(";"))));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void updateCompany(Company company) {
         try {
             mySqlService.update(String.format("UPDATE companies SET name = '%s', members = '%s' WHERE id = %d",
