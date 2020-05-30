@@ -17,7 +17,7 @@ import xyz.spedcord.server.endpoint.user.UserInfoEndpoint;
 import xyz.spedcord.server.endpoint.user.UserJobsEndpoint;
 import xyz.spedcord.server.job.JobController;
 import xyz.spedcord.server.oauth.DiscordAuthorizationReceiver;
-import xyz.spedcord.server.oauth.JoinLinkRetriever;
+import xyz.spedcord.server.joinlink.JoinLinkController;
 import xyz.spedcord.server.response.Responses;
 import xyz.spedcord.server.user.UserController;
 
@@ -61,7 +61,7 @@ public class SpedcordServer {
                 config.get("oauth-clientid"),
                 config.get("oauth-clientsecret")
         );
-        JoinLinkRetriever joinLinkRetriever = new JoinLinkRetriever(mySqlService);
+        JoinLinkController joinLinkController = new JoinLinkController(mySqlService);
         UserController userController = new UserController(mySqlService);
         JobController jobController = new JobController(mySqlService);
         CompanyController companyController = new CompanyController(mySqlService);
@@ -71,13 +71,13 @@ public class SpedcordServer {
                 Responses.error(HttpStatus.TOO_MANY_REQUESTS_429, "Too many requests").respondTo(ctx));
         HttpServer server = new HttpServer(app, rateLimiter);
 
-        server.endpoint("/invite/:id", HandlerType.GET, new InviteEndpoint(auth, joinLinkRetriever));
-        server.endpoint("/discord", HandlerType.GET, new DiscordEndpoint(auth, joinLinkRetriever, userController, companyController));
+        server.endpoint("/invite/:id", HandlerType.GET, new InviteEndpoint(auth, joinLinkController));
+        server.endpoint("/discord", HandlerType.GET, new DiscordEndpoint(auth, joinLinkController, userController, companyController));
         server.endpoint("/user/info", HandlerType.GET, new UserInfoEndpoint(userController));
         server.endpoint("/user/get", HandlerType.GET, new UserGetEndpoint(userController));
         server.endpoint("/user/jobs", HandlerType.GET, new UserJobsEndpoint(userController, jobController));
         server.endpoint("/user/changekey", HandlerType.POST, new UserChangekeyEndpoint(userController));
-        server.endpoint("/company/createjoinlink", HandlerType.POST, new CreateJoinLinkEndpoint(joinLinkRetriever));
+        server.endpoint("/company/createjoinlink", HandlerType.POST, new CreateJoinLinkEndpoint(joinLinkController));
     }
 
 }

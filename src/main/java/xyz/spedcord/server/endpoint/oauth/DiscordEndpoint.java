@@ -3,11 +3,13 @@ package xyz.spedcord.server.endpoint.oauth;
 import com.google.gson.Gson;
 import dev.lukaesebrot.jal.endpoints.Endpoint;
 import io.javalin.http.Context;
+import org.eclipse.jetty.http.HttpStatus;
 import xyz.spedcord.server.company.Company;
 import xyz.spedcord.server.company.CompanyController;
+import xyz.spedcord.server.joinlink.JoinLinkController;
 import xyz.spedcord.server.oauth.AuthResult;
 import xyz.spedcord.server.oauth.DiscordAuthorizationReceiver;
-import xyz.spedcord.server.oauth.JoinLinkRetriever;
+import xyz.spedcord.server.response.Responses;
 import xyz.spedcord.server.user.User;
 import xyz.spedcord.server.user.UserController;
 
@@ -16,14 +18,14 @@ import java.util.Optional;
 public class DiscordEndpoint extends Endpoint {
 
     private DiscordAuthorizationReceiver auth;
-    private JoinLinkRetriever joinLinkRetriever;
+    private JoinLinkController joinLinkController;
     private UserController userController;
     private CompanyController companyController;
 
-    public DiscordEndpoint(DiscordAuthorizationReceiver auth, JoinLinkRetriever joinLinkRetriever,
+    public DiscordEndpoint(DiscordAuthorizationReceiver auth, JoinLinkController joinLinkController,
                            UserController userController, CompanyController companyController) {
         this.auth = auth;
-        this.joinLinkRetriever = joinLinkRetriever;
+        this.joinLinkController = joinLinkController;
         this.userController = userController;
         this.companyController = companyController;
     }
@@ -43,10 +45,15 @@ public class DiscordEndpoint extends Endpoint {
         }
 
         AuthResult authResult = auth.exchangeCode(code, state);
-        joinLinkRetriever.removeJoinLink(authResult.getJoinId());
+        if (authResult.getUser().isBot()) {
+            Responses.error(HttpStatus.FORBIDDEN_403, "You're a bot o.0");
+            return;
+        }
+
+        joinLinkController.joinLinkUsed(authResult.getJoinId());
 
         Optional<Company> optional = companyController.getCompany(authResult.getCompanyId());
-        if(optional.isEmpty()) {
+        if (optional.isEmpty()) {
             context.status(500);
             return;
         }
@@ -54,7 +61,7 @@ public class DiscordEndpoint extends Endpoint {
 
         long userDiscordId = Long.parseLong(authResult.getUser().getId());
         Optional<User> userOptional = userController.getUser(userDiscordId);
-        if(userOptional.isEmpty()) {
+        if (userOptional.isEmpty()) {
             userController.createUser(userDiscordId);
             userOptional = userController.getUser(userDiscordId);
         }

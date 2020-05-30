@@ -3,7 +3,7 @@ package xyz.spedcord.server.endpoint.oauth;
 import dev.lukaesebrot.jal.endpoints.Endpoint;
 import io.javalin.http.Context;
 import xyz.spedcord.server.oauth.DiscordAuthorizationReceiver;
-import xyz.spedcord.server.oauth.JoinLinkRetriever;
+import xyz.spedcord.server.joinlink.JoinLinkController;
 import xyz.spedcord.server.response.Responses;
 
 import java.sql.SQLException;
@@ -11,23 +11,18 @@ import java.sql.SQLException;
 public class InviteEndpoint extends Endpoint {
 
     private DiscordAuthorizationReceiver auth;
-    private JoinLinkRetriever joinLinkRetriever;
+    private JoinLinkController joinLinkController;
 
-    public InviteEndpoint(DiscordAuthorizationReceiver auth, JoinLinkRetriever joinLinkRetriever) {
+    public InviteEndpoint(DiscordAuthorizationReceiver auth, JoinLinkController joinLinkController) {
         this.auth = auth;
-        this.joinLinkRetriever = joinLinkRetriever;
+        this.joinLinkController = joinLinkController;
     }
 
     @Override
     public void handle(Context context) {
         String id = context.pathParam("id");
 
-        int companyId = -1;
-        try {
-            companyId = joinLinkRetriever.getCompanyId(id);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        int companyId = joinLinkController.getCompanyId(id);
         if(companyId == -1) {
             Responses.error("Invalid id param").respondTo(context);
             return;
