@@ -22,11 +22,13 @@ public class DiscordEndpoint extends Endpoint {
         String code = context.queryParam("code");
         if (code == null) {
             context.status(400);
+            return;
         }
 
         String state = context.queryParam("state");
         if (state == null) {
             context.status(400);
+            return;
         }
 
         AuthResult authResult = auth.exchangeCode(code, state);

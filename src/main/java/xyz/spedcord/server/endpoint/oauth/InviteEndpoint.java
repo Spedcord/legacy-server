@@ -4,6 +4,7 @@ import dev.lukaesebrot.jal.endpoints.Endpoint;
 import io.javalin.http.Context;
 import xyz.spedcord.server.oauth.DiscordAuthorizationReceiver;
 import xyz.spedcord.server.oauth.JoinLinkRetriever;
+import xyz.spedcord.server.response.Responses;
 
 import java.sql.SQLException;
 
@@ -21,7 +22,7 @@ public class InviteEndpoint extends Endpoint {
     public void handle(Context context) {
         String id = context.queryParam("id");
         if(id == null) {
-            context.result("Missing id").status(400);
+            Responses.error("Missing id param").respondTo(context);
             return;
         }
 
@@ -31,7 +32,7 @@ public class InviteEndpoint extends Endpoint {
         } catch (SQLException ignored) {
         }
         if(companyId == null) {
-            context.result("Invalid id").status(400);
+            Responses.error("Invalid id").respondTo(context);
             return;
         }
 
