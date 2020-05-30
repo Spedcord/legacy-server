@@ -11,6 +11,8 @@ import xyz.spedcord.server.endpoint.oauth.DiscordEndpoint;
 import xyz.spedcord.server.endpoint.oauth.InviteEndpoint;
 import xyz.spedcord.server.endpoint.user.UserGetEndpoint;
 import xyz.spedcord.server.endpoint.user.UserInfoEndpoint;
+import xyz.spedcord.server.endpoint.user.UserJobsEndpoint;
+import xyz.spedcord.server.job.JobController;
 import xyz.spedcord.server.oauth.DiscordAuthorizationReceiver;
 import xyz.spedcord.server.oauth.JoinLinkRetriever;
 import xyz.spedcord.server.response.Responses;
@@ -58,6 +60,7 @@ public class SpedcordServer {
         );
         JoinLinkRetriever joinLinkRetriever = new JoinLinkRetriever(mySqlService);
         UserController userController = new UserController(mySqlService);
+        JobController jobController = new JobController(mySqlService);
 
         Javalin app = Javalin.create().start(config.get("host"), Integer.parseInt(config.get("port")));
         RateLimiter rateLimiter = new RateLimiter(Integer.parseInt(config.get("requests-per-minute")), ctx ->
@@ -68,6 +71,7 @@ public class SpedcordServer {
         server.endpoint("/discord", HandlerType.GET, new DiscordEndpoint(auth, joinLinkRetriever)); //TODO
         server.endpoint("/user/info", HandlerType.GET, new UserInfoEndpoint(userController));
         server.endpoint("/user/get", HandlerType.GET, new UserGetEndpoint(userController));
+        server.endpoint("/user/jobs", HandlerType.GET, new UserJobsEndpoint(userController, jobController));
     }
 
 }
