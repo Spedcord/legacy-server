@@ -17,7 +17,7 @@ public class JobController {
 
     private final MySqlService mySqlService;
 
-    private Map<Long, Job> pendingJobs = new HashMap<>();
+    private final Map<Long, Job> pendingJobs = new HashMap<>();
 
     public JobController(MySqlService mySqlService) {
         this.mySqlService = mySqlService;
@@ -63,6 +63,11 @@ public class JobController {
         job.setPay(pay);
 
         try {
+            ResultSet resultSet = mySqlService.execute("SELECT AUTO_INCREMENT FROM information_schema.TABLES WHERE TABLE_NAME ='jobs'");
+            if(resultSet.next()) {
+                job.setId(resultSet.getInt(1));
+            }
+
             mySqlService.update(String.format("INSERT INTO jobs (startedAt, endedAt, cargoWeight, " +
                             "pay, fromCity, toCity, cargo, truck) VALUES (%d, %d, %f, %f, '%s', '%s', '%s', '%s')",
                     job.getStartedAt(), job.getEndedAt(), job.getCargoWeight(), job.getPay(),

@@ -83,4 +83,9 @@ public class Job {
     public void setToCity(String toCity) {
         this.toCity = toCity;
     }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
 }
