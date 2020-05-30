@@ -72,7 +72,7 @@ public class SpedcordServer {
         HttpServer server = new HttpServer(app, rateLimiter);
 
         server.endpoint("/invite/:id", HandlerType.GET, new InviteEndpoint(auth, joinLinkRetriever));
-        server.endpoint("/discord", HandlerType.GET, new DiscordEndpoint(auth, joinLinkRetriever, userController, companyController)); //TODO
+        server.endpoint("/discord", HandlerType.GET, new DiscordEndpoint(auth, joinLinkRetriever, userController, companyController));
         server.endpoint("/user/info", HandlerType.GET, new UserInfoEndpoint(userController));
         server.endpoint("/user/get", HandlerType.GET, new UserGetEndpoint(userController));
         server.endpoint("/user/jobs", HandlerType.GET, new UserJobsEndpoint(userController, jobController));
