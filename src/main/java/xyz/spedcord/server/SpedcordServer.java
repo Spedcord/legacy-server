@@ -7,6 +7,8 @@ import io.javalin.http.HandlerType;
 import org.eclipse.jetty.http.HttpStatus;
 import xyz.spedcord.common.config.Config;
 import xyz.spedcord.common.sql.MySqlService;
+import xyz.spedcord.server.company.CompanyController;
+import xyz.spedcord.server.endpoint.company.CreateJoinLinkEndpoint;
 import xyz.spedcord.server.endpoint.oauth.DiscordEndpoint;
 import xyz.spedcord.server.endpoint.oauth.InviteEndpoint;
 import xyz.spedcord.server.endpoint.user.UserChangekeyEndpoint;
@@ -62,18 +64,20 @@ public class SpedcordServer {
         JoinLinkRetriever joinLinkRetriever = new JoinLinkRetriever(mySqlService);
         UserController userController = new UserController(mySqlService);
         JobController jobController = new JobController(mySqlService);
+        CompanyController companyController = new CompanyController(mySqlService);
 
         Javalin app = Javalin.create().start(config.get("host"), Integer.parseInt(config.get("port")));
         RateLimiter rateLimiter = new RateLimiter(Integer.parseInt(config.get("requests-per-minute")), ctx ->
                 Responses.error(HttpStatus.TOO_MANY_REQUESTS_429, "Too many requests").respondTo(ctx));
         HttpServer server = new HttpServer(app, rateLimiter);
 
-        server.endpoint("/invite", HandlerType.GET, new InviteEndpoint(auth, joinLinkRetriever));
-        server.endpoint("/discord", HandlerType.GET, new DiscordEndpoint(auth, joinLinkRetriever)); //TODO
+        server.endpoint("/invite/:id", HandlerType.GET, new InviteEndpoint(auth, joinLinkRetriever));
+        server.endpoint("/discord", HandlerType.GET, new DiscordEndpoint(auth, joinLinkRetriever, userController, companyController)); //TODO
         server.endpoint("/user/info", HandlerType.GET, new UserInfoEndpoint(userController));
         server.endpoint("/user/get", HandlerType.GET, new UserGetEndpoint(userController));
         server.endpoint("/user/jobs", HandlerType.GET, new UserJobsEndpoint(userController, jobController));
         server.endpoint("/user/changekey", HandlerType.POST, new UserChangekeyEndpoint(userController));
+        server.endpoint("/company/createjoinlink", HandlerType.POST, new CreateJoinLinkEndpoint(joinLinkRetriever));
     }
 
 }
