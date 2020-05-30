@@ -80,8 +80,8 @@ public class SpedcordServer {
                 Responses.error(HttpStatus.TOO_MANY_REQUESTS_429, "Too many requests").respondTo(ctx));
         HttpServer server = new HttpServer(app, rateLimiter);
 
+        server.endpoint("/invite/discord", HandlerType.GET, new DiscordEndpoint(inviteAuthController, joinLinkController, userController, companyController));
         server.endpoint("/invite/:id", HandlerType.GET, new InviteEndpoint(inviteAuthController, joinLinkController));
-        server.endpoint("/discord", HandlerType.GET, new DiscordEndpoint(inviteAuthController, joinLinkController, userController, companyController));
         server.endpoint("/user/register", HandlerType.GET, new RegisterEndpoint(registerAuthController));
         server.endpoint("/user/register/discord", HandlerType.GET, new RegisterDiscordEndpoint(registerAuthController, userController));
         server.endpoint("/user/info", HandlerType.GET, new UserInfoEndpoint(userController));

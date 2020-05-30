@@ -77,6 +77,6 @@ public class DiscordEndpoint extends Endpoint {
         company.getMemberDiscordIds().add(user.getDiscordId());
         companyController.updateCompany(company);
 
-        context.result(new Gson().toJson(inviteAuthResult)).status(200);
+        Responses.success("You successfully joined the company").respondTo(context);
     }
 }
