@@ -10,7 +10,7 @@ public abstract class RestrictedEndpoint extends Endpoint {
     public void handle(Context context) {
         String authorization = context.header("Authorization");
         if (authorization == null) {
-            Responses.error("Missing Authorization header").respondTo(context);
+            Responses.error(HttpStatus.UNAUTHORIZED_401, "Unauthorized").respondTo(context);
             return;
         }
 
