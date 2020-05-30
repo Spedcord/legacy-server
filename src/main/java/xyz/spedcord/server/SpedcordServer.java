@@ -8,6 +8,7 @@ import org.eclipse.jetty.http.HttpStatus;
 import xyz.spedcord.common.config.Config;
 import xyz.spedcord.common.sql.MySqlService;
 import xyz.spedcord.server.company.CompanyController;
+import xyz.spedcord.server.endpoint.company.CompanyInfoEndpoint;
 import xyz.spedcord.server.endpoint.company.CreateJoinLinkEndpoint;
 import xyz.spedcord.server.endpoint.oauth.DiscordEndpoint;
 import xyz.spedcord.server.endpoint.oauth.InviteEndpoint;
@@ -77,6 +78,7 @@ public class SpedcordServer {
         server.endpoint("/user/get", HandlerType.GET, new UserGetEndpoint(userController));
         server.endpoint("/user/jobs", HandlerType.GET, new UserJobsEndpoint(userController, jobController));
         server.endpoint("/user/changekey", HandlerType.POST, new UserChangekeyEndpoint(userController));
+        server.endpoint("/company/info/:discordServerId", HandlerType.GET, new CompanyInfoEndpoint(companyController, userController, jobController));
         server.endpoint("/company/createjoinlink", HandlerType.POST, new CreateJoinLinkEndpoint(joinLinkController));
     }
 
