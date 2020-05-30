@@ -9,15 +9,20 @@ import xyz.spedcord.common.config.Config;
 import xyz.spedcord.common.sql.MySqlService;
 import xyz.spedcord.server.endpoint.oauth.DiscordEndpoint;
 import xyz.spedcord.server.endpoint.oauth.InviteEndpoint;
+import xyz.spedcord.server.endpoint.user.UserGetEndpoint;
+import xyz.spedcord.server.endpoint.user.UserInfoEndpoint;
 import xyz.spedcord.server.oauth.DiscordAuthorizationReceiver;
 import xyz.spedcord.server.oauth.JoinLinkRetriever;
 import xyz.spedcord.server.response.Responses;
+import xyz.spedcord.server.user.UserController;
 
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 
 public class SpedcordServer {
+
+    public static String KEY = null;
 
     public static void main(String[] args) throws IOException {
         Config config = new Config(new File("config.cfg"), new String[]{
@@ -37,7 +42,7 @@ public class SpedcordServer {
                 "port", "3306"
         });
 
-        String key = config.get("key");
+        KEY = config.get("key");
 
         MySqlService mySqlService;
         try {
@@ -52,14 +57,17 @@ public class SpedcordServer {
                 config.get("oauth-clientsecret")
         );
         JoinLinkRetriever joinLinkRetriever = new JoinLinkRetriever(mySqlService);
+        UserController userController = new UserController(mySqlService);
 
         Javalin app = Javalin.create().start(config.get("host"), Integer.parseInt(config.get("port")));
         RateLimiter rateLimiter = new RateLimiter(Integer.parseInt(config.get("requests-per-minute")), ctx ->
                 Responses.error(HttpStatus.TOO_MANY_REQUESTS_429, "Too many requests").respondTo(ctx));
         HttpServer server = new HttpServer(app, rateLimiter);
 
-        server.endpoint("/invite", HandlerType.GET, new InviteEndpoint(auth, joinLinkRetriever)); //TODO
+        server.endpoint("/invite", HandlerType.GET, new InviteEndpoint(auth, joinLinkRetriever));
         server.endpoint("/discord", HandlerType.GET, new DiscordEndpoint(auth, joinLinkRetriever)); //TODO
+        server.endpoint("/user/info", HandlerType.GET, new UserInfoEndpoint(userController));
+        server.endpoint("/user/get", HandlerType.GET, new UserGetEndpoint(userController));
     }
 
 }
