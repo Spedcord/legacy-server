@@ -5,6 +5,8 @@ import xyz.spedcord.server.endpoint.RestrictedEndpoint;
 import xyz.spedcord.server.joinlink.JoinLinkController;
 import xyz.spedcord.server.response.Responses;
 
+import java.util.Optional;
+
 public class CreateJoinLinkEndpoint extends RestrictedEndpoint {
 
     private final JoinLinkController joinLinkController;
@@ -15,18 +17,12 @@ public class CreateJoinLinkEndpoint extends RestrictedEndpoint {
 
     @Override
     protected void handleFurther(Context context) {
-        String rawCompanyId = context.queryParam("companyId");
-        if (rawCompanyId == null) {
-            Responses.error("Missing companyId param").respondTo(context);
-            return;
-        }
-        int companyId;
-        try {
-            companyId = Integer.parseInt(rawCompanyId);
-        } catch (NumberFormatException ignored) {
+        Optional<Integer> paramOptional = getPathParamAsInt("companyId", context);
+        if(paramOptional.isEmpty()) {
             Responses.error("Invalid companyId param").respondTo(context);
             return;
         }
+        int companyId = paramOptional.get();
 
         int maxUses = 1;
         String rawMaxUses = context.queryParam("maxUses");

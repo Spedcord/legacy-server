@@ -29,14 +29,12 @@ public class CompanyInfoEndpoint extends Endpoint {
 
     @Override
     public void handle(Context context) {
-        String rawDiscordServerId = context.pathParam("discordServerId");
-        long discordServerId;
-        try {
-            discordServerId = Long.parseLong(rawDiscordServerId);
-        } catch (NumberFormatException ignored) {
+        Optional<Long> paramOptional = getPathParamAsLong("discordServerId", context);
+        if(paramOptional.isEmpty()) {
             Responses.error("Invalid discordServerId param").respondTo(context);
             return;
         }
+        long discordServerId = paramOptional.get();
 
         Optional<Company> optional = companyController.getCompany(discordServerId);
         if(optional.isEmpty()) {

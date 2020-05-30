@@ -20,18 +20,12 @@ public class UserInfoEndpoint extends Endpoint {
 
     @Override
     public void handle(Context context) {
-        String rawDiscordId = context.queryParam("discordId");
-        if (rawDiscordId == null) {
-            Responses.error("Missing discordId param").respondTo(context);
-            return;
-        }
-        long discordId;
-        try {
-            discordId = Long.parseLong(rawDiscordId);
-        } catch (NumberFormatException ignored) {
+        Optional<Long> paramOptional = getPathParamAsLong("discordId", context);
+        if(paramOptional.isEmpty()) {
             Responses.error("Invalid discordId param").respondTo(context);
             return;
         }
+        long discordId = paramOptional.get();
 
         Optional<User> optional = userController.getUser(discordId);
         if(!optional.isPresent()) {
