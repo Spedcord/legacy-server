@@ -1,21 +1,27 @@
 package xyz.spedcord.server.endpoint.user;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import dev.lukaesebrot.jal.endpoints.Endpoint;
 import io.javalin.http.Context;
+import xyz.spedcord.server.job.Job;
+import xyz.spedcord.server.job.JobController;
 import xyz.spedcord.server.response.Responses;
 import xyz.spedcord.server.user.User;
 import xyz.spedcord.server.user.UserController;
 
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
-public class UserInfoEndpoint extends Endpoint {
+public class UserJobsEndpoint extends Endpoint {
 
-    private final UserController userController;
+    private UserController userController;
+    private JobController jobController;
 
-    public UserInfoEndpoint(UserController userController) {
+    public UserJobsEndpoint(UserController userController, JobController jobController) {
         this.userController = userController;
+        this.jobController = jobController;
     }
 
     @Override
@@ -34,15 +40,17 @@ public class UserInfoEndpoint extends Endpoint {
         }
 
         Optional<User> optional = userController.getUser(discordId);
-        if(!optional.isPresent()) {
+        if (!optional.isPresent()) {
             Responses.error("Unknown user").respondTo(context);
             return;
         }
 
-        JsonObject jsonObj = new Gson().toJsonTree(optional.get()).getAsJsonObject();
-        jsonObj.remove("key");
-        jsonObj.remove("jobList");
+        User user = optional.get();
+        List<Job> jobs = user.getJobList().stream()
+                .map(id -> jobController.getJob(id))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
 
-        context.result(jsonObj.toString()).status(200);
+        context.result(new Gson().toJson(jobs)).status(200);
     }
 }
