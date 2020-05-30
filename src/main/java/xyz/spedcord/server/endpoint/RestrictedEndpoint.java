@@ -1,6 +1,5 @@
 package xyz.spedcord.server.endpoint;
 
-import dev.lukaesebrot.jal.endpoints.Endpoint;
 import io.javalin.http.Context;
 import org.eclipse.jetty.http.HttpStatus;
 import xyz.spedcord.server.SpedcordServer;

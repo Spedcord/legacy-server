@@ -1,7 +1,7 @@
 package xyz.spedcord.server.endpoint.user;
 
 import com.google.gson.Gson;
-import dev.lukaesebrot.jal.endpoints.Endpoint;
+import xyz.spedcord.server.endpoint.Endpoint;
 import io.javalin.http.Context;
 import xyz.spedcord.server.job.Job;
 import xyz.spedcord.server.job.JobController;

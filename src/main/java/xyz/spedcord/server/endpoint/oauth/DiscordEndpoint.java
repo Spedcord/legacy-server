@@ -1,8 +1,7 @@
 package xyz.spedcord.server.endpoint.oauth;
 
 import bell.oauth.discord.main.Response;
-import com.google.gson.Gson;
-import dev.lukaesebrot.jal.endpoints.Endpoint;
+import xyz.spedcord.server.endpoint.Endpoint;
 import io.javalin.http.Context;
 import org.eclipse.jetty.http.HttpStatus;
 import xyz.spedcord.server.company.Company;
@@ -18,10 +17,10 @@ import java.util.Optional;
 
 public class DiscordEndpoint extends Endpoint {
 
-    private InviteAuthController auth;
-    private JoinLinkController joinLinkController;
-    private UserController userController;
-    private CompanyController companyController;
+    private final InviteAuthController auth;
+    private final JoinLinkController joinLinkController;
+    private final UserController userController;
+    private final CompanyController companyController;
 
     public DiscordEndpoint(InviteAuthController auth, JoinLinkController joinLinkController,
                            UserController userController, CompanyController companyController) {

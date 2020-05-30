@@ -2,7 +2,7 @@ package xyz.spedcord.server.endpoint.user;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import dev.lukaesebrot.jal.endpoints.Endpoint;
+import xyz.spedcord.server.endpoint.Endpoint;
 import io.javalin.http.Context;
 import xyz.spedcord.server.response.Responses;
 import xyz.spedcord.server.user.User;

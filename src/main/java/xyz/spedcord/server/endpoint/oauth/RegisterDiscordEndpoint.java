@@ -1,7 +1,7 @@
 package xyz.spedcord.server.endpoint.oauth;
 
 import bell.oauth.discord.main.Response;
-import dev.lukaesebrot.jal.endpoints.Endpoint;
+import xyz.spedcord.server.endpoint.Endpoint;
 import io.javalin.http.Context;
 import org.eclipse.jetty.http.HttpStatus;
 import xyz.spedcord.server.oauth.register.RegisterAuthController;
@@ -14,8 +14,8 @@ import java.util.Optional;
 
 public class RegisterDiscordEndpoint extends Endpoint {
 
-    private RegisterAuthController authController;
-    private UserController userController;
+    private final RegisterAuthController authController;
+    private final UserController userController;
 
     public RegisterDiscordEndpoint(RegisterAuthController authController, UserController userController) {
         this.authController = authController;

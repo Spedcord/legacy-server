@@ -1,6 +1,6 @@
 package xyz.spedcord.server.endpoint.oauth;
 
-import dev.lukaesebrot.jal.endpoints.Endpoint;
+import xyz.spedcord.server.endpoint.Endpoint;
 import io.javalin.http.Context;
 import xyz.spedcord.server.oauth.invite.InviteAuthController;
 import xyz.spedcord.server.joinlink.JoinLinkController;
@@ -8,8 +8,8 @@ import xyz.spedcord.server.response.Responses;
 
 public class InviteEndpoint extends Endpoint {
 
-    private InviteAuthController auth;
-    private JoinLinkController joinLinkController;
+    private final InviteAuthController auth;
+    private final JoinLinkController joinLinkController;
 
     public InviteEndpoint(InviteAuthController auth, JoinLinkController joinLinkController) {
         this.auth = auth;

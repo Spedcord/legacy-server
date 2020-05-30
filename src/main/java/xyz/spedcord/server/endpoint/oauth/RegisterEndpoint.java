@@ -1,6 +1,6 @@
 package xyz.spedcord.server.endpoint.oauth;
 
-import dev.lukaesebrot.jal.endpoints.Endpoint;
+import xyz.spedcord.server.endpoint.Endpoint;
 import io.javalin.http.Context;
 import xyz.spedcord.server.oauth.register.RegisterAuthController;
 

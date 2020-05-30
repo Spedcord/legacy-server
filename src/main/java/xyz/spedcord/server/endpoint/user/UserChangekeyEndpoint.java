@@ -10,7 +10,7 @@ import java.util.Optional;
 
 public class UserChangekeyEndpoint extends RestrictedEndpoint {
 
-    private UserController userController;
+    private final UserController userController;
 
     public UserChangekeyEndpoint(UserController userController) {
         this.userController = userController;
