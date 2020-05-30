@@ -20,19 +20,16 @@ public class InviteEndpoint extends Endpoint {
 
     @Override
     public void handle(Context context) {
-        String id = context.queryParam("id");
-        if(id == null) {
-            Responses.error("Missing id param").respondTo(context);
-            return;
-        }
+        String id = context.pathParam("id");
 
-        String companyId = null;
+        int companyId = -1;
         try {
             companyId = joinLinkRetriever.getCompanyId(id);
-        } catch (SQLException ignored) {
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-        if(companyId == null) {
-            Responses.error("Invalid id").respondTo(context);
+        if(companyId == -1) {
+            Responses.error("Invalid id param").respondTo(context);
             return;
         }
 
