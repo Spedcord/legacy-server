@@ -1,5 +1,7 @@
 package xyz.spedcord.server;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import dev.lukaesebrot.jal.endpoints.HttpServer;
 import dev.lukaesebrot.jal.ratelimiting.RateLimiter;
 import io.javalin.Javalin;
@@ -11,6 +13,9 @@ import xyz.spedcord.server.company.CompanyController;
 import xyz.spedcord.server.endpoint.company.CompanyInfoEndpoint;
 import xyz.spedcord.server.endpoint.company.CompanyRegisterEndpoint;
 import xyz.spedcord.server.endpoint.company.CreateJoinLinkEndpoint;
+import xyz.spedcord.server.endpoint.job.JobCancelEndpoint;
+import xyz.spedcord.server.endpoint.job.JobEndEndpoint;
+import xyz.spedcord.server.endpoint.job.JobStartEndpoint;
 import xyz.spedcord.server.endpoint.oauth.DiscordEndpoint;
 import xyz.spedcord.server.endpoint.oauth.InviteEndpoint;
 import xyz.spedcord.server.endpoint.oauth.RegisterDiscordEndpoint;
@@ -25,6 +30,7 @@ import xyz.spedcord.server.oauth.invite.InviteAuthController;
 import xyz.spedcord.server.oauth.register.RegisterAuthController;
 import xyz.spedcord.server.response.Responses;
 import xyz.spedcord.server.user.UserController;
+import xyz.spedcord.server.util.WebhookUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,7 +38,9 @@ import java.sql.SQLException;
 
 public class SpedcordServer {
 
+    public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     public static String KEY = null;
+
     private InviteAuthController inviteAuthController;
     private RegisterAuthController registerAuthController;
     private JoinLinkController joinLinkController;
@@ -60,6 +68,8 @@ public class SpedcordServer {
         });
 
         KEY = config.get("key");
+
+        WebhookUtil.loadWebhooks();
 
         MySqlService mySqlService;
         try {
@@ -105,6 +115,10 @@ public class SpedcordServer {
         server.endpoint("/company/register", HandlerType.POST, new CompanyRegisterEndpoint(companyController, userController));
         server.endpoint("/company/createjoinlink/:companyId", HandlerType.POST, new CreateJoinLinkEndpoint(joinLinkController,
                 config.get("host"), Integer.parseInt(config.get("port"))));
+
+        server.endpoint("/job/start", HandlerType.POST, new JobStartEndpoint(jobController, userController));
+        server.endpoint("/job/end", HandlerType.POST, new JobEndEndpoint(jobController, userController));
+        server.endpoint("/job/cancel", HandlerType.POST, new JobCancelEndpoint(jobController, userController));
     }
 
 }
