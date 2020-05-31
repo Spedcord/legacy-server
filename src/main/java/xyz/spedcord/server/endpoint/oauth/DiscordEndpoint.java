@@ -73,7 +73,8 @@ public class DiscordEndpoint extends Endpoint {
         }
         User user = userOptional.get();
 
-        if(company.getMemberDiscordIds().contains(user.getDiscordId())) {
+        if(company.getMemberDiscordIds().contains(user.getDiscordId())
+                || company.getOwnerDiscordId() == user.getDiscordId()) {
             //Responses.error(HttpStatus.FORBIDDEN_403, "You're already a member of this company").respondTo(context);
             context.redirect("https://www.spedcord.xyz/error/invite/3");
             return;
