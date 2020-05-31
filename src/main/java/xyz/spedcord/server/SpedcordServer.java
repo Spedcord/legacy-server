@@ -12,6 +12,7 @@ import xyz.spedcord.common.config.Config;
 import xyz.spedcord.common.sql.MySqlService;
 import xyz.spedcord.server.company.CompanyController;
 import xyz.spedcord.server.endpoint.company.CompanyInfoEndpoint;
+import xyz.spedcord.server.endpoint.company.CompanyKickMemberEndpoint;
 import xyz.spedcord.server.endpoint.company.CompanyRegisterEndpoint;
 import xyz.spedcord.server.endpoint.company.CreateJoinLinkEndpoint;
 import xyz.spedcord.server.endpoint.job.JobCancelEndpoint;
@@ -117,6 +118,7 @@ public class SpedcordServer {
 
         server.endpoint("/company/info", HandlerType.GET, new CompanyInfoEndpoint(companyController, userController, jobController));
         server.endpoint("/company/register", HandlerType.POST, new CompanyRegisterEndpoint(companyController, userController));
+        server.endpoint("/company/kickmember", HandlerType.POST, new CompanyKickMemberEndpoint(companyController, userController));
         server.endpoint("/company/createjoinlink/:companyId", HandlerType.POST, new CreateJoinLinkEndpoint(joinLinkController,
                 config.get("host"), Integer.parseInt(config.get("port"))));
 
