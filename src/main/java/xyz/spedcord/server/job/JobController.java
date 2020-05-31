@@ -50,7 +50,7 @@ public class JobController {
 
         JsonObject jsonObject = SpedcordServer.GSON.toJsonTree(pendingJobs.get(discordId)).getAsJsonObject();
         jsonObject.addProperty("state", "START");
-        WebhookUtil.callWebhooks(discordId, jsonObject);
+        WebhookUtil.callWebhooks(discordId, jsonObject, "JOB");
     }
 
     public void endJob(long discordId, double pay) {
@@ -80,13 +80,14 @@ public class JobController {
 
         JsonObject jsonObject = SpedcordServer.GSON.toJsonTree(job).getAsJsonObject();
         jsonObject.addProperty("state", "END");
-        WebhookUtil.callWebhooks(discordId, jsonObject);
+        WebhookUtil.callWebhooks(discordId, jsonObject, "JOB");
     }
 
     public void cancelJob(long discordId) {
         Job job = pendingJobs.remove(discordId);
         JsonObject jsonObject = SpedcordServer.GSON.toJsonTree(job).getAsJsonObject();
         jsonObject.addProperty("state", "CANCEL");
+        WebhookUtil.callWebhooks(discordId, jsonObject, "JOB");
     }
 
     public Job getPendingJob(long discordId) {

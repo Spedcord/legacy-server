@@ -25,7 +25,7 @@ public class InviteAuthController {
     public String getNewAuthLink(int companyId, String joinId) {
         OAuthBuilder oAuthBuilder = new OAuthBuilder(clientId, clientSecret)
                 .setScopes(new String[]{"identify"})
-                .setRedirectURI("http://localhost/invite/discord");
+                .setRedirectURI("http://localhost:81/invite/discord");
 
         String state = UUID.randomUUID().toString();
         authMap.put(state, oAuthBuilder);

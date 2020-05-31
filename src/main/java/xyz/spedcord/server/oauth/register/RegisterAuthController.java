@@ -21,7 +21,7 @@ public class RegisterAuthController {
     public String getNewAuthLink() {
         OAuthBuilder oAuthBuilder = new OAuthBuilder(clientId, clientSecret)
                 .setScopes(new String[]{"identify"})
-                .setRedirectURI("http://localhost/user/register/discord");
+                .setRedirectURI("http://localhost:81/user/register/discord");
 
         String state = UUID.randomUUID().toString();
         authMap.put(state, oAuthBuilder);

@@ -24,7 +24,7 @@ public class CompanyController {
 
     private void init() {
         try {
-            mySqlService.update("CREATE TABLE IF NOT EXISTS companies (id BIGINT, discordServerId BIGINT, " +
+            mySqlService.update("CREATE TABLE IF NOT EXISTS companies (id BIGINT AUTO_INCREMENT, discordServerId BIGINT, " +
                     "name VARCHAR(128), ownerDiscordId BIGINT, members MEDIUMTEXT, PRIMARY KEY (id))");
             load();
         } catch (SQLException e) {
@@ -63,6 +63,7 @@ public class CompanyController {
                     company.getMemberDiscordIds().stream()
                             .map(Object::toString)
                             .collect(Collectors.joining(";"))));
+            companies.add(company);
         } catch (SQLException e) {
             e.printStackTrace();
         }

@@ -1,7 +1,10 @@
 package xyz.spedcord.server.user;
 
+import com.google.gson.JsonObject;
 import xyz.spedcord.common.sql.MySqlService;
+import xyz.spedcord.server.SpedcordServer;
 import xyz.spedcord.server.util.StringUtil;
+import xyz.spedcord.server.util.WebhookUtil;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -57,7 +60,7 @@ public class UserController {
                     "VALUES (%d, '%s', -1, '')", discordId, StringUtil.generateKey(32)));
             ResultSet resultSet = mySqlService.execute(String.format("SELECT * FROM users WHERE discordId = %d", discordId));
             if (resultSet.next()) {
-                users.add(new User(
+                User user = new User(
                         resultSet.getInt("id"),
                         resultSet.getLong("discordId"),
                         resultSet.getString("ukey"),
@@ -66,7 +69,11 @@ public class UserController {
                                 .filter(s -> !s.matches("\\s+") && !s.equals(""))
                                 .map(Integer::parseInt)
                                 .collect(Collectors.toList())
-                ));
+                );
+                users.add(user);
+
+                JsonObject jsonObject = SpedcordServer.GSON.toJsonTree(user).getAsJsonObject();
+                WebhookUtil.callWebhooks(discordId, jsonObject, "NEW_USER");
             }
         } catch (SQLException e) {
             e.printStackTrace();

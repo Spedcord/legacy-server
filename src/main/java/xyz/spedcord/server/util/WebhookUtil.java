@@ -2,6 +2,7 @@ package xyz.spedcord.server.util;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import org.jetbrains.annotations.NotNull;
 import xyz.spedcord.server.SpedcordServer;
 import xyz.spedcord.server.job.Job;
 import xyz.spedcord.server.user.User;
@@ -17,11 +18,24 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.stream.Collectors;
 
 public class WebhookUtil {
 
-    private static final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private static final ExecutorService executorService = Executors.newSingleThreadExecutor(new ThreadFactory() {
+        @Override
+        public Thread newThread(@NotNull Runnable r) {
+            Thread thread = new Thread(r);
+            thread.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+                @Override
+                public void uncaughtException(Thread t, Throwable e) {
+                    System.out.println("Exception: "+e.toString());
+                }
+            });
+            return thread;
+        }
+    });
     private static final List<String> webhooks = new ArrayList<>();
 
     private WebhookUtil() {
@@ -46,9 +60,10 @@ public class WebhookUtil {
         }
     }
 
-    public static void callWebhooks(long user, JsonObject data) {
+    public static void callWebhooks(long user, JsonObject data, String event) {
         executorService.submit(() -> {
             JsonObject object = new JsonObject();
+            object.addProperty("event", event);
             object.addProperty("user", user);
             object.add("data", data);
 
@@ -62,11 +77,13 @@ public class WebhookUtil {
                     connection.setRequestProperty("Authorization", "Bearer " + SpedcordServer.KEY);
 
                     connection.setDoOutput(true);
-                    connection.connect();
 
                     OutputStream outputStream = connection.getOutputStream();
                     outputStream.write(object.toString().getBytes(StandardCharsets.UTF_8));
-                } catch (IOException ignored) {
+
+                    connection.getResponseCode();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             });
         });
