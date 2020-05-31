@@ -4,7 +4,7 @@ import java.util.List;
 
 public class Company {
 
-    private final int id;
+    private int id;
     private final long discordServerId;
     private String name;
     private final long ownerDiscordId;
@@ -36,6 +36,10 @@ public class Company {
 
     public List<Long> getMemberDiscordIds() {
         return memberDiscordIds;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public void setName(String name) {

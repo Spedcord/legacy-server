@@ -115,7 +115,7 @@ public class SpedcordServer {
         server.endpoint("/user/jobs/:discordId", HandlerType.GET, new UserJobsEndpoint(userController, jobController));
         server.endpoint("/user/changekey", HandlerType.POST, new UserChangekeyEndpoint(userController));
 
-        server.endpoint("/company/info/:discordServerId", HandlerType.GET, new CompanyInfoEndpoint(companyController, userController, jobController));
+        server.endpoint("/company/info", HandlerType.GET, new CompanyInfoEndpoint(companyController, userController, jobController));
         server.endpoint("/company/register", HandlerType.POST, new CompanyRegisterEndpoint(companyController, userController));
         server.endpoint("/company/createjoinlink/:companyId", HandlerType.POST, new CreateJoinLinkEndpoint(joinLinkController,
                 config.get("host"), Integer.parseInt(config.get("port"))));

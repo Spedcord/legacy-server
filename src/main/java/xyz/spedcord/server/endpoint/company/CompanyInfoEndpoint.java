@@ -30,13 +30,23 @@ public class CompanyInfoEndpoint extends Endpoint {
 
     @Override
     public void handle(Context context) {
-        Optional<Long> paramOptional = getPathParamAsLong("discordServerId", context);
+        Optional<Long> paramOptional = getQueryParamAsLong("discordServerId", context);
         if(paramOptional.isEmpty()) {
+            Optional<Integer> idOptional = getQueryParamAsInt("id", context);
+            if(idOptional.isPresent()) {
+                handleWithId(idOptional.get(), context);
+                return;
+            }
+
             Responses.error("Invalid discordServerId param").respondTo(context);
             return;
         }
         long discordServerId = paramOptional.get();
 
+        handleWithDiscordId(discordServerId, context);
+    }
+
+    private void handleWithDiscordId(long discordServerId, Context context) {
         Optional<Company> optional = companyController.getCompany(discordServerId);
         if(optional.isEmpty()) {
             Responses.error("Invalid discordServerId param").respondTo(context);
@@ -44,6 +54,21 @@ public class CompanyInfoEndpoint extends Endpoint {
         }
 
         Company company = optional.get();
+        handleFurther(company, context);
+    }
+
+    private void handleWithId(int id, Context context) {
+        Optional<Company> optional = companyController.getCompany(id);
+        if(optional.isEmpty()) {
+            Responses.error("Invalid id param").respondTo(context);
+            return;
+        }
+
+        Company company = optional.get();
+        handleFurther(company, context);
+    }
+
+    private void handleFurther(Company company, Context context) {
         JsonObject jsonObj = SpedcordServer.GSON.toJsonTree(company).getAsJsonObject();
         JsonObject logbook = new JsonObject();
         for (Long memberDiscordId : company.getMemberDiscordIds()) {
@@ -64,4 +89,5 @@ public class CompanyInfoEndpoint extends Endpoint {
 
         context.result(SpedcordServer.GSON.toJson(jsonObj)).status(200);
     }
+
 }

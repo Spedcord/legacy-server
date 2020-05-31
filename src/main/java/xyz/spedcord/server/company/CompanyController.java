@@ -58,6 +58,11 @@ public class CompanyController {
 
     public void createCompany(Company company) {
         try {
+            ResultSet resultSet = mySqlService.execute("SELECT AUTO_INCREMENT FROM information_schema.TABLES WHERE TABLE_NAME ='companies'");
+            if(resultSet.next()) {
+                company.setId(resultSet.getInt(1));
+            }
+
             mySqlService.update(String.format("INSERT INTO companies (discordServerId, name, ownerDiscordId, members) VALUES(%d, '%s', %d, '%s')",
                     company.getDiscordServerId(), MySqlUtil.escapeString(company.getName()), company.getOwnerDiscordId(),
                     company.getMemberDiscordIds().stream()

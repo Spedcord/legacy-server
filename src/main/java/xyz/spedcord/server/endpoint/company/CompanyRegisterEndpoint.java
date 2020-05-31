@@ -56,6 +56,9 @@ public class CompanyRegisterEndpoint extends RestrictedEndpoint {
         }
 
         companyController.createCompany(company);
+        user.setCompanyId(company.getId());
+        userController.updateUser(user);
+
         Responses.success("Company was registered").respondTo(context);
     }
 }
