@@ -25,7 +25,8 @@ public class UserController {
     private void init() {
         try {
             mySqlService.update("CREATE TABLE IF NOT EXISTS users (id BIGINT AUTO_INCREMENT, discordId BIGINT, " +
-                    "ukey VARCHAR(64), companyId BIGINT, jobs MEDIUMTEXT, PRIMARY KEY (id))");
+                    "ukey VARCHAR(64), accessToken VARCHAR(128), refreshToken VARCHAR(128), companyId BIGINT, " +
+                    "jobs MEDIUMTEXT, PRIMARY KEY (id))");
             loadUsers();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -41,6 +42,8 @@ public class UserController {
                     resultSet.getInt("id"),
                     resultSet.getLong("discordId"),
                     resultSet.getString("ukey"),
+                    resultSet.getString("accessToken"),
+                    resultSet.getString("refreshToken"),
                     resultSet.getInt("companyId"),
                     Arrays.stream(resultSet.getString("jobs").split(";"))
                             .filter(s -> !s.matches("\\s+") && !s.equals(""))
@@ -54,16 +57,18 @@ public class UserController {
         return users.stream().filter(user -> user.getDiscordId() == discordId).findAny();
     }
 
-    public void createUser(long discordId) {
+    public void createUser(long discordId, String accessToken, String refreshToken) {
         try {
-            mySqlService.update(String.format("INSERT INTO users (discordId, ukey, companyId, jobs) " +
-                    "VALUES (%d, '%s', -1, '')", discordId, StringUtil.generateKey(32)));
+            mySqlService.update(String.format("INSERT INTO users (discordId, ukey, accessToken, refreshToken, companyId, jobs) " +
+                    "VALUES (%d, '%s', '%s', '%s', -1, '')", discordId, StringUtil.generateKey(32), accessToken, refreshToken));
             ResultSet resultSet = mySqlService.execute(String.format("SELECT * FROM users WHERE discordId = %d", discordId));
             if (resultSet.next()) {
                 User user = new User(
                         resultSet.getInt("id"),
                         resultSet.getLong("discordId"),
                         resultSet.getString("ukey"),
+                        resultSet.getString("accessToken"),
+                        resultSet.getString("refreshToken"),
                         resultSet.getInt("companyId"),
                         Arrays.stream(resultSet.getString("jobs").split(";"))
                                 .filter(s -> !s.matches("\\s+") && !s.equals(""))

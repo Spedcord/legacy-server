@@ -1,9 +1,9 @@
 package xyz.spedcord.server.endpoint.user;
 
-import com.google.gson.Gson;
+import bell.oauth.discord.main.OAuthBuilder;
 import com.google.gson.JsonObject;
-import dev.lukaesebrot.jal.endpoints.Endpoint;
 import io.javalin.http.Context;
+import xyz.spedcord.common.config.Config;
 import xyz.spedcord.server.SpedcordServer;
 import xyz.spedcord.server.endpoint.RestrictedEndpoint;
 import xyz.spedcord.server.response.Responses;
@@ -15,9 +15,11 @@ import java.util.Optional;
 public class UserGetEndpoint extends RestrictedEndpoint {
 
     private final UserController userController;
+    private final Config config;
 
-    public UserGetEndpoint(UserController userController) {
+    public UserGetEndpoint(UserController userController, Config config) {
         this.userController = userController;
+        this.config = config;
     }
 
     @Override
@@ -35,6 +37,39 @@ public class UserGetEndpoint extends RestrictedEndpoint {
             return;
         }
 
-        context.result(SpedcordServer.GSON.toJson(optional.get())).status(200);
+        User user = optional.get();
+        JsonObject jsonObj = SpedcordServer.GSON.toJsonTree(user).getAsJsonObject();
+
+        OAuthBuilder oAuthBuilder = new OAuthBuilder(
+                config.get("oauth-clientid"),
+                config.get("oauth-clientsecret"),
+                user.getAccessToken(),
+                user.getRefreshToken()
+        ).setRedirectURI("https://api.spedcord.xyz/user/register/discord");
+
+        JsonObject oAuthObj = new JsonObject();
+        try {
+            bell.oauth.discord.domain.User discordUser;
+            try {
+                discordUser = oAuthBuilder.getUser();
+            } catch (Exception ex) {
+                oAuthBuilder.refresh();
+                discordUser = oAuthBuilder.getUser();
+
+                user.setAccessToken(oAuthBuilder.getAccess_token());
+                user.setRefreshToken(oAuthBuilder.getRefresh_token());
+                userController.updateUser(user);
+            }
+
+            oAuthObj.addProperty("name", discordUser.getUsername());
+            oAuthObj.addProperty("discriminator", discordUser.getDiscriminator());
+            oAuthObj.addProperty("avatar", discordUser.getAvatar());
+        } catch (Exception e) {
+            e.printStackTrace();
+            oAuthObj.addProperty("error", e.getMessage());
+        }
+        jsonObj.add("oauth", oAuthObj);
+
+        context.result(jsonObj.toString()).status(200);
     }
 }

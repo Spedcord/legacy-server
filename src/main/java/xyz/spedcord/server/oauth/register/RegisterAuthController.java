@@ -21,7 +21,7 @@ public class RegisterAuthController {
     public String getNewAuthLink() {
         OAuthBuilder oAuthBuilder = new OAuthBuilder(clientId, clientSecret)
                 .setScopes(new String[]{"identify"})
-                .setRedirectURI("http://localhost:81/user/register/discord");
+                .setRedirectURI("https://api.spedcord.xyz/user/register/discord");
 
         String state = UUID.randomUUID().toString();
         authMap.put(state, oAuthBuilder);
@@ -37,7 +37,9 @@ public class RegisterAuthController {
 
         return new RegisterAuthResult(
                 oAuthBuilder.exchange(code),
-                oAuthBuilder.getUser()
+                oAuthBuilder.getUser(),
+                oAuthBuilder.getAccess_token(),
+                oAuthBuilder.getRefresh_token()
         );
     }
 

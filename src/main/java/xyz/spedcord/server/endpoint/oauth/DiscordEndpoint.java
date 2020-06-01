@@ -8,6 +8,7 @@ import xyz.spedcord.server.endpoint.Endpoint;
 import xyz.spedcord.server.joinlink.JoinLinkController;
 import xyz.spedcord.server.oauth.invite.InviteAuthController;
 import xyz.spedcord.server.oauth.invite.InviteAuthResult;
+import xyz.spedcord.server.response.Responses;
 import xyz.spedcord.server.user.User;
 import xyz.spedcord.server.user.UserController;
 
@@ -66,8 +67,8 @@ public class DiscordEndpoint extends Endpoint {
         long userDiscordId = Long.parseLong(inviteAuthResult.getUser().getId());
         Optional<User> userOptional = userController.getUser(userDiscordId);
         if (userOptional.isEmpty()) {
-            userController.createUser(userDiscordId);
-            userOptional = userController.getUser(userDiscordId);
+            Responses.error("User is not registered").respondTo(context);
+            return;
         }
         User user = userOptional.get();
 

@@ -22,7 +22,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
-                            <mainClass>xyz.spedcord.server.SpedcordServer</mainClass>
+                            <mainClass>xyz.spedcord.server.Launcher</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -111,9 +111,9 @@
         </dependency>
 
         <dependency>
-            <groupId>com.github.HayateLaTech</groupId>
+            <groupId>Bell</groupId>
             <artifactId>OAuth2Discord</artifactId>
-            <version>4fded51caa</version>
+            <version>SNAPSHOT-Spedcord-1</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>

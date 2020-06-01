@@ -22,10 +22,7 @@ import xyz.spedcord.server.endpoint.oauth.DiscordEndpoint;
 import xyz.spedcord.server.endpoint.oauth.InviteEndpoint;
 import xyz.spedcord.server.endpoint.oauth.RegisterDiscordEndpoint;
 import xyz.spedcord.server.endpoint.oauth.RegisterEndpoint;
-import xyz.spedcord.server.endpoint.user.UserChangekeyEndpoint;
-import xyz.spedcord.server.endpoint.user.UserGetEndpoint;
-import xyz.spedcord.server.endpoint.user.UserInfoEndpoint;
-import xyz.spedcord.server.endpoint.user.UserJobsEndpoint;
+import xyz.spedcord.server.endpoint.user.*;
 import xyz.spedcord.server.job.JobController;
 import xyz.spedcord.server.joinlink.JoinLinkController;
 import xyz.spedcord.server.oauth.invite.InviteAuthController;
@@ -111,10 +108,11 @@ public class SpedcordServer {
 
         server.endpoint("/user/register", HandlerType.GET, new RegisterEndpoint(registerAuthController));
         server.endpoint("/user/register/discord", HandlerType.GET, new RegisterDiscordEndpoint(registerAuthController, userController));
-        server.endpoint("/user/info/:discordId", HandlerType.GET, new UserInfoEndpoint(userController));
-        server.endpoint("/user/get/:discordId", HandlerType.GET, new UserGetEndpoint(userController));
+        server.endpoint("/user/info/:discordId", HandlerType.GET, new UserInfoEndpoint(config, userController));
+        server.endpoint("/user/get/:discordId", HandlerType.GET, new UserGetEndpoint(userController, config));
         server.endpoint("/user/jobs/:discordId", HandlerType.GET, new UserJobsEndpoint(userController, jobController));
         server.endpoint("/user/changekey", HandlerType.POST, new UserChangekeyEndpoint(userController));
+        server.endpoint("/user/checkauth", HandlerType.POST, new UserCheckAuthEndpoint(userController));
 
         server.endpoint("/company/info", HandlerType.GET, new CompanyInfoEndpoint(companyController, userController, jobController));
         server.endpoint("/company/register", HandlerType.POST, new CompanyRegisterEndpoint(companyController, userController));

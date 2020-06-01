@@ -44,6 +44,6 @@ public class CreateJoinLinkEndpoint extends RestrictedEndpoint {
         }
 
         String id = joinLinkController.generateNewLink(companyId, maxUses);
-        context.result(String.format("https://%s/invite/%s", host + (port == 80 ? "" : ":" + port), id)).status(200);
+        context.result(String.format("https://api.spedcord.xyz/invite/%s", id)).status(200);
     }
 }
