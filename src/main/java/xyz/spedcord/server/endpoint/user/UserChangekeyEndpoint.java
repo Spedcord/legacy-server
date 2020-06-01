@@ -35,6 +35,6 @@ public class UserChangekeyEndpoint extends RestrictedEndpoint {
         userController.changeKey(user);
         userController.updateUser(user);
 
-        Responses.success("Key was regenerated").respondTo(context);
+        Responses.success(user.getKey()).respondTo(context);
     }
 }
