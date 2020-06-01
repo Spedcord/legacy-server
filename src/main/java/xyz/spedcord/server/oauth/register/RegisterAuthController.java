@@ -39,7 +39,8 @@ public class RegisterAuthController {
                 oAuthBuilder.exchange(code),
                 oAuthBuilder.getUser(),
                 oAuthBuilder.getAccess_token(),
-                oAuthBuilder.getRefresh_token()
+                oAuthBuilder.getRefresh_token(),
+                oAuthBuilder.getTokenExpiresIn()
         );
     }
 

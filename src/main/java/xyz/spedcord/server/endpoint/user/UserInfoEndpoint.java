@@ -42,7 +42,9 @@ public class UserInfoEndpoint extends Endpoint {
         JsonObject jsonObj = SpedcordServer.GSON.toJsonTree(user).getAsJsonObject();
         jsonObj.remove("key");
         jsonObj.remove("jobList");
+        jsonObj.remove("accessToken");
         jsonObj.remove("refreshToken");
+        jsonObj.remove("tokenExpires");
 
         OAuthBuilder oAuthBuilder = new OAuthBuilder(
                 config.get("oauth-clientid"),
@@ -54,15 +56,25 @@ public class UserInfoEndpoint extends Endpoint {
         JsonObject oAuthObj = new JsonObject();
         try {
             bell.oauth.discord.domain.User discordUser;
-            try {
-                discordUser = oAuthBuilder.getUser();
-            } catch (Exception ex) {
+            if (user.getTokenExpires() <= System.currentTimeMillis()) {
                 oAuthBuilder.refresh();
                 discordUser = oAuthBuilder.getUser();
 
                 user.setAccessToken(oAuthBuilder.getAccess_token());
                 user.setRefreshToken(oAuthBuilder.getRefresh_token());
+                user.setTokenExpires(System.currentTimeMillis() + (oAuthBuilder.getTokenExpiresIn() * 1000));
                 userController.updateUser(user);
+            } else {
+                try {
+                    discordUser = oAuthBuilder.getUser();
+                } catch (Exception ex) {
+                    oAuthBuilder.refresh();
+                    discordUser = oAuthBuilder.getUser();
+
+                    user.setAccessToken(oAuthBuilder.getAccess_token());
+                    user.setRefreshToken(oAuthBuilder.getRefresh_token());
+                    userController.updateUser(user);
+                }
             }
 
             oAuthObj.addProperty("name", discordUser.getUsername());

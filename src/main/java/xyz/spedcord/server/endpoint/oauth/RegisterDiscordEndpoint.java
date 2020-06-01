@@ -57,7 +57,8 @@ public class RegisterDiscordEndpoint extends Endpoint {
             return;
         }
 
-        userController.createUser(Long.parseLong(authResult.getUser().getId()), authResult.getAccessToken(), authResult.getRefreshToken());
+        long tokenExpires = System.currentTimeMillis() + (authResult.getTokenExpires() * 1000);
+        userController.createUser(Long.parseLong(authResult.getUser().getId()), authResult.getAccessToken(), authResult.getRefreshToken(), tokenExpires);
         //Responses.success("Your Discord account was successfully registered").respondTo(context);
         context.redirect("https://www.spedcord.xyz/success/user/1");
     }

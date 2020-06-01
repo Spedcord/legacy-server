@@ -9,15 +9,17 @@ public class User {
     private String key;
     private String accessToken;
     private String refreshToken;
+    private long tokenExpires;
     private int companyId;
     private final List<Integer> jobList;
 
-    public User(int id, long discordId, String key, String accessToken, String refreshToken, int companyId, List<Integer> jobList) {
+    public User(int id, long discordId, String key, String accessToken, String refreshToken, long tokenExpires, int companyId, List<Integer> jobList) {
         this.id = id;
         this.discordId = discordId;
         this.key = key;
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
+        this.tokenExpires = tokenExpires;
         this.companyId = companyId;
         this.jobList = jobList;
     }
@@ -58,12 +60,20 @@ public class User {
         return refreshToken;
     }
 
+    public long getTokenExpires() {
+        return tokenExpires;
+    }
+
     public void setAccessToken(String accessToken) {
         this.accessToken = accessToken;
     }
 
     public void setRefreshToken(String refreshToken) {
         this.refreshToken = refreshToken;
+    }
+
+    public void setTokenExpires(long tokenExpires) {
+        this.tokenExpires = tokenExpires;
     }
 
 }
