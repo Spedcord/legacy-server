@@ -34,6 +34,9 @@ import xyz.spedcord.server.util.WebhookUtil;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class SpedcordServer {
 
@@ -100,6 +103,20 @@ public class SpedcordServer {
         HttpServer server = new HttpServer(app, rateLimiter);
 
         registerEndpoints(server);
+        startSqlPinger(mySqlService);
+    }
+
+    private void startSqlPinger(MySqlService sqlService) {
+        ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+        executorService.scheduleAtFixedRate(() -> {
+            try {
+                sqlService.update("SELECT 1");
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }, 1, 5, TimeUnit.MINUTES);
+
+        Runtime.getRuntime().addShutdownHook(new Thread(executorService::shutdown));
     }
 
     private void registerEndpoints(HttpServer server) {
