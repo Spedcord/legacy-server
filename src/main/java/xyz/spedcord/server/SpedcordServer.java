@@ -37,6 +37,8 @@ import java.sql.SQLException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class SpedcordServer {
 
@@ -104,6 +106,51 @@ public class SpedcordServer {
 
         registerEndpoints(server);
         startSqlPinger(mySqlService);
+        startPayoutTimer();
+    }
+
+    private void startPayoutTimer() {
+        String lastPayoutStr = config.get("lastPayout");
+        if (lastPayoutStr == null) {
+            lastPayoutStr = "0";
+        }
+        AtomicLong lastPayout = new AtomicLong(Long.parseLong(lastPayoutStr));
+
+        ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+        executorService.scheduleAtFixedRate(() -> {
+            if (System.currentTimeMillis()-lastPayout.get() >= TimeUnit.DAYS.toMillis(7)) {
+                lastPayout.set(System.currentTimeMillis());
+                config.set("lastPayout", lastPayout.get() + "");
+                try {
+                    config.save();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                companyController.getCompanies().forEach(company -> {
+                    AtomicInteger payouts = new AtomicInteger(0);
+                    company.getMemberDiscordIds().forEach(memberId -> {
+                        userController.getUser(memberId).ifPresent(user -> {
+                            user.setBalance(user.getBalance() + 2500);
+                            userController.updateUser(user);
+                            payouts.incrementAndGet();
+                        });
+                    });
+
+                    userController.getUser(company.getOwnerDiscordId()).ifPresent(user -> {
+                        user.setBalance(user.getBalance() + 2500);
+                        userController.updateUser(user);
+                        payouts.incrementAndGet();
+                    });
+
+                    company.setBalance(company.getBalance() - (payouts.get() * 2500));
+                    companyController.updateCompany(company);
+                });
+                System.out.println("Payouts were paid");
+            }
+        }, 5, 5, TimeUnit.MINUTES);
+
+        Runtime.getRuntime().addShutdownHook(new Thread(executorService::shutdown));
     }
 
     private void startSqlPinger(MySqlService sqlService) {
@@ -138,7 +185,7 @@ public class SpedcordServer {
                 config.get("host"), Integer.parseInt(config.get("port"))));
 
         server.endpoint("/job/start", HandlerType.POST, new JobStartEndpoint(jobController, userController));
-        server.endpoint("/job/end", HandlerType.POST, new JobEndEndpoint(jobController, userController));
+        server.endpoint("/job/end", HandlerType.POST, new JobEndEndpoint(jobController, userController, companyController));
         server.endpoint("/job/cancel", HandlerType.POST, new JobCancelEndpoint(jobController, userController));
     }
 
