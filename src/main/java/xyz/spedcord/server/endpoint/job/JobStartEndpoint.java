@@ -61,7 +61,7 @@ public class JobStartEndpoint extends Endpoint {
                 jobStartBody.toCity,
                 jobStartBody.truck,
                 jobStartBody.cargo,
-                jobStartBody.cargoWeight
+                Math.ceil(jobStartBody.cargoWeight)
         );
         Responses.success("Job started").respondTo(ctx);
     }
