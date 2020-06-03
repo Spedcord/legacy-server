@@ -1,8 +1,9 @@
 package xyz.spedcord.server.endpoint.job;
 
-import com.google.gson.Gson;
 import io.javalin.http.Context;
 import org.eclipse.jetty.http.HttpStatus;
+import xyz.spedcord.server.company.Company;
+import xyz.spedcord.server.company.CompanyController;
 import xyz.spedcord.server.endpoint.Endpoint;
 import xyz.spedcord.server.job.Job;
 import xyz.spedcord.server.job.JobController;
@@ -16,10 +17,12 @@ public class JobEndEndpoint extends Endpoint {
 
     private final JobController jobController;
     private final UserController userController;
+    private final CompanyController companyController;
 
-    public JobEndEndpoint(JobController jobController, UserController userController) {
+    public JobEndEndpoint(JobController jobController, UserController userController, CompanyController companyController) {
         this.jobController = jobController;
         this.userController = userController;
+        this.companyController = companyController;
     }
 
     @Override
@@ -66,6 +69,14 @@ public class JobEndEndpoint extends Endpoint {
         jobController.endJob(discordId, pay);
         user.getJobList().add(job.getId());
         userController.updateUser(user);
+
+        double companyPay = pay * (35d / 100d);
+        Optional<Company> companyOptional = companyController.getCompany(user.getCompanyId());
+        if(companyOptional.isPresent()) {
+            Company company = companyOptional.get();
+            company.setBalance(company.getBalance()+companyPay);
+            companyController.updateCompany(company);
+        }
 
         Responses.success("Job ended").respondTo(ctx);
     }
