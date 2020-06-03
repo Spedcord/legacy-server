@@ -11,9 +11,10 @@ public class User {
     private String refreshToken;
     private long tokenExpires;
     private int companyId;
+    private double balance;
     private final List<Integer> jobList;
 
-    public User(int id, long discordId, String key, String accessToken, String refreshToken, long tokenExpires, int companyId, List<Integer> jobList) {
+    public User(int id, long discordId, String key, String accessToken, String refreshToken, long tokenExpires, int companyId, double balance, List<Integer> jobList) {
         this.id = id;
         this.discordId = discordId;
         this.key = key;
@@ -21,6 +22,7 @@ public class User {
         this.refreshToken = refreshToken;
         this.tokenExpires = tokenExpires;
         this.companyId = companyId;
+        this.balance = balance;
         this.jobList = jobList;
     }
 
@@ -38,6 +40,10 @@ public class User {
 
     public int getCompanyId() {
         return companyId;
+    }
+
+    public double getBalance() {
+        return balance;
     }
 
     public List<Integer> getJobList() {
@@ -74,6 +80,10 @@ public class User {
 
     public void setTokenExpires(long tokenExpires) {
         this.tokenExpires = tokenExpires;
+    }
+
+    public void setBalance(double balance) {
+        this.balance = balance;
     }
 
 }

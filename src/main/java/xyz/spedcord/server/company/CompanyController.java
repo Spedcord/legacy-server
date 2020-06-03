@@ -25,7 +25,7 @@ public class CompanyController {
     private void init() {
         try {
             mySqlService.update("CREATE TABLE IF NOT EXISTS companies (id BIGINT AUTO_INCREMENT, discordServerId BIGINT, " +
-                    "name VARCHAR(128), ownerDiscordId BIGINT, members MEDIUMTEXT, PRIMARY KEY (id))");
+                    "name VARCHAR(128), ownerDiscordId BIGINT, balance DOUBLE, members MEDIUMTEXT, PRIMARY KEY (id))");
             load();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -40,6 +40,7 @@ public class CompanyController {
                     resultSet.getLong("discordServerId"),
                     resultSet.getString("name"),
                     resultSet.getLong("ownerDiscordId"),
+                    resultSet.getDouble("balance"),
                     Arrays.stream(resultSet.getString("members").split(";"))
                             .filter(s -> !s.matches("\\s+") && !s.equals(""))
                             .map(Long::parseLong)
@@ -63,7 +64,7 @@ public class CompanyController {
                 company.setId(resultSet.getInt(1));
             }
 
-            mySqlService.update(String.format("INSERT INTO companies (discordServerId, name, ownerDiscordId, members) VALUES(%d, '%s', %d, '%s')",
+            mySqlService.update(String.format("INSERT INTO companies (discordServerId, name, ownerDiscordId, balance, members) VALUES(%d, '%s', %d, 0, '%s')",
                     company.getDiscordServerId(), MySqlUtil.escapeString(company.getName()), company.getOwnerDiscordId(),
                     company.getMemberDiscordIds().stream()
                             .map(Object::toString)
@@ -76,13 +77,17 @@ public class CompanyController {
 
     public void updateCompany(Company company) {
         try {
-            mySqlService.update(String.format("UPDATE companies SET name = '%s', members = '%s' WHERE id = %d",
-                    MySqlUtil.escapeString(company.getName()), company.getMemberDiscordIds().stream()
+            mySqlService.update(String.format("UPDATE companies SET name = '%s', balance = %f, members = '%s' WHERE id = %d",
+                    MySqlUtil.escapeString(company.getName()), company.getBalance(), company.getMemberDiscordIds().stream()
                     .map(Object::toString)
                     .collect(Collectors.joining(";")), company.getId()));
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public Set<Company> getCompanies() {
+        return companies;
     }
 
 }
