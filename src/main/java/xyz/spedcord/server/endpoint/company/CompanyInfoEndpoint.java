@@ -1,6 +1,5 @@
 package xyz.spedcord.server.endpoint.company;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import io.javalin.http.Context;
@@ -8,7 +7,6 @@ import xyz.spedcord.server.SpedcordServer;
 import xyz.spedcord.server.company.Company;
 import xyz.spedcord.server.company.CompanyController;
 import xyz.spedcord.server.endpoint.Endpoint;
-import xyz.spedcord.server.job.Job;
 import xyz.spedcord.server.job.JobController;
 import xyz.spedcord.server.response.Responses;
 import xyz.spedcord.server.user.User;
@@ -31,9 +29,9 @@ public class CompanyInfoEndpoint extends Endpoint {
     @Override
     public void handle(Context context) {
         Optional<Long> paramOptional = getQueryParamAsLong("discordServerId", context);
-        if(paramOptional.isEmpty()) {
+        if (paramOptional.isEmpty()) {
             Optional<Integer> idOptional = getQueryParamAsInt("id", context);
-            if(idOptional.isPresent()) {
+            if (idOptional.isPresent()) {
                 handleWithId(idOptional.get(), context);
                 return;
             }
@@ -48,7 +46,7 @@ public class CompanyInfoEndpoint extends Endpoint {
 
     private void handleWithDiscordId(long discordServerId, Context context) {
         Optional<Company> optional = companyController.getCompany(discordServerId);
-        if(optional.isEmpty()) {
+        if (optional.isEmpty()) {
             Responses.error("Invalid discordServerId param").respondTo(context);
             return;
         }
@@ -59,7 +57,7 @@ public class CompanyInfoEndpoint extends Endpoint {
 
     private void handleWithId(int id, Context context) {
         Optional<Company> optional = companyController.getCompany(id);
-        if(optional.isEmpty()) {
+        if (optional.isEmpty()) {
             Responses.error("Invalid id param").respondTo(context);
             return;
         }
@@ -73,16 +71,12 @@ public class CompanyInfoEndpoint extends Endpoint {
         JsonObject logbook = new JsonObject();
         for (Long memberDiscordId : company.getMemberDiscordIds()) {
             Optional<User> userOptional = userController.getUser(memberDiscordId);
-            if(userOptional.isEmpty()) {
+            if (userOptional.isEmpty()) {
                 continue;
             }
 
             User user = userOptional.get();
-            JsonArray array = new JsonArray();
-            for (int jobId : user.getJobList()) {
-                Job job = jobController.getJob(jobId);
-                array.add(SpedcordServer.GSON.toJsonTree(job));
-            }
+            JsonArray array = SpedcordServer.GSON.toJsonTree(jobController.getJobs(user.getJobList())).getAsJsonArray();
             logbook.add(String.valueOf(user.getDiscordId()), array);
         }
         jsonObj.add("logbook", logbook);
