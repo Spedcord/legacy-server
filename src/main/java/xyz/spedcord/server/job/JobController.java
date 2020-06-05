@@ -102,7 +102,7 @@ public class JobController {
         try {
             ResultSet resultSet = mySqlService.execute("SELECT * from 'jobs' WHERE id IN ("
                     + Arrays.stream(ids).mapToObj(String::valueOf).collect(Collectors.joining(", ")) + ")");
-            if (resultSet.next()) {
+            while (resultSet.next()) {
                 list.add(new Job(
                         resultSet.getInt("id"),
                         resultSet.getLong("startedAt"),
