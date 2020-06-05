@@ -8,10 +8,8 @@ import xyz.spedcord.server.util.WebhookUtil;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class JobController {
 
@@ -95,11 +93,17 @@ public class JobController {
         return pendingJobs.get(discordId);
     }
 
-    public Job getJob(int id) {
+    public List<Job> getJobs(List<Integer> collection) {
+        return getJobs(collection.stream().mapToInt(value -> value).toArray());
+    }
+
+    public List<Job> getJobs(int... ids) {
+        List<Job> list = new ArrayList<>();
         try {
-            ResultSet resultSet = mySqlService.execute(String.format("SELECT * FROM jobs WHERE id = %d", id));
+            ResultSet resultSet = mySqlService.execute("SELECT * from 'jobs' WHERE id IN ("
+                    + Arrays.stream(ids).mapToObj(String::valueOf).collect(Collectors.joining(", ")) + ")");
             if (resultSet.next()) {
-                return new Job(
+                list.add(new Job(
                         resultSet.getInt("id"),
                         resultSet.getLong("startedAt"),
                         resultSet.getLong("endedAt"),
@@ -111,12 +115,16 @@ public class JobController {
                         resultSet.getString("truck"),
                         new ArrayList<>(),
                         resultSet.getInt("verified") == 1
-                );
+                ));
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return null;
+        return list;
+    }
+
+    public Job getJob(int id) {
+        return getJobs(id).stream().findAny().orElse(null);
     }
 
     public void updateJob(Job job) {
