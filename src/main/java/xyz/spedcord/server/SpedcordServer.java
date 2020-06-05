@@ -15,9 +15,7 @@ import xyz.spedcord.server.endpoint.company.CompanyInfoEndpoint;
 import xyz.spedcord.server.endpoint.company.CompanyKickMemberEndpoint;
 import xyz.spedcord.server.endpoint.company.CompanyRegisterEndpoint;
 import xyz.spedcord.server.endpoint.company.CreateJoinLinkEndpoint;
-import xyz.spedcord.server.endpoint.job.JobCancelEndpoint;
-import xyz.spedcord.server.endpoint.job.JobEndEndpoint;
-import xyz.spedcord.server.endpoint.job.JobStartEndpoint;
+import xyz.spedcord.server.endpoint.job.*;
 import xyz.spedcord.server.endpoint.oauth.DiscordEndpoint;
 import xyz.spedcord.server.endpoint.oauth.InviteEndpoint;
 import xyz.spedcord.server.endpoint.oauth.RegisterDiscordEndpoint;
@@ -46,6 +44,7 @@ public class SpedcordServer {
             .setPrettyPrinting()
             .setLongSerializationPolicy(LongSerializationPolicy.STRING)
             .create();
+    public static final long[] MODERATORS = {347018538713874444L, 332142165402714113L};
     public static String KEY = null;
 
     private InviteAuthController inviteAuthController;
@@ -118,7 +117,7 @@ public class SpedcordServer {
 
         ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
         executorService.scheduleAtFixedRate(() -> {
-            if (System.currentTimeMillis()-lastPayout.get() >= TimeUnit.DAYS.toMillis(7)) {
+            if (System.currentTimeMillis() - lastPayout.get() >= TimeUnit.DAYS.toMillis(7)) {
                 lastPayout.set(System.currentTimeMillis());
                 config.set("lastPayout", lastPayout.get() + "");
                 try {
@@ -177,6 +176,7 @@ public class SpedcordServer {
         server.endpoint("/user/jobs/:discordId", HandlerType.GET, new UserJobsEndpoint(userController, jobController));
         server.endpoint("/user/changekey", HandlerType.POST, new UserChangekeyEndpoint(userController));
         server.endpoint("/user/checkauth", HandlerType.POST, new UserCheckAuthEndpoint(userController));
+        server.endpoint("/user/cheater", HandlerType.POST, new UserCheaterEndpoint(userController));
 
         server.endpoint("/company/info", HandlerType.GET, new CompanyInfoEndpoint(companyController, userController, jobController));
         server.endpoint("/company/register", HandlerType.POST, new CompanyRegisterEndpoint(companyController, userController));
@@ -187,6 +187,8 @@ public class SpedcordServer {
         server.endpoint("/job/start", HandlerType.POST, new JobStartEndpoint(jobController, userController));
         server.endpoint("/job/end", HandlerType.POST, new JobEndEndpoint(jobController, userController, companyController));
         server.endpoint("/job/cancel", HandlerType.POST, new JobCancelEndpoint(jobController, userController));
+        server.endpoint("/job/listunverified", HandlerType.GET, new JobListUnverifiedEndpoint(jobController, userController));
+        server.endpoint("/job/verify", HandlerType.POST, new JobVerifyEndpoint(jobController, userController));
     }
 
 }

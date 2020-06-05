@@ -20,7 +20,7 @@ public class RegisterAuthController {
 
     public String getNewAuthLink() {
         OAuthBuilder oAuthBuilder = new OAuthBuilder(clientId, clientSecret)
-                .setScopes(new String[]{"identify"})
+                .setScopes(new String[]{"identify", "guilds.join"})
                 .setRedirectURI("https://api.spedcord.xyz/user/register/discord");
 
         String state = UUID.randomUUID().toString();

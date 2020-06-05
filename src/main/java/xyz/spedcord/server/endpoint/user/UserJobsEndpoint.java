@@ -10,6 +10,7 @@ import xyz.spedcord.server.response.Responses;
 import xyz.spedcord.server.user.User;
 import xyz.spedcord.server.user.UserController;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -41,7 +42,7 @@ public class UserJobsEndpoint extends Endpoint {
         }
 
         User user = optional.get();
-        List<Job> jobs = user.getJobList().stream()
+        List<Job> jobs = new ArrayList<>(user.getJobList()).stream()
                 .map(id -> jobController.getJob(id))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());

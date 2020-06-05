@@ -29,7 +29,7 @@ public class UserController {
         try {
             mySqlService.update("CREATE TABLE IF NOT EXISTS users (id BIGINT AUTO_INCREMENT, discordId BIGINT, " +
                     "ukey VARCHAR(64), accessToken VARCHAR(128), refreshToken VARCHAR(128), tokenExpires BIGINT, " +
-                    "balance DOUBLE, companyId BIGINT, jobs MEDIUMTEXT, PRIMARY KEY (id))");
+                    "balance DOUBLE, companyId BIGINT, jobs MEDIUMTEXT, flags TINYTEXT, PRIMARY KEY (id))");
             loadUsers();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -51,9 +51,13 @@ public class UserController {
                     resultSet.getInt("companyId"),
                     resultSet.getDouble("balance"),
                     Arrays.stream(resultSet.getString("jobs").split(";"))
-                    .filter(s -> !s.matches("\\s+") && !s.equals(""))
-                    .map(Integer::parseInt)
-                    .collect(Collectors.toList())
+                            .filter(s -> !s.matches("\\s+") && !s.equals(""))
+                            .map(Integer::parseInt)
+                            .collect(Collectors.toList()),
+                    Arrays.stream(resultSet.getString("flags").split(";"))
+                            .filter(s -> !s.matches("\\s+") && !s.equals(""))
+                            .map(User.Flag::valueOf)
+                            .toArray(User.Flag[]::new)
             ));
         }
     }
@@ -62,10 +66,14 @@ public class UserController {
         return users.stream().filter(user -> user.getDiscordId() == discordId).findAny();
     }
 
+    public Optional<User> getUserByJobId(int jobId) {
+        return users.stream().filter(user -> user.getJobList().contains(jobId)).findAny();
+    }
+
     public void createUser(long discordId, String accessToken, String refreshToken, long tokenExpires) {
         try {
-            mySqlService.update(String.format("INSERT INTO users (discordId, ukey, accessToken, refreshToken, tokenExpires, balance, companyId, jobs) " +
-                    "VALUES (%d, '%s', '%s', '%s', %d, 0, -1, '')", discordId, StringUtil.generateKey(32), accessToken, refreshToken, tokenExpires));
+            mySqlService.update(String.format("INSERT INTO users (discordId, ukey, accessToken, refreshToken, tokenExpires, balance, companyId, jobs, flags) " +
+                    "VALUES (%d, '%s', '%s', '%s', %d, 0, -1, '', '')", discordId, StringUtil.generateKey(32), accessToken, refreshToken, tokenExpires));
             ResultSet resultSet = mySqlService.execute(String.format("SELECT * FROM users WHERE discordId = %d", discordId));
             if (resultSet.next()) {
                 User user = new User(
@@ -78,9 +86,13 @@ public class UserController {
                         resultSet.getInt("companyId"),
                         resultSet.getDouble("balance"),
                         Arrays.stream(resultSet.getString("jobs").split(";"))
-                        .filter(s -> !s.matches("\\s+") && !s.equals(""))
-                        .map(Integer::parseInt)
-                        .collect(Collectors.toList())
+                                .filter(s -> !s.matches("\\s+") && !s.equals(""))
+                                .map(Integer::parseInt)
+                                .collect(Collectors.toList()),
+                        Arrays.stream(resultSet.getString("flags").split(";"))
+                                .filter(s -> !s.matches("\\s+") && !s.equals(""))
+                                .map(User.Flag::valueOf)
+                                .toArray(User.Flag[]::new)
                 );
                 users.add(user);
 
@@ -95,12 +107,13 @@ public class UserController {
     public void updateUser(User user) {
         try {
             mySqlService.update(String.format("UPDATE users SET companyId = %d, jobs = '%s', accessToken = '%s', " +
-                            "refreshToken = '%s', tokenExpires = %d, balance = %f, ukey = '%s' WHERE discordId = %d",
+                            "refreshToken = '%s', tokenExpires = %d, balance = %f, ukey = '%s', flags = '%s' WHERE discordId = %d",
                     user.getCompanyId(), user.getJobList().stream()
                             .map(Object::toString)
                             .collect(Collectors.joining(";")),
                     user.getAccessToken(), user.getRefreshToken(), user.getTokenExpires(),
-                    user.getBalance(), user.getKey(), user.getDiscordId()));
+                    user.getBalance(), user.getKey(), Arrays.stream(user.getFlags())
+                            .map(Enum::name).collect(Collectors.joining(";")), user.getDiscordId()));
         } catch (SQLException e) {
             e.printStackTrace();
         }

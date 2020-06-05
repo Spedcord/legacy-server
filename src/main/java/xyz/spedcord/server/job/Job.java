@@ -14,8 +14,9 @@ public class Job {
     private String cargo;
     private String truck;
     private List<Location> positions; // Will be used to track the player's position to prevent cheating
+    private boolean verified;
 
-    public Job(int id, long startedAt, long endedAt, double cargoWeight, double pay, String fromCity, String toCity, String cargo, String truck, List<Location> positions) {
+    public Job(int id, long startedAt, long endedAt, double cargoWeight, double pay, String fromCity, String toCity, String cargo, String truck, List<Location> positions, boolean verified) {
         this.id = id;
         this.startedAt = startedAt;
         this.endedAt = endedAt;
@@ -26,6 +27,7 @@ public class Job {
         this.cargo = cargo;
         this.truck = truck;
         this.positions = positions;
+        this.verified = verified;
     }
 
     public int getId() {
@@ -68,6 +70,10 @@ public class Job {
         return positions;
     }
 
+    public boolean isVerified() {
+        return verified;
+    }
+
     public void setStartedAt(long startedAt) {
         this.startedAt = startedAt;
     }
@@ -86,6 +92,10 @@ public class Job {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public void setVerified(boolean verified) {
+        this.verified = verified;
     }
 
 }

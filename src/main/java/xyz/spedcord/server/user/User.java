@@ -4,6 +4,9 @@ import java.util.List;
 
 public class User {
 
+    public static final User EMPTY = new User(-1, -1, null, null,
+            null, -1, -1, -1, null, null);
+
     private final int id;
     private final long discordId;
     private String key;
@@ -13,8 +16,9 @@ public class User {
     private int companyId;
     private double balance;
     private final List<Integer> jobList;
+    private Flag[] flags;
 
-    public User(int id, long discordId, String key, String accessToken, String refreshToken, long tokenExpires, int companyId, double balance, List<Integer> jobList) {
+    public User(int id, long discordId, String key, String accessToken, String refreshToken, long tokenExpires, int companyId, double balance, List<Integer> jobList, Flag[] flags) {
         this.id = id;
         this.discordId = discordId;
         this.key = key;
@@ -24,6 +28,7 @@ public class User {
         this.companyId = companyId;
         this.balance = balance;
         this.jobList = jobList;
+        this.flags = flags;
     }
 
     public int getId() {
@@ -70,6 +75,10 @@ public class User {
         return tokenExpires;
     }
 
+    public Flag[] getFlags() {
+        return flags;
+    }
+
     public void setAccessToken(String accessToken) {
         this.accessToken = accessToken;
     }
@@ -86,4 +95,11 @@ public class User {
         this.balance = balance;
     }
 
+    public void setFlags(Flag[] flags) {
+        this.flags = flags;
+    }
+
+    public enum Flag {
+        CHEATER
+    }
 }

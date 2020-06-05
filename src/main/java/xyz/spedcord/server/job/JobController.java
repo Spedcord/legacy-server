@@ -1,6 +1,5 @@
 package xyz.spedcord.server.job;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import xyz.spedcord.common.sql.MySqlService;
 import xyz.spedcord.server.SpedcordServer;
@@ -11,6 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class JobController {
@@ -28,7 +28,7 @@ public class JobController {
         try {
             mySqlService.update("CREATE TABLE IF NOT EXISTS jobs (id BIGINT AUTO_INCREMENT, startedAt BIGINT, " +
                     "endedAt BIGINT, cargoWeight DOUBLE, pay DOUBLE, fromCity TINYTEXT, toCity TINYTEXT, cargo TINYTEXT, " +
-                    "truck TINYTEXT, PRIMARY KEY (id))");
+                    "truck TINYTEXT, verified INT, PRIMARY KEY (id))");
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -45,7 +45,8 @@ public class JobController {
                 toCity,
                 cargo,
                 truck,
-                new ArrayList<>()
+                new ArrayList<>(),
+                false
         ));
 
         JsonObject jsonObject = SpedcordServer.GSON.toJsonTree(pendingJobs.get(discordId)).getAsJsonObject();
@@ -64,12 +65,12 @@ public class JobController {
 
         try {
             ResultSet resultSet = mySqlService.execute("SELECT AUTO_INCREMENT FROM information_schema.TABLES WHERE TABLE_NAME ='jobs'");
-            if(resultSet.next()) {
+            if (resultSet.next()) {
                 job.setId(resultSet.getInt(1));
             }
 
             mySqlService.update(String.format("INSERT INTO jobs (startedAt, endedAt, cargoWeight, " +
-                            "pay, fromCity, toCity, cargo, truck) VALUES (%d, %d, %f, %f, '%s', '%s', '%s', '%s')",
+                            "pay, fromCity, toCity, cargo, truck, verified) VALUES (%d, %d, %f, %f, '%s', '%s', '%s', '%s', 0)",
                     job.getStartedAt(), job.getEndedAt(), job.getCargoWeight(), job.getPay(),
                     MySqlUtil.escapeString(job.getFromCity()), MySqlUtil.escapeString(job.getToCity()),
                     MySqlUtil.escapeString(job.getCargo()), MySqlUtil.escapeString(job.getTruck())));
@@ -108,13 +109,48 @@ public class JobController {
                         resultSet.getString("toCity"),
                         resultSet.getString("cargo"),
                         resultSet.getString("truck"),
-                        new ArrayList<>()
+                        new ArrayList<>(),
+                        resultSet.getInt("verified") == 1
                 );
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public void updateJob(Job job) {
+        try {
+            mySqlService.update(String.format("UPDATE jobs SET verified = %d WHERE id = %d",
+                    job.isVerified() ? 1 : -1, job.getId()));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public List<Job> getUnverifiedJobs() {
+        List<Job> list = new ArrayList<>();
+        try {
+            ResultSet resultSet = mySqlService.execute("SELECT * FROM jobs WHERE verified = 0");
+            while (resultSet.next()) {
+                list.add(new Job(
+                        resultSet.getInt("id"),
+                        resultSet.getLong("startedAt"),
+                        resultSet.getLong("endedAt"),
+                        resultSet.getDouble("cargoWeight"),
+                        resultSet.getDouble("pay"),
+                        resultSet.getString("fromCity"),
+                        resultSet.getString("toCity"),
+                        resultSet.getString("cargo"),
+                        resultSet.getString("truck"),
+                        new ArrayList<>(),
+                        resultSet.getInt("verified") == 1
+                ));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 
     public boolean canStartJob(long discordId) {
