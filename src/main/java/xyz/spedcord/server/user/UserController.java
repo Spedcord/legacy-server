@@ -8,10 +8,7 @@ import xyz.spedcord.server.util.WebhookUtil;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class UserController {
@@ -72,33 +69,17 @@ public class UserController {
 
     public void createUser(long discordId, String accessToken, String refreshToken, long tokenExpires) {
         try {
+            User user = new User(0, discordId, StringUtil.generateKey(32), accessToken, refreshToken, tokenExpires, -1, 0, new ArrayList<>(), new User.Flag[0]);
+            ResultSet resultSet = mySqlService.execute("SELECT AUTO_INCREMENT FROM information_schema.TABLES WHERE TABLE_NAME ='users'");
+            if (resultSet.next()) {
+                user.setId(resultSet.getInt(1));
+            }
+
             mySqlService.update(String.format("INSERT INTO users (discordId, ukey, accessToken, refreshToken, tokenExpires, balance, companyId, jobs, flags) " +
                     "VALUES (%d, '%s', '%s', '%s', %d, 0, -1, '', '')", discordId, StringUtil.generateKey(32), accessToken, refreshToken, tokenExpires));
-            ResultSet resultSet = mySqlService.execute(String.format("SELECT * FROM users WHERE discordId = %d", discordId));
-            if (resultSet.next()) {
-                User user = new User(
-                        resultSet.getInt("id"),
-                        resultSet.getLong("discordId"),
-                        resultSet.getString("ukey"),
-                        resultSet.getString("accessToken"),
-                        resultSet.getString("refreshToken"),
-                        resultSet.getLong("tokenExpires"),
-                        resultSet.getInt("companyId"),
-                        resultSet.getDouble("balance"),
-                        Arrays.stream(resultSet.getString("jobs").split(";"))
-                                .filter(s -> !s.matches("\\s+") && !s.equals(""))
-                                .map(Integer::parseInt)
-                                .collect(Collectors.toList()),
-                        Arrays.stream(resultSet.getString("flags").split(";"))
-                                .filter(s -> !s.matches("\\s+") && !s.equals(""))
-                                .map(User.Flag::valueOf)
-                                .toArray(User.Flag[]::new)
-                );
-                users.add(user);
 
-                JsonObject jsonObject = SpedcordServer.GSON.toJsonTree(user).getAsJsonObject();
-                WebhookUtil.callWebhooks(discordId, jsonObject, "NEW_USER");
-            }
+            JsonObject jsonObject = SpedcordServer.GSON.toJsonTree(user).getAsJsonObject();
+            WebhookUtil.callWebhooks(discordId, jsonObject, "NEW_USER");
         } catch (SQLException e) {
             e.printStackTrace();
         }

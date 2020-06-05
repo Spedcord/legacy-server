@@ -7,7 +7,7 @@ public class User {
     public static final User EMPTY = new User(-1, -1, null, null,
             null, -1, -1, -1, null, null);
 
-    private final int id;
+    private int id;
     private final long discordId;
     private String key;
     private String accessToken;
@@ -97,6 +97,10 @@ public class User {
 
     public void setFlags(Flag[] flags) {
         this.flags = flags;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public enum Flag {
