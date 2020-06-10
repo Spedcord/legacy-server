@@ -27,20 +27,6 @@ public class JobEndEndpoint extends Endpoint {
 
     @Override
     public void handle(Context ctx) {
-        Optional<String> keyOptional = getQueryParam("key", ctx);
-        if(keyOptional.isEmpty()) {
-            Responses.error("Invalid key param").respondTo(ctx);
-            return;
-        }
-        String key = keyOptional.get();
-
-        Optional<Long> discordIdOptional = getQueryParamAsLong("discordId", ctx);
-        if(discordIdOptional.isEmpty()) {
-            Responses.error("Invalid discordId param").respondTo(ctx);
-            return;
-        }
-        long discordId = discordIdOptional.get();
-
         Optional<Double> payOptional = getQueryParamAsDouble("pay", ctx);
         if(payOptional.isEmpty()) {
             Responses.error("Invalid pay param").respondTo(ctx);
@@ -48,25 +34,20 @@ public class JobEndEndpoint extends Endpoint {
         }
         double pay = payOptional.get();
 
-        Optional<User> userOptional = userController.getUser(discordId);
-        if (userOptional.isEmpty()) {
-            Responses.error("Unknown user").respondTo(ctx);
+        Optional<User> optional = getUserFromPath("discordId", true, ctx, userController);
+        if (optional.isEmpty()) {
+            Responses.error("Unknown user / Invalid request").respondTo(ctx);
             return;
         }
-        User user = userOptional.get();
+        User user = optional.get();
 
-        if (!user.getKey().equals(key)) {
-            Responses.error(HttpStatus.UNAUTHORIZED_401, "Unauthorized").respondTo(ctx);
-            return;
-        }
-
-        if(jobController.getPendingJob(discordId) == null) {
+        if(jobController.getPendingJob(user.getDiscordId()) == null) {
             Responses.error("You don't have a pending job").respondTo(ctx);
             return;
         }
 
-        Job job = jobController.getPendingJob(discordId);
-        jobController.endJob(discordId, pay);
+        Job job = jobController.getPendingJob(user.getDiscordId());
+        jobController.endJob(user.getDiscordId(), pay);
         user.getJobList().add(job.getId());
         userController.updateUser(user);
 

@@ -1,6 +1,9 @@
 package xyz.spedcord.server.endpoint;
 
 import io.javalin.http.Context;
+import xyz.spedcord.server.response.Responses;
+import xyz.spedcord.server.user.User;
+import xyz.spedcord.server.user.UserController;
 
 import java.util.Optional;
 
@@ -113,6 +116,37 @@ public abstract class Endpoint extends dev.lukaesebrot.jal.endpoints.Endpoint {
             default:
                 return Optional.empty();
         }
+    }
+
+    protected Optional<User> getUserFromQuery(String key, boolean passNeeded, Context context, UserController userController) {
+        return getUser(key, false, passNeeded, context, userController);
+    }
+
+    protected Optional<User> getUserFromPath(String key, boolean passNeeded, Context context, UserController userController) {
+        return getUser(key, true, passNeeded, context, userController);
+    }
+
+    private Optional<User> getUser(String key, boolean path, boolean passNeeded, Context context, UserController userController) {
+        Optional<Long> paramOptional = path ? getPathParamAsLong(key, context) : getQueryParamAsLong(key, context);
+        if (paramOptional.isEmpty()) {
+            return Optional.empty();
+        }
+        long discordId = paramOptional.get();
+
+        Optional<User> optional = userController.getUser(discordId);
+        if (optional.isEmpty()) {
+            return Optional.empty();
+        }
+
+        User user = optional.get();
+        if(passNeeded) {
+            Optional<String> providedKey = path ? getPathParam("key", context) : getQueryParam("key", context);
+            if(providedKey.isEmpty() || !providedKey.get().equals(user.getKey())) {
+                return Optional.empty();
+            }
+        }
+
+        return Optional.of(user);
     }
 
 }

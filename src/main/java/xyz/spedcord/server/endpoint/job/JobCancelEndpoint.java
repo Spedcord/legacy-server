@@ -22,38 +22,19 @@ public class JobCancelEndpoint extends Endpoint {
 
     @Override
     public void handle(Context ctx) {
-        Optional<String> keyOptional = getQueryParam("key", ctx);
-        if(keyOptional.isEmpty()) {
-            Responses.error("Invalid key param").respondTo(ctx);
+        Optional<User> optional = getUserFromPath("discordId", true, ctx, userController);
+        if (optional.isEmpty()) {
+            Responses.error("Unknown user / Invalid request").respondTo(ctx);
             return;
         }
-        String key = keyOptional.get();
+        User user = optional.get();
 
-        Optional<Long> discordIdOptional = getQueryParamAsLong("discordId", ctx);
-        if(discordIdOptional.isEmpty()) {
-            Responses.error("Invalid discordId param").respondTo(ctx);
-            return;
-        }
-        long discordId = discordIdOptional.get();
-
-        Optional<User> userOptional = userController.getUser(discordId);
-        if (userOptional.isEmpty()) {
-            Responses.error("Unknown user").respondTo(ctx);
-            return;
-        }
-        User user = userOptional.get();
-
-        if (!user.getKey().equals(key)) {
-            Responses.error(HttpStatus.UNAUTHORIZED_401, "Unauthorized").respondTo(ctx);
-            return;
-        }
-
-        if(jobController.getPendingJob(discordId) == null) {
+        if(jobController.getPendingJob(user.getDiscordId()) == null) {
             Responses.error("You don't have a pending job").respondTo(ctx);
             return;
         }
 
-        jobController.cancelJob(discordId);
+        jobController.cancelJob(user.getDiscordId());
         Responses.success("Job cancelled").respondTo(ctx);
     }
 

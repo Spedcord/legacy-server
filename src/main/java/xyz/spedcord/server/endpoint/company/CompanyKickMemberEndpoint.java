@@ -28,26 +28,20 @@ public class CompanyKickMemberEndpoint extends RestrictedEndpoint {
             return;
         }
 
-        Optional<Long> userDiscordIdOptional = getQueryParamAsLong("userDiscordId", context);
-        if(userDiscordIdOptional.isEmpty()) {
-            Responses.error("Invalid userDiscordId param").respondTo(context);
-            return;
-        }
-
         Optional<Company> companyOptional = companyController.getCompany(companyDiscordIdOptional.get());
         if(companyOptional.isEmpty()) {
             Responses.error("Company does not exist").respondTo(context);
             return;
         }
 
-        Optional<User> userOptional = userController.getUser(userDiscordIdOptional.get());
-        if(userOptional.isEmpty()) {
-            Responses.error("Unknown user").respondTo(context);
+        Optional<User> optional = getUserFromPath("userDiscordId", false, context, userController);
+        if (optional.isEmpty()) {
+            Responses.error("Unknown user / Invalid request").respondTo(context);
             return;
         }
 
+        User user = optional.get();
         Company company = companyOptional.get();
-        User user = userOptional.get();
 
         if(!company.getMemberDiscordIds().contains(user.getDiscordId())) {
             Responses.error("User is not a member of the company").respondTo(context);

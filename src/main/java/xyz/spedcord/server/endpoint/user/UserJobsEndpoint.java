@@ -28,20 +28,13 @@ public class UserJobsEndpoint extends Endpoint {
 
     @Override
     public void handle(Context context) {
-        Optional<Long> paramOptional = getPathParamAsLong("discordId", context);
-        if(paramOptional.isEmpty()) {
-            Responses.error("Invalid discordId param").respondTo(context);
+        Optional<User> optional = getUserFromPath("discordId", false, context, userController);
+        if (optional.isEmpty()) {
+            Responses.error("Unknown user / Invalid request").respondTo(context);
             return;
         }
-        long discordId = paramOptional.get();
-
-        Optional<User> optional = userController.getUser(discordId);
-        if (!optional.isPresent()) {
-            Responses.error("Unknown user").respondTo(context);
-            return;
-        }
-
         User user = optional.get();
+
         List<Job> jobs = new ArrayList<>(user.getJobList()).stream()
                 .map(id -> jobController.getJob(id))
                 .filter(Objects::nonNull)

@@ -27,32 +27,12 @@ public class UserCheaterEndpoint extends Endpoint {
             return;
         }
 
-        Optional<Long> userIdOptional = getQueryParamAsLong("userId", context);
-        if (userIdOptional.isEmpty()) {
+        Optional<User> optional = getUserFromQuery("userId", true, context, userController);
+        if (optional.isEmpty()) {
             Responses.error(HttpStatus.UNAUTHORIZED_401, "Unauthorized").respondTo(context);
             return;
         }
-
-        Optional<String> keyOptional = getQueryParam("key", context);
-        if (keyOptional.isEmpty()) {
-            Responses.error(HttpStatus.UNAUTHORIZED_401, "Unauthorized").respondTo(context);
-            return;
-        }
-
-        long userId = userIdOptional.get();
-        String key = keyOptional.get();
-
-        Optional<User> userOptional = userController.getUser(userId);
-        if (userOptional.isEmpty()) {
-            Responses.error(HttpStatus.UNAUTHORIZED_401, "Unauthorized").respondTo(context);
-            return;
-        }
-
-        User user = userOptional.get();
-        if (!user.getKey().equals(key)) {
-            Responses.error(HttpStatus.UNAUTHORIZED_401, "Unauthorized").respondTo(context);
-            return;
-        }
+        User user = optional.get();
 
         if (Arrays.stream(SpedcordServer.MODERATORS).noneMatch(l -> l == user.getDiscordId())) {
             Responses.error(HttpStatus.UNAUTHORIZED_401, "Unauthorized").respondTo(context);

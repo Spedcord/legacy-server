@@ -18,20 +18,13 @@ public class UserChangekeyEndpoint extends RestrictedEndpoint {
 
     @Override
     public void handleFurther(Context context) {
-        Optional<Long> paramOptional = getQueryParamAsLong("discordId", context);
-        if(paramOptional.isEmpty()) {
-            Responses.error("Invalid discordId param").respondTo(context);
+        Optional<User> optional = getUserFromQuery("discordId", false, context, userController);
+        if (optional.isEmpty()) {
+            Responses.error("Unknown user / Invalid request").respondTo(context);
             return;
         }
-        long discordId = paramOptional.get();
-
-        Optional<User> optional = userController.getUser(discordId);
-        if(!optional.isPresent()) {
-            Responses.error("Unknown user").respondTo(context);
-            return;
-        }
-
         User user = optional.get();
+
         userController.changeKey(user);
         userController.updateUser(user);
 
