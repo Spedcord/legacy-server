@@ -41,6 +41,11 @@ public class UserLeaveCompanyEndpoint extends RestrictedEndpoint {
         }
         Company company = companyOptional.get();
 
+        if(company.getOwnerDiscordId() == user.getDiscordId()) {
+            Responses.error("The company owner cannot leave the company").respondTo(context);
+            return;
+        }
+
         user.setCompanyId(-1);
         company.getMemberDiscordIds().remove(user.getDiscordId());
 
