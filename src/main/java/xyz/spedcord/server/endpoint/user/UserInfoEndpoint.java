@@ -1,6 +1,7 @@
 package xyz.spedcord.server.endpoint.user;
 
 import bell.oauth.discord.main.OAuthBuilder;
+import bell.oauth.discord.main.Response;
 import com.google.gson.JsonObject;
 import io.javalin.http.Context;
 import xyz.spedcord.common.config.Config;
@@ -49,7 +50,9 @@ public class UserInfoEndpoint extends Endpoint {
         try {
             bell.oauth.discord.domain.User discordUser;
             if (user.getTokenExpires() <= System.currentTimeMillis()) {
-                oAuthBuilder.refresh();
+                Response refreshResponse = oAuthBuilder.refresh();
+                System.out.println(refreshResponse.name());
+
                 discordUser = oAuthBuilder.getUser();
 
                 user.setAccessToken(oAuthBuilder.getAccess_token());

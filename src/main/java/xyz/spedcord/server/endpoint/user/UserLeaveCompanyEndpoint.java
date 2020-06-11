@@ -1,5 +1,6 @@
 package xyz.spedcord.server.endpoint.user;
 
+import com.google.gson.JsonObject;
 import io.javalin.http.Context;
 import xyz.spedcord.server.company.Company;
 import xyz.spedcord.server.company.CompanyController;
@@ -7,6 +8,7 @@ import xyz.spedcord.server.endpoint.RestrictedEndpoint;
 import xyz.spedcord.server.response.Responses;
 import xyz.spedcord.server.user.User;
 import xyz.spedcord.server.user.UserController;
+import xyz.spedcord.server.util.WebhookUtil;
 
 import java.util.Optional;
 
@@ -51,6 +53,10 @@ public class UserLeaveCompanyEndpoint extends RestrictedEndpoint {
 
         userController.updateUser(user);
         companyController.updateCompany(company);
+
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("company", company.getId());
+        WebhookUtil.callWebhooks(user.getDiscordId(), jsonObject, "USER_LEAVE_COMPANY");
 
         Responses.success("The user was removed from the company").respondTo(context);
     }
