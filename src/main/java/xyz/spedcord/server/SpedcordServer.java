@@ -172,12 +172,15 @@ public class SpedcordServer {
         server.endpoint("/user/checkauth", HandlerType.POST, new UserCheckAuthEndpoint(userController));
         server.endpoint("/user/cheater", HandlerType.POST, new UserCheaterEndpoint(userController));
         server.endpoint("/user/leavecompany", HandlerType.POST, new UserLeaveCompanyEndpoint(userController, companyController));
+        server.endpoint("/user/listmods", HandlerType.GET, new UserListModsEndpoint());
 
         server.endpoint("/company/info", HandlerType.GET, new CompanyInfoEndpoint(companyController, userController, jobController));
         server.endpoint("/company/register", HandlerType.POST, new CompanyRegisterEndpoint(companyController, userController));
         server.endpoint("/company/kickmember", HandlerType.POST, new CompanyKickMemberEndpoint(companyController, userController));
         server.endpoint("/company/createjoinlink/:companyId", HandlerType.POST, new CreateJoinLinkEndpoint(joinLinkController,
                 config.get("host"), Integer.parseInt(config.get("port"))));
+        //server.endpoint("/company/shop", HandlerType.POST, new ShopBuyItemEndpoint(companyController, joinLinkController));
+        server.endpoint("/company/list/:sortMode", HandlerType.GET, new CompanyListEndpoint(companyController, userController));
 
         server.endpoint("/job/start", HandlerType.POST, new JobStartEndpoint(jobController, userController));
         server.endpoint("/job/end", HandlerType.POST, new JobEndEndpoint(jobController, userController, companyController));
