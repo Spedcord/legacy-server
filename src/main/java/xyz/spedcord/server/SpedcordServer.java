@@ -188,4 +188,5 @@ public class SpedcordServer {
         server.endpoint("/job/listunverified", HandlerType.GET, new JobListUnverifiedEndpoint(jobController, userController));
         server.endpoint("/job/verify", HandlerType.POST, new JobVerifyEndpoint(jobController, userController));
     }
+
 }
