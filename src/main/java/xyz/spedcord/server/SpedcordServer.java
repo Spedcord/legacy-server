@@ -172,6 +172,7 @@ public class SpedcordServer {
         server.endpoint("/user/checkauth", HandlerType.POST, new UserCheckAuthEndpoint(userController));
         server.endpoint("/user/cheater", HandlerType.POST, new UserCheaterEndpoint(userController));
         server.endpoint("/user/leavecompany", HandlerType.POST, new UserLeaveCompanyEndpoint(userController, companyController));
+        server.endpoint("/user/listmods", HandlerType.GET, new UserListModsEndpoint());
 
         server.endpoint("/company/info", HandlerType.GET, new CompanyInfoEndpoint(companyController, userController, jobController));
         server.endpoint("/company/register", HandlerType.POST, new CompanyRegisterEndpoint(companyController, userController));
