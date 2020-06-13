@@ -182,7 +182,6 @@ public class SpedcordServer {
         //server.endpoint("/company/shop", HandlerType.POST, new ShopBuyItemEndpoint(companyController, joinLinkController));
         server.endpoint("/company/list/:sortMode", HandlerType.GET, new CompanyListEndpoint(companyController, userController));
 
-
         server.endpoint("/job/start", HandlerType.POST, new JobStartEndpoint(jobController, userController));
         server.endpoint("/job/end", HandlerType.POST, new JobEndEndpoint(jobController, userController, companyController));
         server.endpoint("/job/cancel", HandlerType.POST, new JobCancelEndpoint(jobController, userController));
