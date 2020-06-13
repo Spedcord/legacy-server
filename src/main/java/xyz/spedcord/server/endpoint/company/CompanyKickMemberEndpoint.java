@@ -1,5 +1,6 @@
 package xyz.spedcord.server.endpoint.company;
 
+import com.google.gson.JsonObject;
 import io.javalin.http.Context;
 import xyz.spedcord.server.company.Company;
 import xyz.spedcord.server.company.CompanyController;
@@ -7,6 +8,7 @@ import xyz.spedcord.server.endpoint.RestrictedEndpoint;
 import xyz.spedcord.server.response.Responses;
 import xyz.spedcord.server.user.User;
 import xyz.spedcord.server.user.UserController;
+import xyz.spedcord.server.util.WebhookUtil;
 
 import java.util.Optional;
 
@@ -34,7 +36,7 @@ public class CompanyKickMemberEndpoint extends RestrictedEndpoint {
             return;
         }
 
-        Optional<User> optional = getUserFromPath("userDiscordId", false, context, userController);
+        Optional<User> optional = getUserFromQuery("userDiscordId", false, context, userController);
         if (optional.isEmpty()) {
             Responses.error("Unknown user / Invalid request").respondTo(context);
             return;
@@ -53,6 +55,10 @@ public class CompanyKickMemberEndpoint extends RestrictedEndpoint {
 
         companyController.updateCompany(company);
         userController.updateUser(user);
+
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("company", company.getId());
+        WebhookUtil.callWebhooks(user.getDiscordId(), jsonObject, "USER_LEAVE_COMPANY");
 
         Responses.success("User was kicked from the company").respondTo(context);
     }

@@ -43,7 +43,9 @@ public class CreateJoinLinkEndpoint extends RestrictedEndpoint {
             }
         }
 
-        String id = joinLinkController.generateNewLink(companyId, maxUses);
+        String customId = getQueryParam("customId", context).orElse(null);
+        String id = (customId == null ? joinLinkController.generateNewLink(companyId, maxUses)
+                : joinLinkController.addCustomLink(customId, companyId, maxUses));
         context.result(String.format("https://api.spedcord.xyz/invite/%s", id)).status(200);
     }
 }

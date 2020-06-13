@@ -68,7 +68,7 @@ public class JoinLinkController {
         JoinLink joinLink = optional.get();
         joinLink.setUses(joinLink.getUses() + 1);
 
-        if (joinLink.getUses() >= joinLink.getMaxUses()) {
+        if (joinLink.getUses() >= joinLink.getMaxUses() && joinLink.getMaxUses() != -1) {
             removeJoinLink(id);
             return;
         }
@@ -93,8 +93,7 @@ public class JoinLinkController {
         }
     }
 
-    public String generateNewLink(int companyId, int maxUses) {
-        String str = StringUtil.generateKey(12);
+    public String addCustomLink(String str, int companyId, int maxUses) {
         try {
             mySqlService.update(String.format("INSERT INTO joinlinks (stringId, companyId, uses, maxUses, createdAt) " +
                     "VALUES('%s', %d, 0, %d, %d)", str, companyId, maxUses, System.currentTimeMillis()));
@@ -103,6 +102,10 @@ public class JoinLinkController {
         }
         joinLinks.add(new JoinLink(str, companyId, maxUses, 0, System.currentTimeMillis()));
         return str;
+    }
+
+    public String generateNewLink(int companyId, int maxUses) {
+        return addCustomLink(StringUtil.generateKey(12), companyId, maxUses);
     }
 
 }

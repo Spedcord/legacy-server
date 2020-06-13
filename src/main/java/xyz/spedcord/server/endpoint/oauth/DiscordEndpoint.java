@@ -1,6 +1,7 @@
 package xyz.spedcord.server.endpoint.oauth;
 
 import bell.oauth.discord.main.Response;
+import com.google.gson.JsonObject;
 import io.javalin.http.Context;
 import xyz.spedcord.server.company.Company;
 import xyz.spedcord.server.company.CompanyController;
@@ -11,6 +12,7 @@ import xyz.spedcord.server.oauth.invite.InviteAuthResult;
 import xyz.spedcord.server.response.Responses;
 import xyz.spedcord.server.user.User;
 import xyz.spedcord.server.user.UserController;
+import xyz.spedcord.server.util.WebhookUtil;
 
 import java.util.Optional;
 
@@ -95,6 +97,10 @@ public class DiscordEndpoint extends Endpoint {
         companyController.updateCompany(company);
 
         joinLinkController.joinLinkUsed(inviteAuthResult.getJoinId());
+
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("company", company.getId());
+        WebhookUtil.callWebhooks(user.getDiscordId(), jsonObject, "USER_JOIN_COMPANY");
 
         //Responses.success("You successfully joined the company").respondTo(context);
         context.redirect("https://www.spedcord.xyz/success/invite/1");

@@ -12,7 +12,10 @@ import xyz.spedcord.server.response.Responses;
 import xyz.spedcord.server.user.User;
 import xyz.spedcord.server.user.UserController;
 
+import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class CompanyInfoEndpoint extends Endpoint {
 
@@ -68,8 +71,15 @@ public class CompanyInfoEndpoint extends Endpoint {
 
     private void handleFurther(Company company, Context context) {
         JsonObject jsonObj = SpedcordServer.GSON.toJsonTree(company).getAsJsonObject();
+
+        List<Company> sortedCompanies = companyController.getCompanies().stream()
+                .sorted(Comparator.comparingDouble(value -> ((Company) value).getBalance()).reversed())
+                .collect(Collectors.toList());
+        int rank = sortedCompanies.indexOf(company) + 1;
+        jsonObj.addProperty("rank", rank);
+
         JsonObject logbook = new JsonObject();
-        for (Long memberDiscordId : company.getMemberDiscordIds()) {
+        for (long memberDiscordId : company.getMemberDiscordIds()) {
             Optional<User> userOptional = userController.getUser(memberDiscordId);
             if (userOptional.isEmpty()) {
                 continue;

@@ -99,6 +99,11 @@ public class JobController {
 
     public List<Job> getJobs(int... ids) {
         List<Job> list = new ArrayList<>();
+
+        if(ids.length == 0) {
+            return list;
+        }
+
         try {
             ResultSet resultSet = mySqlService.execute("SELECT * from 'jobs' WHERE id IN ("
                     + Arrays.stream(ids).mapToObj(String::valueOf).collect(Collectors.joining(", ")) + ")");

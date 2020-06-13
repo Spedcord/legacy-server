@@ -78,6 +78,8 @@ public class UserController {
             mySqlService.update(String.format("INSERT INTO users (discordId, ukey, accessToken, refreshToken, tokenExpires, balance, companyId, jobs, flags) " +
                     "VALUES (%d, '%s', '%s', '%s', %d, 0, -1, '', '')", discordId, StringUtil.generateKey(32), accessToken, refreshToken, tokenExpires));
 
+            users.add(user);
+
             JsonObject jsonObject = SpedcordServer.GSON.toJsonTree(user).getAsJsonObject();
             WebhookUtil.callWebhooks(discordId, jsonObject, "NEW_USER");
         } catch (SQLException e) {
