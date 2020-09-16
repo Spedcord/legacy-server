@@ -100,13 +100,13 @@ public class JobController {
     public List<Job> getJobs(int... ids) {
         List<Job> list = new ArrayList<>();
 
-        if(ids.length == 0) {
+        if (ids.length == 0) {
             return list;
         }
 
         try {
-            ResultSet resultSet = mySqlService.execute("SELECT * from 'jobs' WHERE id IN ("
-                    + Arrays.stream(ids).mapToObj(String::valueOf).collect(Collectors.joining(", ")) + ")");
+            ResultSet resultSet = mySqlService.execute("SELECT * from `jobs` WHERE id " + (ids.length == 1 ? " = "
+                    + ids[0] : "IN (" + Arrays.stream(ids).mapToObj(String::valueOf).collect(Collectors.joining(", ")) + ")"));
             while (resultSet.next()) {
                 list.add(new Job(
                         resultSet.getInt("id"),
