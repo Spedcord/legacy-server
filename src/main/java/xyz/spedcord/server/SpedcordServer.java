@@ -9,6 +9,7 @@ import io.javalin.Javalin;
 import io.javalin.http.HandlerType;
 import org.eclipse.jetty.http.HttpStatus;
 import xyz.spedcord.common.config.Config;
+import xyz.spedcord.common.mongodb.MongoDBService;
 import xyz.spedcord.common.sql.MySqlService;
 import xyz.spedcord.server.company.CompanyController;
 import xyz.spedcord.server.endpoint.company.*;
@@ -20,6 +21,7 @@ import xyz.spedcord.server.joinlink.JoinLinkController;
 import xyz.spedcord.server.oauth.invite.InviteAuthController;
 import xyz.spedcord.server.oauth.register.RegisterAuthController;
 import xyz.spedcord.server.response.Responses;
+import xyz.spedcord.server.user.Flag;
 import xyz.spedcord.server.user.UserController;
 import xyz.spedcord.server.util.WebhookUtil;
 
@@ -34,6 +36,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class SpedcordServer {
 
+    public static final boolean DEV = System.getenv("SPEDCORD_DEV") != null
+            && System.getenv("SPEDCORD_DEV").equals("true");
     public static final Gson GSON = new GsonBuilder()
             .setPrettyPrinting()
             .setLongSerializationPolicy(LongSerializationPolicy.STRING)
@@ -59,25 +63,22 @@ public class SpedcordServer {
                 "oauth-clientid", "ENTER_THE_CLIENTID",
                 "oauth-clientsecret", "ENTER_THE_CLIENTSECRET"
         });
-        Config mySqlConfig = new Config(new File("mysql.cfg"), new String[]{
+        Config mongoConfig = new Config(new File("mongo.cfg"), new String[]{
                 "host", "localhost",
-                "user", "",
-                "pass", "",
-                "db", "spedcord",
-                "port", "3306"
+                "port", "27017",
+                "db", "spedcord"
         });
 
         KEY = config.get("key");
 
         WebhookUtil.loadWebhooks();
 
-        MySqlService mySqlService;
-        try {
-            mySqlService = new MySqlService(mySqlConfig);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return;
-        }
+        MongoDBService mongoDBService = new MongoDBService(
+                mongoConfig.get("host"),
+                Integer.parseInt(mongoConfig.get("port")),
+                mongoConfig.get("db"),
+                Flag[].class
+        );
 
         inviteAuthController = new InviteAuthController(
                 config.get("oauth-clientid"),
@@ -87,10 +88,10 @@ public class SpedcordServer {
                 config.get("oauth-clientid"),
                 config.get("oauth-clientsecret")
         );
-        joinLinkController = new JoinLinkController(mySqlService);
-        userController = new UserController(mySqlService);
-        jobController = new JobController(mySqlService);
-        companyController = new CompanyController(mySqlService);
+        joinLinkController = new JoinLinkController(mongoDBService);
+        userController = new UserController(mongoDBService);
+        jobController = new JobController(mongoDBService);
+        companyController = new CompanyController(mongoDBService);
 
         Javalin app = Javalin.create().start(config.get("host"), Integer.parseInt(config.get("port")));
         RateLimiter rateLimiter = new RateLimiter(Integer.parseInt(config.get("requests-per-minute")), ctx ->
@@ -98,7 +99,6 @@ public class SpedcordServer {
         HttpServer server = new HttpServer(app, rateLimiter);
 
         registerEndpoints(server);
-        startSqlPinger(mySqlService);
         startPayoutTimer();
     }
 
@@ -142,19 +142,6 @@ public class SpedcordServer {
                 System.out.println("Payouts were paid");
             }
         }, 5, 5, TimeUnit.MINUTES);
-
-        Runtime.getRuntime().addShutdownHook(new Thread(executorService::shutdown));
-    }
-
-    private void startSqlPinger(MySqlService sqlService) {
-        ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
-        executorService.scheduleAtFixedRate(() -> {
-            try {
-                sqlService.update("SELECT 1");
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }, 1, 5, TimeUnit.MINUTES);
 
         Runtime.getRuntime().addShutdownHook(new Thread(executorService::shutdown));
     }

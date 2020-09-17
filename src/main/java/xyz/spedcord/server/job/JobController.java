@@ -1,35 +1,34 @@
 package xyz.spedcord.server.job;
 
 import com.google.gson.JsonObject;
-import xyz.spedcord.common.sql.MySqlService;
+import com.mongodb.client.model.Filters;
+import com.mongodb.reactivestreams.client.MongoCollection;
+import xyz.spedcord.common.mongodb.CallbackSubscriber;
+import xyz.spedcord.common.mongodb.MongoDBService;
 import xyz.spedcord.server.SpedcordServer;
-import xyz.spedcord.server.util.MySqlUtil;
+import xyz.spedcord.server.util.CarelessSubscriber;
 import xyz.spedcord.server.util.WebhookUtil;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class JobController {
 
-    private final MySqlService mySqlService;
+    private final MongoDBService mongoDBService;
 
     private final Map<Long, Job> pendingJobs = new HashMap<>();
+    private MongoCollection<Job> jobCollection;
 
-    public JobController(MySqlService mySqlService) {
-        this.mySqlService = mySqlService;
+    public JobController(MongoDBService mongoDBService) {
+        this.mongoDBService = mongoDBService;
         init();
     }
 
     private void init() {
-        try {
-            mySqlService.update("CREATE TABLE IF NOT EXISTS jobs (id BIGINT AUTO_INCREMENT, startedAt BIGINT, " +
-                    "endedAt BIGINT, cargoWeight DOUBLE, pay DOUBLE, fromCity TINYTEXT, toCity TINYTEXT, cargo TINYTEXT, " +
-                    "truck TINYTEXT, verified INT, PRIMARY KEY (id))");
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        jobCollection = mongoDBService.getDatabase().getCollection("jobs", Job.class);
     }
 
     public void startJob(long discordId, String fromCity, String toCity, String truck, String cargo, double cargoWeight) {
@@ -61,21 +60,7 @@ public class JobController {
         job.setEndedAt(System.currentTimeMillis());
         job.setPay(pay);
 
-        try {
-            ResultSet resultSet = mySqlService.execute("SELECT AUTO_INCREMENT FROM information_schema.TABLES WHERE TABLE_NAME ='jobs'");
-            if (resultSet.next()) {
-                job.setId(resultSet.getInt(1));
-            }
-
-            mySqlService.update(String.format("INSERT INTO jobs (startedAt, endedAt, cargoWeight, " +
-                            "pay, fromCity, toCity, cargo, truck, verified) VALUES (%d, %d, %f, %f, '%s', '%s', '%s', '%s', 0)",
-                    job.getStartedAt(), job.getEndedAt(), job.getCargoWeight(), job.getPay(),
-                    MySqlUtil.escapeString(job.getFromCity()), MySqlUtil.escapeString(job.getToCity()),
-                    MySqlUtil.escapeString(job.getCargo()), MySqlUtil.escapeString(job.getTruck())));
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return;
-        }
+        jobCollection.insertOne(job).subscribe(new CarelessSubscriber<>());
 
         JsonObject jsonObject = SpedcordServer.GSON.toJsonTree(job).getAsJsonObject();
         jsonObject.addProperty("state", "END");
@@ -104,27 +89,14 @@ public class JobController {
             return list;
         }
 
-        try {
-            ResultSet resultSet = mySqlService.execute("SELECT * from `jobs` WHERE id " + (ids.length == 1 ? " = "
-                    + ids[0] : "IN (" + Arrays.stream(ids).mapToObj(String::valueOf).collect(Collectors.joining(", ")) + ")"));
-            while (resultSet.next()) {
-                list.add(new Job(
-                        resultSet.getInt("id"),
-                        resultSet.getLong("startedAt"),
-                        resultSet.getLong("endedAt"),
-                        resultSet.getDouble("cargoWeight"),
-                        resultSet.getDouble("pay"),
-                        resultSet.getString("fromCity"),
-                        resultSet.getString("toCity"),
-                        resultSet.getString("cargo"),
-                        resultSet.getString("truck"),
-                        new ArrayList<>(),
-                        resultSet.getInt("verified") == 1
-                ));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        AtomicBoolean finished = new AtomicBoolean(false);
+        CallbackSubscriber<Job> subscriber = new CallbackSubscriber<>();
+        subscriber.doOnNext(list::add);
+        subscriber.doOnComplete(() -> finished.set(true));
+
+        jobCollection.find(Filters.all("id", ids)).subscribe(subscriber);
+        while (!finished.get()) ;
+
         return list;
     }
 
@@ -133,40 +105,25 @@ public class JobController {
     }
 
     public void updateJob(Job job) {
-        try {
-            mySqlService.update(String.format("UPDATE jobs SET verified = %d WHERE id = %d",
-                    job.isVerified() ? 1 : -1, job.getId()));
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        jobCollection.replaceOne(Filters.eq("id", job.getId()), job);
     }
 
     public List<Job> getUnverifiedJobs() {
         List<Job> list = new ArrayList<>();
-        try {
-            ResultSet resultSet = mySqlService.execute("SELECT * FROM jobs WHERE verified = 0");
-            while (resultSet.next()) {
-                list.add(new Job(
-                        resultSet.getInt("id"),
-                        resultSet.getLong("startedAt"),
-                        resultSet.getLong("endedAt"),
-                        resultSet.getDouble("cargoWeight"),
-                        resultSet.getDouble("pay"),
-                        resultSet.getString("fromCity"),
-                        resultSet.getString("toCity"),
-                        resultSet.getString("cargo"),
-                        resultSet.getString("truck"),
-                        new ArrayList<>(),
-                        resultSet.getInt("verified") == 1
-                ));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+
+        AtomicBoolean finished = new AtomicBoolean(false);
+        CallbackSubscriber<Job> subscriber = new CallbackSubscriber<>();
+        subscriber.doOnNext(list::add);
+        subscriber.doOnComplete(() -> finished.set(true));
+
+        jobCollection.find(Filters.eq("verified", false)).subscribe(subscriber);
+        while (!finished.get()) ;
+
         return list;
     }
 
     public boolean canStartJob(long discordId) {
         return !pendingJobs.containsKey(discordId);
     }
+
 }

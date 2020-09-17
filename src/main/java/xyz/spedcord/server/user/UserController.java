@@ -1,62 +1,52 @@
 package xyz.spedcord.server.user;
 
 import com.google.gson.JsonObject;
-import xyz.spedcord.common.sql.MySqlService;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.result.InsertOneResult;
+import com.mongodb.reactivestreams.client.MongoCollection;
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
+import xyz.spedcord.common.mongodb.CallbackSubscriber;
+import xyz.spedcord.common.mongodb.MongoDBService;
 import xyz.spedcord.server.SpedcordServer;
+import xyz.spedcord.server.util.CarelessSubscriber;
 import xyz.spedcord.server.util.StringUtil;
 import xyz.spedcord.server.util.WebhookUtil;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class UserController {
 
-    private final MySqlService mySqlService;
+    private final MongoDBService mongoDBService;
 
     private final Set<User> users = new HashSet<>();
+    private MongoCollection<User> userCollection;
 
-    public UserController(MySqlService mySqlService) {
-        this.mySqlService = mySqlService;
+    public UserController(MongoDBService mongoDBService) {
+        this.mongoDBService = mongoDBService;
         init();
     }
 
     private void init() {
-        try {
-            mySqlService.update("CREATE TABLE IF NOT EXISTS users (id BIGINT AUTO_INCREMENT, discordId BIGINT, " +
-                    "ukey VARCHAR(64), accessToken VARCHAR(128), refreshToken VARCHAR(128), tokenExpires BIGINT, " +
-                    "balance DOUBLE, companyId BIGINT, jobs MEDIUMTEXT, flags TINYTEXT, PRIMARY KEY (id))");
-            loadUsers();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        userCollection = mongoDBService.getDatabase().getCollection("users", User.class);
+        loadUsers();
     }
 
-    private void loadUsers() throws SQLException {
+    private void loadUsers() {
         users.clear();
 
-        ResultSet resultSet = mySqlService.execute("SELECT * FROM users");
-        while (resultSet.next()) {
-            users.add(new User(
-                    resultSet.getInt("id"),
-                    resultSet.getLong("discordId"),
-                    resultSet.getString("ukey"),
-                    resultSet.getString("accessToken"),
-                    resultSet.getString("refreshToken"),
-                    resultSet.getLong("tokenExpires"),
-                    resultSet.getInt("companyId"),
-                    resultSet.getDouble("balance"),
-                    Arrays.stream(resultSet.getString("jobs").split(";"))
-                            .filter(s -> !s.matches("\\s+") && !s.equals(""))
-                            .map(Integer::parseInt)
-                            .collect(Collectors.toList()),
-                    Arrays.stream(resultSet.getString("flags").split(";"))
-                            .filter(s -> !s.matches("\\s+") && !s.equals(""))
-                            .map(User.Flag::valueOf)
-                            .toArray(User.Flag[]::new)
-            ));
-        }
+        AtomicBoolean finished = new AtomicBoolean(false);
+        CallbackSubscriber<User> subscriber = new CallbackSubscriber<>();
+        subscriber.doOnNext(users::add);
+        subscriber.doOnComplete(() -> finished.set(true));
+
+        userCollection.find().subscribe(subscriber);
+        while (!finished.get()) ;
     }
 
     public Optional<User> getUser(long discordId) {
@@ -68,38 +58,25 @@ public class UserController {
     }
 
     public void createUser(long discordId, String accessToken, String refreshToken, long tokenExpires) {
-        try {
-            User user = new User(0, discordId, StringUtil.generateKey(32), accessToken, refreshToken, tokenExpires, -1, 0, new ArrayList<>(), new User.Flag[0]);
-            ResultSet resultSet = mySqlService.execute("SELECT AUTO_INCREMENT FROM information_schema.TABLES WHERE TABLE_NAME ='users'");
-            if (resultSet.next()) {
-                user.setId(resultSet.getInt(1));
-            }
+        AtomicLong size = new AtomicLong(0);
+        AtomicBoolean finished = new AtomicBoolean(false);
+        CallbackSubscriber<Long> subscriber = new CallbackSubscriber<>();
+        subscriber.doOnNext(size::set);
+        subscriber.doOnComplete(() -> finished.set(true));
 
-            mySqlService.update(String.format("INSERT INTO users (discordId, ukey, accessToken, refreshToken, tokenExpires, balance, companyId, jobs, flags) " +
-                    "VALUES (%d, '%s', '%s', '%s', %d, 0, -1, '', '')", discordId, StringUtil.generateKey(32), accessToken, refreshToken, tokenExpires));
+        userCollection.countDocuments().subscribe(subscriber);
+        while (!finished.get()) ;
 
-            users.add(user);
+        User user = new User(Long.valueOf(size.get()).intValue(), discordId, StringUtil.generateKey(32), accessToken, refreshToken, tokenExpires, -1, 0, new ArrayList<>(), new Flag[0]);
+        userCollection.insertOne(user).subscribe(new CarelessSubscriber<>());
+        users.add(user);
 
-            JsonObject jsonObject = SpedcordServer.GSON.toJsonTree(user).getAsJsonObject();
-            WebhookUtil.callWebhooks(discordId, jsonObject, "NEW_USER");
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        JsonObject jsonObject = SpedcordServer.GSON.toJsonTree(user).getAsJsonObject();
+        WebhookUtil.callWebhooks(discordId, jsonObject, "NEW_USER");
     }
 
     public void updateUser(User user) {
-        try {
-            mySqlService.update(String.format("UPDATE users SET companyId = %d, jobs = '%s', accessToken = '%s', " +
-                            "refreshToken = '%s', tokenExpires = %d, balance = %f, ukey = '%s', flags = '%s' WHERE discordId = %d",
-                    user.getCompanyId(), user.getJobList().stream()
-                            .map(Object::toString)
-                            .collect(Collectors.joining(";")),
-                    user.getAccessToken(), user.getRefreshToken(), user.getTokenExpires(),
-                    user.getBalance(), user.getKey(), Arrays.stream(user.getFlags())
-                            .map(Enum::name).collect(Collectors.joining(";")), user.getDiscordId()));
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        userCollection.replaceOne(Filters.eq("id", user.getId()), user).subscribe(new CarelessSubscriber<>());
     }
 
     public void changeKey(User user) {

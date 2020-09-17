@@ -1,52 +1,41 @@
 package xyz.spedcord.server.company;
 
-import xyz.spedcord.common.sql.MySqlService;
-import xyz.spedcord.server.util.MySqlUtil;
+import com.mongodb.client.model.Filters;
+import com.mongodb.reactivestreams.client.MongoCollection;
+import xyz.spedcord.common.mongodb.CallbackSubscriber;
+import xyz.spedcord.common.mongodb.MongoDBService;
+import xyz.spedcord.server.util.CarelessSubscriber;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class CompanyController {
 
-    private MySqlService mySqlService;
+    private final MongoDBService mongoDBService;
 
-    private Set<Company> companies = new HashSet<>();
+    private final Set<Company> companies = new HashSet<>();
+    private MongoCollection<Company> companyCollection;
 
-    public CompanyController(MySqlService mySqlService) {
-        this.mySqlService = mySqlService;
+    public CompanyController(MongoDBService mongoDBService) {
+        this.mongoDBService = mongoDBService;
         init();
     }
 
     private void init() {
-        try {
-            mySqlService.update("CREATE TABLE IF NOT EXISTS companies (id BIGINT AUTO_INCREMENT, discordServerId BIGINT, " +
-                    "name VARCHAR(128), ownerDiscordId BIGINT, balance DOUBLE, members MEDIUMTEXT, PRIMARY KEY (id))");
-            load();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        companyCollection = mongoDBService.getDatabase().getCollection("companies", Company.class);
+        load();
     }
 
-    private void load() throws SQLException {
-        ResultSet resultSet = mySqlService.execute("SELECT * FROM companies");
-        while (resultSet.next()) {
-            companies.add(new Company(
-                    resultSet.getInt("id"),
-                    resultSet.getLong("discordServerId"),
-                    resultSet.getString("name"),
-                    resultSet.getLong("ownerDiscordId"),
-                    resultSet.getDouble("balance"),
-                    Arrays.stream(resultSet.getString("members").split(";"))
-                            .filter(s -> !s.matches("\\s+") && !s.equals(""))
-                            .map(Long::parseLong)
-                            .collect(Collectors.toList())
-            ));
-        }
+    private void load() {
+        AtomicBoolean finished = new AtomicBoolean(false);
+        CallbackSubscriber<Company> subscriber = new CallbackSubscriber<>();
+        subscriber.doOnNext(companies::add);
+        subscriber.doOnComplete(() -> finished.set(true));
+
+        companyCollection.find().subscribe(subscriber);
+        while (!finished.get()) ;
     }
 
     public Optional<Company> getCompany(long discordServerId) {
@@ -58,32 +47,12 @@ public class CompanyController {
     }
 
     public void createCompany(Company company) {
-        try {
-            ResultSet resultSet = mySqlService.execute("SELECT AUTO_INCREMENT FROM information_schema.TABLES WHERE TABLE_NAME ='companies'");
-            if(resultSet.next()) {
-                company.setId(resultSet.getInt(1));
-            }
-
-            mySqlService.update(String.format("INSERT INTO companies (discordServerId, name, ownerDiscordId, balance, members) VALUES(%d, '%s', %d, 0, '%s')",
-                    company.getDiscordServerId(), MySqlUtil.escapeString(company.getName()), company.getOwnerDiscordId(),
-                    company.getMemberDiscordIds().stream()
-                            .map(Object::toString)
-                            .collect(Collectors.joining(";"))));
-            companies.add(company);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        companies.add(company);
+        companyCollection.insertOne(company).subscribe(new CarelessSubscriber<>());
     }
 
     public void updateCompany(Company company) {
-        try {
-            mySqlService.update(String.format("UPDATE companies SET name = '%s', balance = %f, members = '%s' WHERE id = %d",
-                    MySqlUtil.escapeString(company.getName()), company.getBalance(), company.getMemberDiscordIds().stream()
-                    .map(Object::toString)
-                    .collect(Collectors.joining(";")), company.getId()));
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        companyCollection.replaceOne(Filters.eq("id", 1), company).subscribe(new CarelessSubscriber<>());
     }
 
     public Set<Company> getCompanies() {
