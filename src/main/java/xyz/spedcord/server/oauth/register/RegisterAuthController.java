@@ -1,6 +1,7 @@
 package xyz.spedcord.server.oauth.register;
 
 import bell.oauth.discord.main.OAuthBuilder;
+import xyz.spedcord.server.SpedcordServer;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -8,9 +9,9 @@ import java.util.UUID;
 
 public class RegisterAuthController {
 
-    private String clientId;
-    private String clientSecret;
-    private Map<String, OAuthBuilder> authMap;
+    private final String clientId;
+    private final String clientSecret;
+    private final Map<String, OAuthBuilder> authMap;
 
     public RegisterAuthController(String clientId, String clientSecret) {
         this.clientId = clientId;
@@ -21,7 +22,7 @@ public class RegisterAuthController {
     public String getNewAuthLink() {
         OAuthBuilder oAuthBuilder = new OAuthBuilder(clientId, clientSecret)
                 .setScopes(new String[]{"identify", "guilds.join"})
-                .setRedirectURI("https://api.spedcord.xyz/user/register/discord");
+                .setRedirectURI((SpedcordServer.DEV ? "http://localhost:81" : "https://api.spedcord.xyz") + "/user/register/discord");
 
         String state = UUID.randomUUID().toString();
         authMap.put(state, oAuthBuilder);

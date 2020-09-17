@@ -1,6 +1,7 @@
 package xyz.spedcord.server.oauth.invite;
 
 import bell.oauth.discord.main.OAuthBuilder;
+import xyz.spedcord.server.SpedcordServer;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -8,11 +9,11 @@ import java.util.UUID;
 
 public class InviteAuthController {
 
-    private String clientId;
-    private String clientSecret;
-    private Map<String, OAuthBuilder> authMap;
-    private Map<String, Integer> companyIdMap;
-    private Map<String, String> joinIdMap;
+    private final String clientId;
+    private final String clientSecret;
+    private final Map<String, OAuthBuilder> authMap;
+    private final Map<String, Integer> companyIdMap;
+    private final Map<String, String> joinIdMap;
 
     public InviteAuthController(String clientId, String clientSecret) {
         this.clientId = clientId;
@@ -25,7 +26,7 @@ public class InviteAuthController {
     public String getNewAuthLink(int companyId, String joinId) {
         OAuthBuilder oAuthBuilder = new OAuthBuilder(clientId, clientSecret)
                 .setScopes(new String[]{"identify"})
-                .setRedirectURI("https://api.spedcord.xyz/invite/discord");
+                .setRedirectURI((SpedcordServer.DEV ? "http://localhost:81" : "https://api.spedcord.xyz") + "/invite/discord");
 
         String state = UUID.randomUUID().toString();
         authMap.put(state, oAuthBuilder);
@@ -52,7 +53,7 @@ public class InviteAuthController {
     }
 
     private <K, V> Map.Entry<K, V> entry(K key, V value) {
-        return new Map.Entry<K, V>() {
+        return new Map.Entry<>() {
             @Override
             public K getKey() {
                 return key;

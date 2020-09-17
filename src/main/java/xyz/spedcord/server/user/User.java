@@ -103,7 +103,4 @@ public class User {
         this.id = id;
     }
 
-    public enum Flag {
-        CHEATER
-    }
 }

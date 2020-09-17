@@ -5,6 +5,7 @@ import org.eclipse.jetty.http.HttpStatus;
 import xyz.spedcord.server.SpedcordServer;
 import xyz.spedcord.server.endpoint.Endpoint;
 import xyz.spedcord.server.response.Responses;
+import xyz.spedcord.server.user.Flag;
 import xyz.spedcord.server.user.User;
 import xyz.spedcord.server.user.UserController;
 
@@ -47,7 +48,7 @@ public class UserCheaterEndpoint extends Endpoint {
         }
 
         User cheater = cheaterOptional.get();
-        cheater.setFlags(new User.Flag[]{User.Flag.CHEATER});
+        cheater.setFlags(new Flag[]{Flag.CHEATER});
         userController.updateUser(cheater);
 
         Responses.success("User was flagged as cheater").respondTo(context);

@@ -1,53 +1,42 @@
 package xyz.spedcord.server.joinlink;
 
-import xyz.spedcord.common.sql.MySqlService;
-import xyz.spedcord.server.util.MySqlUtil;
+import com.mongodb.client.model.Filters;
+import com.mongodb.reactivestreams.client.MongoCollection;
+import xyz.spedcord.common.mongodb.CallbackSubscriber;
+import xyz.spedcord.common.mongodb.MongoDBService;
+import xyz.spedcord.server.util.CarelessSubscriber;
 import xyz.spedcord.server.util.StringUtil;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class JoinLinkController {
 
-    private final MySqlService mySqlService;
+    private final MongoDBService mongoDBService;
 
     private final Set<JoinLink> joinLinks = new HashSet<>();
+    private MongoCollection<JoinLink> joinLinkCollection;
 
-    public JoinLinkController(MySqlService mySqlService) {
-        this.mySqlService = mySqlService;
+    public JoinLinkController(MongoDBService mongoDBService) {
+        this.mongoDBService = mongoDBService;
         init();
     }
 
     private void init() {
-        try {
-            mySqlService.update("CREATE TABLE IF NOT EXISTS joinlinks (id BIGINT AUTO_INCREMENT, stringId VARCHAR(128), " +
-                    "companyId BIGINT, uses INT, maxUses INT, createdAt BIGINT, PRIMARY KEY (id))");
-            load();
-        } catch (SQLException exception) {
-            exception.printStackTrace();
-        }
+        joinLinkCollection = mongoDBService.getDatabase().getCollection("join_links", JoinLink.class);
+        load();
     }
 
-    private void load() throws SQLException {
-        ResultSet resultSet = mySqlService.execute("SELECT * FROM joinlinks");
-        while (resultSet.next()) {
-            JoinLink joinLink = new JoinLink(
-                    resultSet.getString("stringId"),
-                    resultSet.getInt("companyId"),
-                    resultSet.getInt("maxUses"),
-                    resultSet.getInt("uses"),
-                    resultSet.getLong("createdAt")
-            );
-            if (System.currentTimeMillis() - joinLink.getCreatedAt() >= TimeUnit.HOURS.toMillis(1)) {
-                removeJoinLink(joinLink.getId());
-                continue;
-            }
-            joinLinks.add(joinLink);
-        }
+    private void load() {
+        AtomicBoolean finished = new AtomicBoolean(false);
+        CallbackSubscriber<JoinLink> subscriber = new CallbackSubscriber<>();
+        subscriber.doOnNext(joinLinks::add);
+        subscriber.doOnComplete(() -> finished.set(true));
+
+        joinLinkCollection.find().subscribe(subscriber);
+        while (!finished.get()) ;
     }
 
     public int getCompanyId(String joinId) {
@@ -73,12 +62,7 @@ public class JoinLinkController {
             return;
         }
 
-        try {
-            mySqlService.update(String.format("UPDATE joinlinks SET uses = %d WHERE stringId = '%s'",
-                    joinLink.getUses(), joinLink.getId()));
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        joinLinkCollection.replaceOne(Filters.eq("id", joinLink.getId()), joinLink).subscribe(new CarelessSubscriber<>());
     }
 
     public void removeJoinLink(String id) {
@@ -86,21 +70,13 @@ public class JoinLinkController {
                 .filter(joinLink -> joinLink.getId().equals(id))
                 .findAny()
                 .ifPresent(joinLinks::remove);
-        try {
-            mySqlService.update(String.format("DELETE FROM joinlinks WHERE stringId = '%s'", MySqlUtil.escapeString(id)));
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        joinLinkCollection.deleteOne(Filters.eq("id", id)).subscribe(new CarelessSubscriber<>());
     }
 
     public String addCustomLink(String str, int companyId, int maxUses) {
-        try {
-            mySqlService.update(String.format("INSERT INTO joinlinks (stringId, companyId, uses, maxUses, createdAt) " +
-                    "VALUES('%s', %d, 0, %d, %d)", str, companyId, maxUses, System.currentTimeMillis()));
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        joinLinks.add(new JoinLink(str, companyId, maxUses, 0, System.currentTimeMillis()));
+        JoinLink joinLink = new JoinLink(str, companyId, maxUses, 0, System.currentTimeMillis());
+        joinLinks.add(joinLink);
+        joinLinkCollection.insertOne(joinLink).subscribe(new CarelessSubscriber<>());
         return str;
     }
 
