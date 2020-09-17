@@ -20,8 +20,12 @@ public class CompanyRole {
         this.memberDiscordIds = memberDiscordIds;
     }
 
-    public static CompanyRole createDefault() {
-        return new CompanyRole("Default", 1000, new ArrayList<>());
+    public static CompanyRole[] createDefaults() {
+        return new CompanyRole[]{
+                new CompanyRole("Owner", 5000, new ArrayList<>()),
+                new CompanyRole("Manager", 3000, new ArrayList<>()),
+                new CompanyRole("Driver", 1000, new ArrayList<>())
+        };
     }
 
     public String getName() {

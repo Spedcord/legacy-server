@@ -94,6 +94,9 @@ public class DiscordEndpoint extends Endpoint {
         userController.updateUser(user);
 
         company.getMemberDiscordIds().add(user.getDiscordId());
+        company.getRoles().stream()
+                .filter(companyRole -> companyRole.getName().equals(company.getDefaultRole()))
+                .findAny().ifPresent(companyRole -> companyRole.getMemberDiscordIds().add(user.getDiscordId()));
         companyController.updateCompany(company);
 
         joinLinkController.joinLinkUsed(inviteAuthResult.getJoinId());

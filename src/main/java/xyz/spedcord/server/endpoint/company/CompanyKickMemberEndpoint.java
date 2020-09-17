@@ -25,13 +25,13 @@ public class CompanyKickMemberEndpoint extends RestrictedEndpoint {
     @Override
     protected void handleFurther(Context context) {
         Optional<Long> companyDiscordIdOptional = getQueryParamAsLong("companyDiscordId", context);
-        if(companyDiscordIdOptional.isEmpty()) {
+        if (companyDiscordIdOptional.isEmpty()) {
             Responses.error("Invalid companyDiscordId param").respondTo(context);
             return;
         }
 
         Optional<Company> companyOptional = companyController.getCompany(companyDiscordIdOptional.get());
-        if(companyOptional.isEmpty()) {
+        if (companyOptional.isEmpty()) {
             Responses.error("Company does not exist").respondTo(context);
             return;
         }
@@ -45,10 +45,14 @@ public class CompanyKickMemberEndpoint extends RestrictedEndpoint {
         User user = optional.get();
         Company company = companyOptional.get();
 
-        if(!company.getMemberDiscordIds().contains(user.getDiscordId())) {
+        if (!company.getMemberDiscordIds().contains(user.getDiscordId())) {
             Responses.error("User is not a member of the company").respondTo(context);
             return;
         }
+
+        company.getRoles().stream()
+                .filter(companyRole -> companyRole.getMemberDiscordIds().contains(user.getDiscordId()))
+                .forEach(companyRole -> companyRole.getMemberDiscordIds().remove(user.getDiscordId()));
 
         company.getMemberDiscordIds().remove(user.getDiscordId());
         user.setCompanyId(-1);

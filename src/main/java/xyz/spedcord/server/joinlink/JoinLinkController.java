@@ -60,7 +60,7 @@ public class JoinLinkController {
             return;
         }
 
-        joinLinkCollection.replaceOne(Filters.eq("id", joinLink.getId()), joinLink).subscribe(new CarelessSubscriber<>());
+        joinLinkCollection.replaceOne(Filters.eq("_id", joinLink.getId()), joinLink).subscribe(new CarelessSubscriber<>());
     }
 
     public void removeJoinLink(String id) {

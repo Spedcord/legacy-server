@@ -69,7 +69,7 @@ public class UserController {
     }
 
     public void updateUser(User user) {
-        userCollection.replaceOne(Filters.eq("id", user.getId()), user).subscribe(new CarelessSubscriber<>());
+        userCollection.replaceOne(Filters.eq("_id", user.getId()), user).subscribe(new CarelessSubscriber<>());
     }
 
     public void changeKey(User user) {

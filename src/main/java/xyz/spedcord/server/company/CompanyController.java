@@ -54,7 +54,7 @@ public class CompanyController {
     }
 
     public void updateCompany(Company company) {
-        companyCollection.replaceOne(Filters.eq("id", 1), company).subscribe(new CarelessSubscriber<>());
+        companyCollection.replaceOne(Filters.eq("_id", company.getId()), company).subscribe(new CarelessSubscriber<>());
     }
 
     public Set<Company> getCompanies() {
