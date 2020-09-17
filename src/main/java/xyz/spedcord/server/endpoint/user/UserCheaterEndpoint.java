@@ -9,6 +9,7 @@ import xyz.spedcord.server.user.Flag;
 import xyz.spedcord.server.user.User;
 import xyz.spedcord.server.user.UserController;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Optional;
 
@@ -48,7 +49,11 @@ public class UserCheaterEndpoint extends Endpoint {
         }
 
         User cheater = cheaterOptional.get();
-        cheater.setFlags(new Flag[]{Flag.CHEATER});
+        cheater.setFlags(new ArrayList<>(){
+            {
+                add(Flag.CHEATER);
+            }
+        });
         userController.updateUser(cheater);
 
         Responses.success("User was flagged as cheater").respondTo(context);

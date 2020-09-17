@@ -7,6 +7,7 @@ import xyz.spedcord.common.mongodb.CallbackSubscriber;
 import xyz.spedcord.common.mongodb.MongoDBService;
 import xyz.spedcord.server.SpedcordServer;
 import xyz.spedcord.server.util.CarelessSubscriber;
+import xyz.spedcord.server.util.MongoDBUtil;
 import xyz.spedcord.server.util.WebhookUtil;
 
 import java.util.ArrayList;
@@ -57,6 +58,8 @@ public class JobController {
             return;
         }
 
+        long docs = MongoDBUtil.countDocuments(jobCollection);
+        job.setId(Long.valueOf(docs).intValue());
         job.setEndedAt(System.currentTimeMillis());
         job.setPay(pay);
 

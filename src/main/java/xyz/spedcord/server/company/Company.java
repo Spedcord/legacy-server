@@ -1,5 +1,9 @@
 package xyz.spedcord.server.company;
 
+import org.bson.codecs.pojo.annotations.BsonCreator;
+import org.bson.codecs.pojo.annotations.BsonId;
+import org.bson.codecs.pojo.annotations.BsonProperty;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -14,7 +18,8 @@ public class Company {
     private final List<CompanyRole> roles;
     private String defaultRole;
 
-    public Company(int id, long discordServerId, String name, long ownerDiscordId, double balance, List<Long> memberDiscordIds, List<CompanyRole> roles, String defaultRole) {
+    @BsonCreator
+    public Company(@BsonId int id, @BsonProperty("discordServerId") long discordServerId,@BsonProperty("name") String name, @BsonProperty("ownerDiscordId")long ownerDiscordId, @BsonProperty("balance")double balance, @BsonProperty("memberDiscordIds")List<Long> memberDiscordIds, @BsonProperty("roles")List<CompanyRole> roles, @BsonProperty("defaultRole")String defaultRole) {
         this.id = id;
         this.discordServerId = discordServerId;
         this.name = name;

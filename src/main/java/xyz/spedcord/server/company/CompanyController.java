@@ -5,11 +5,13 @@ import com.mongodb.reactivestreams.client.MongoCollection;
 import xyz.spedcord.common.mongodb.CallbackSubscriber;
 import xyz.spedcord.common.mongodb.MongoDBService;
 import xyz.spedcord.server.util.CarelessSubscriber;
+import xyz.spedcord.server.util.MongoDBUtil;
 
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class CompanyController {
 
@@ -44,6 +46,9 @@ public class CompanyController {
     }
 
     public void createCompany(Company company) {
+        long docs = MongoDBUtil.countDocuments(companyCollection);
+        company.setId(Long.valueOf(docs).intValue());
+
         companies.add(company);
         companyCollection.insertOne(company).subscribe(new CarelessSubscriber<>());
     }

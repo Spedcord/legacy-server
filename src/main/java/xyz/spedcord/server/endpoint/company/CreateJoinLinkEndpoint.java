@@ -1,6 +1,7 @@
 package xyz.spedcord.server.endpoint.company;
 
 import io.javalin.http.Context;
+import xyz.spedcord.server.SpedcordServer;
 import xyz.spedcord.server.endpoint.RestrictedEndpoint;
 import xyz.spedcord.server.joinlink.JoinLinkController;
 import xyz.spedcord.server.response.Responses;
@@ -46,6 +47,6 @@ public class CreateJoinLinkEndpoint extends RestrictedEndpoint {
         String customId = getQueryParam("customId", context).orElse(null);
         String id = (customId == null ? joinLinkController.generateNewLink(companyId, maxUses)
                 : joinLinkController.addCustomLink(customId, companyId, maxUses));
-        context.result(String.format("https://api.spedcord.xyz/invite/%s", id)).status(200);
+        context.result(String.format((SpedcordServer.DEV ? "http://localhost:81" : "https://api.spedcord.xyz") + "/invite/%s", id)).status(200);
     }
 }

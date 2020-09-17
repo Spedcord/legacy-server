@@ -10,6 +10,7 @@ import xyz.spedcord.server.util.StringUtil;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class JoinLinkController {
@@ -78,7 +79,7 @@ public class JoinLinkController {
     }
 
     public String generateNewLink(int companyId, int maxUses) {
-        return addCustomLink(StringUtil.generateKey(12), companyId, maxUses);
+        return addCustomLink(UUID.randomUUID().toString().replace("-", ""), companyId, maxUses);
     }
 
 }

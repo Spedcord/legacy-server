@@ -19,7 +19,7 @@ public abstract class RestrictedEndpoint extends Endpoint {
         }
 
         if (!authorization.equals(SpedcordServer.KEY)) {
-            Responses.error(HttpStatus.UNAUTHORIZED_401, "Unauthorized").addData("yk", authorization).addData("ok", SpedcordServer.KEY).respondTo(context);
+            Responses.error(HttpStatus.UNAUTHORIZED_401, "Unauthorized").respondTo(context);
             return;
         }
 

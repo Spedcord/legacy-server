@@ -10,6 +10,7 @@ import xyz.spedcord.common.mongodb.CallbackSubscriber;
 import xyz.spedcord.common.mongodb.MongoDBService;
 import xyz.spedcord.server.SpedcordServer;
 import xyz.spedcord.server.util.CarelessSubscriber;
+import xyz.spedcord.server.util.MongoDBUtil;
 import xyz.spedcord.server.util.StringUtil;
 import xyz.spedcord.server.util.WebhookUtil;
 
@@ -42,23 +43,11 @@ public class UserController {
 
         AtomicBoolean finished = new AtomicBoolean(false);
         CallbackSubscriber<User> subscriber = new CallbackSubscriber<>();
-        subscriber.doOnNext(user -> {
-            System.out.println("Next");
-            users.add(user);
-        });
-        subscriber.doOnComplete(() -> {
-            System.out.println("Completed");
-            finished.set(true);
-        });
+        subscriber.doOnNext(users::add);
+        subscriber.doOnComplete(() -> finished.set(true));
 
         userCollection.find().subscribe(subscriber);
-        while (!finished.get()) {
-            try {
-                Thread.sleep(10);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
+        while (!finished.get()) ;
     }
 
     public Optional<User> getUser(long discordId) {
@@ -70,16 +59,8 @@ public class UserController {
     }
 
     public void createUser(long discordId, String accessToken, String refreshToken, long tokenExpires) {
-        AtomicLong size = new AtomicLong(0);
-        AtomicBoolean finished = new AtomicBoolean(false);
-        CallbackSubscriber<Long> subscriber = new CallbackSubscriber<>();
-        subscriber.doOnNext(size::set);
-        subscriber.doOnComplete(() -> finished.set(true));
-
-        userCollection.countDocuments().subscribe(subscriber);
-        while (!finished.get()) ;
-
-        User user = new User(Long.valueOf(size.get()).intValue(), discordId, StringUtil.generateKey(32), accessToken, refreshToken, tokenExpires, -1, 0, new ArrayList<>(), new Flag[0]);
+        long docs = MongoDBUtil.countDocuments(userCollection);
+        User user = new User(Long.valueOf(docs).intValue(), discordId, StringUtil.generateKey(32), accessToken, refreshToken, tokenExpires, -1, 0, new ArrayList<>(), new ArrayList<>());
         userCollection.insertOne(user).subscribe(new CarelessSubscriber<>());
         users.add(user);
 
