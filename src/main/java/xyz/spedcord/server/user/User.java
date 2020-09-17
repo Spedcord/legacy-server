@@ -1,7 +1,10 @@
 package xyz.spedcord.server.user;
 
+import org.bson.codecs.pojo.annotations.BsonDiscriminator;
+
 import java.util.List;
 
+@BsonDiscriminator
 public class User {
 
     public static final User EMPTY = new User(-1, -1, null, null,

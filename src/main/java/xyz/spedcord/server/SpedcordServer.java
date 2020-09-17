@@ -7,6 +7,15 @@ import dev.lukaesebrot.jal.endpoints.HttpServer;
 import dev.lukaesebrot.jal.ratelimiting.RateLimiter;
 import io.javalin.Javalin;
 import io.javalin.http.HandlerType;
+import org.bson.BsonReader;
+import org.bson.BsonWriter;
+import org.bson.codecs.Codec;
+import org.bson.codecs.DecoderContext;
+import org.bson.codecs.EncoderContext;
+import org.bson.codecs.pojo.ClassModel;
+import org.bson.codecs.pojo.PropertyCodecProvider;
+import org.bson.codecs.pojo.PropertyCodecRegistry;
+import org.bson.codecs.pojo.TypeWithTypeParameters;
 import org.eclipse.jetty.http.HttpStatus;
 import xyz.spedcord.common.config.Config;
 import xyz.spedcord.common.mongodb.MongoDBService;
@@ -22,17 +31,20 @@ import xyz.spedcord.server.oauth.invite.InviteAuthController;
 import xyz.spedcord.server.oauth.register.RegisterAuthController;
 import xyz.spedcord.server.response.Responses;
 import xyz.spedcord.server.user.Flag;
+import xyz.spedcord.server.user.User;
 import xyz.spedcord.server.user.UserController;
 import xyz.spedcord.server.util.WebhookUtil;
 
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 public class SpedcordServer {
 
@@ -77,7 +89,7 @@ public class SpedcordServer {
                 mongoConfig.get("host"),
                 Integer.parseInt(mongoConfig.get("port")),
                 mongoConfig.get("db"),
-                Flag[].class
+                createSuperUselessCodedProviderForFlagArray()
         );
 
         inviteAuthController = new InviteAuthController(
@@ -174,6 +186,38 @@ public class SpedcordServer {
         server.endpoint("/job/cancel", HandlerType.POST, new JobCancelEndpoint(jobController, userController));
         server.endpoint("/job/listunverified", HandlerType.GET, new JobListUnverifiedEndpoint(jobController, userController));
         server.endpoint("/job/verify", HandlerType.POST, new JobVerifyEndpoint(jobController, userController));
+    }
+
+    /*
+     * WHY DO I HAVE TO DO THIS? THIS TOOK ME HOURS TO DEBUG. PLEASE KILL ME
+     */
+    private PropertyCodecProvider createSuperUselessCodedProviderForFlagArray() {
+        return new PropertyCodecProvider() {
+            @Override
+            public <T> Codec<T> get(TypeWithTypeParameters<T> type, PropertyCodecRegistry registry) {
+                if(type.getType() != Flag[].class) {
+                    return null;
+                }
+                return (Codec<T>) new Codec<Flag[]>() {
+                    @Override
+                    public Flag[] decode(BsonReader reader, DecoderContext decoderContext) {
+                        String str = reader.readString();
+                        String[] arr = str.split(";");
+                        return Arrays.stream(arr).map(s -> Flag.valueOf(s)).toArray(Flag[]::new);
+                    }
+
+                    @Override
+                    public void encode(BsonWriter writer, Flag[] value, EncoderContext encoderContext) {
+                        writer.writeString(Arrays.stream(value).map(flag -> flag.name()).collect(Collectors.joining(";")));
+                    }
+
+                    @Override
+                    public Class<Flag[]> getEncoderClass() {
+                        return Flag[].class;
+                    }
+                };
+            }
+        };
     }
 
 }

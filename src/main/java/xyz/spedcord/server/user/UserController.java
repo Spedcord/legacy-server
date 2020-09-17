@@ -42,11 +42,23 @@ public class UserController {
 
         AtomicBoolean finished = new AtomicBoolean(false);
         CallbackSubscriber<User> subscriber = new CallbackSubscriber<>();
-        subscriber.doOnNext(users::add);
-        subscriber.doOnComplete(() -> finished.set(true));
+        subscriber.doOnNext(user -> {
+            System.out.println("Next");
+            users.add(user);
+        });
+        subscriber.doOnComplete(() -> {
+            System.out.println("Completed");
+            finished.set(true);
+        });
 
         userCollection.find().subscribe(subscriber);
-        while (!finished.get()) ;
+        while (!finished.get()) {
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public Optional<User> getUser(long discordId) {

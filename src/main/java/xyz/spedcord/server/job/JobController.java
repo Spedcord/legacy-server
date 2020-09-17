@@ -111,13 +111,10 @@ public class JobController {
     public List<Job> getUnverifiedJobs() {
         List<Job> list = new ArrayList<>();
 
-        AtomicBoolean finished = new AtomicBoolean(false);
         CallbackSubscriber<Job> subscriber = new CallbackSubscriber<>();
         subscriber.doOnNext(list::add);
-        subscriber.doOnComplete(() -> finished.set(true));
 
         jobCollection.find(Filters.eq("verified", false)).subscribe(subscriber);
-        while (!finished.get()) ;
 
         return list;
     }

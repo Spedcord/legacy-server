@@ -29,13 +29,10 @@ public class CompanyController {
     }
 
     private void load() {
-        AtomicBoolean finished = new AtomicBoolean(false);
         CallbackSubscriber<Company> subscriber = new CallbackSubscriber<>();
         subscriber.doOnNext(companies::add);
-        subscriber.doOnComplete(() -> finished.set(true));
 
         companyCollection.find().subscribe(subscriber);
-        while (!finished.get()) ;
     }
 
     public Optional<Company> getCompany(long discordServerId) {

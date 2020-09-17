@@ -30,13 +30,10 @@ public class JoinLinkController {
     }
 
     private void load() {
-        AtomicBoolean finished = new AtomicBoolean(false);
         CallbackSubscriber<JoinLink> subscriber = new CallbackSubscriber<>();
         subscriber.doOnNext(joinLinks::add);
-        subscriber.doOnComplete(() -> finished.set(true));
 
         joinLinkCollection.find().subscribe(subscriber);
-        while (!finished.get()) ;
     }
 
     public int getCompanyId(String joinId) {

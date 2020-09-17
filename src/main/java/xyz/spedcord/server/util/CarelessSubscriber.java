@@ -15,6 +15,7 @@ public class CarelessSubscriber<T> implements Subscriber<T> {
 
     @Override
     public void onError(Throwable t) {
+        t.printStackTrace();
     }
 
     @Override
