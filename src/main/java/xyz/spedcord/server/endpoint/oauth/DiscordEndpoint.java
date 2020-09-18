@@ -10,6 +10,8 @@ import xyz.spedcord.server.joinlink.JoinLinkController;
 import xyz.spedcord.server.oauth.invite.InviteAuthController;
 import xyz.spedcord.server.oauth.invite.InviteAuthResult;
 import xyz.spedcord.server.response.Responses;
+import xyz.spedcord.server.statistics.Statistics;
+import xyz.spedcord.server.statistics.StatisticsController;
 import xyz.spedcord.server.user.User;
 import xyz.spedcord.server.user.UserController;
 import xyz.spedcord.server.util.WebhookUtil;

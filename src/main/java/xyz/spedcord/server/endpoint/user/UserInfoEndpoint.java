@@ -63,20 +63,28 @@ public class UserInfoEndpoint extends Endpoint {
                 try {
                     discordUser = oAuthBuilder.getUser();
                 } catch (Exception ex) {
-                    oAuthBuilder.refresh();
-                    discordUser = oAuthBuilder.getUser();
+                    try {
+                        oAuthBuilder.refresh();
+                        discordUser = oAuthBuilder.getUser();
 
-                    user.setAccessToken(oAuthBuilder.getAccess_token());
-                    user.setRefreshToken(oAuthBuilder.getRefresh_token());
-                    userController.updateUser(user);
+                        user.setAccessToken(oAuthBuilder.getAccess_token());
+                        user.setRefreshToken(oAuthBuilder.getRefresh_token());
+                        userController.updateUser(user);
+                    } catch (Exception exception) {
+                        discordUser = null;
+                    }
                 }
+            }
+
+            if (discordUser == null) {
+                throw new IllegalStateException("Access denied");
             }
 
             oAuthObj.addProperty("name", discordUser.getUsername());
             oAuthObj.addProperty("discriminator", discordUser.getDiscriminator());
             oAuthObj.addProperty("avatar", discordUser.getAvatar());
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println("Failed to access Discord user: " + e.getMessage());
             oAuthObj.addProperty("error", e.getMessage());
         }
         jsonObj.add("oauth", oAuthObj);

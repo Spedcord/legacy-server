@@ -3,10 +3,10 @@ package xyz.spedcord.server.endpoint.oauth;
 import bell.oauth.discord.main.Response;
 import xyz.spedcord.server.endpoint.Endpoint;
 import io.javalin.http.Context;
-import org.eclipse.jetty.http.HttpStatus;
 import xyz.spedcord.server.oauth.register.RegisterAuthController;
 import xyz.spedcord.server.oauth.register.RegisterAuthResult;
-import xyz.spedcord.server.response.Responses;
+import xyz.spedcord.server.statistics.Statistics;
+import xyz.spedcord.server.statistics.StatisticsController;
 import xyz.spedcord.server.user.User;
 import xyz.spedcord.server.user.UserController;
 
@@ -16,10 +16,12 @@ public class RegisterDiscordEndpoint extends Endpoint {
 
     private final RegisterAuthController authController;
     private final UserController userController;
+    private final StatisticsController statsController;
 
-    public RegisterDiscordEndpoint(RegisterAuthController authController, UserController userController) {
+    public RegisterDiscordEndpoint(RegisterAuthController authController, UserController userController, StatisticsController statsController) {
         this.authController = authController;
         this.userController = userController;
+        this.statsController = statsController;
     }
 
     @Override
@@ -59,6 +61,11 @@ public class RegisterDiscordEndpoint extends Endpoint {
 
         long tokenExpires = System.currentTimeMillis() + (authResult.getTokenExpires() * 1000);
         userController.createUser(Long.parseLong(authResult.getUser().getId()), authResult.getAccessToken(), authResult.getRefreshToken(), tokenExpires);
+
+        Statistics statistics = statsController.getStatistics();
+        statistics.setTotalRegistrations(statistics.getTotalRegistrations() + 1);
+        statsController.update();
+
         //Responses.success("Your Discord account was successfully registered").respondTo(context);
         context.redirect("https://www.spedcord.xyz/success/user/1");
     }

@@ -1,6 +1,8 @@
 package xyz.spedcord.server.endpoint;
 
 import io.javalin.http.Context;
+import xyz.spedcord.server.SpedcordServer;
+import xyz.spedcord.server.company.CompanyRole;
 import xyz.spedcord.server.response.Responses;
 import xyz.spedcord.server.user.User;
 import xyz.spedcord.server.user.UserController;
@@ -116,6 +118,11 @@ public abstract class Endpoint extends dev.lukaesebrot.jal.endpoints.Endpoint {
             default:
                 return Optional.empty();
         }
+    }
+
+    protected Optional<CompanyRole> getCompanyRoleFromBody(Context context) {
+        CompanyRole companyRole = SpedcordServer.GSON.fromJson(context.body(), CompanyRole.class);
+        return Optional.ofNullable(companyRole);
     }
 
     protected Optional<User> getUserFromQuery(String key, boolean passNeeded, Context context, UserController userController) {

@@ -7,40 +7,33 @@ import dev.lukaesebrot.jal.endpoints.HttpServer;
 import dev.lukaesebrot.jal.ratelimiting.RateLimiter;
 import io.javalin.Javalin;
 import io.javalin.http.HandlerType;
-import org.bson.BsonReader;
-import org.bson.BsonWriter;
-import org.bson.codecs.Codec;
-import org.bson.codecs.DecoderContext;
-import org.bson.codecs.EncoderContext;
-import org.bson.codecs.pojo.PropertyCodecProvider;
-import org.bson.codecs.pojo.PropertyCodecRegistry;
-import org.bson.codecs.pojo.TypeWithTypeParameters;
 import org.eclipse.jetty.http.HttpStatus;
 import xyz.spedcord.common.config.Config;
 import xyz.spedcord.common.mongodb.MongoDBService;
 import xyz.spedcord.server.company.CompanyController;
 import xyz.spedcord.server.endpoint.company.*;
 import xyz.spedcord.server.endpoint.job.*;
-import xyz.spedcord.server.endpoint.oauth.*;
+import xyz.spedcord.server.endpoint.oauth.DiscordEndpoint;
+import xyz.spedcord.server.endpoint.oauth.InviteEndpoint;
+import xyz.spedcord.server.endpoint.oauth.RegisterDiscordEndpoint;
+import xyz.spedcord.server.endpoint.oauth.RegisterEndpoint;
 import xyz.spedcord.server.endpoint.user.*;
 import xyz.spedcord.server.job.JobController;
 import xyz.spedcord.server.joinlink.JoinLinkController;
 import xyz.spedcord.server.oauth.invite.InviteAuthController;
 import xyz.spedcord.server.oauth.register.RegisterAuthController;
 import xyz.spedcord.server.response.Responses;
-import xyz.spedcord.server.user.Flag;
+import xyz.spedcord.server.statistics.StatisticsController;
 import xyz.spedcord.server.user.UserController;
 import xyz.spedcord.server.util.WebhookUtil;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class SpedcordServer {
 
@@ -59,6 +52,7 @@ public class SpedcordServer {
     private UserController userController;
     private JobController jobController;
     private CompanyController companyController;
+    private StatisticsController statsController;
     private Config config;
 
     public void start() throws IOException {
@@ -99,6 +93,7 @@ public class SpedcordServer {
         userController = new UserController(mongoDBService);
         jobController = new JobController(mongoDBService);
         companyController = new CompanyController(mongoDBService);
+        statsController = new StatisticsController(mongoDBService);
 
         System.out.println(userController.getUsers().size() + " users");
         System.out.println(companyController.getCompanies().size() + " companies");
@@ -131,22 +126,28 @@ public class SpedcordServer {
                 }
 
                 companyController.getCompanies().forEach(company -> {
-                    AtomicInteger payouts = new AtomicInteger(0);
+                    AtomicReference<Double> totalPayouts = new AtomicReference<>(0D);
                     company.getMemberDiscordIds().forEach(memberId -> {
                         userController.getUser(memberId).ifPresent(user -> {
-                            user.setBalance(user.getBalance() + 2500);
+                            double payout = company.getRoles().stream()
+                                    .filter(companyRole -> companyRole.getMemberDiscordIds().contains(memberId))
+                                    .findAny().get().getPayout();
+                            user.setBalance(user.getBalance() + payout);
+                            totalPayouts.set(totalPayouts.get() + payout);
                             userController.updateUser(user);
-                            payouts.incrementAndGet();
                         });
                     });
 
                     userController.getUser(company.getOwnerDiscordId()).ifPresent(user -> {
-                        user.setBalance(user.getBalance() + 2500);
+                        double payout = company.getRoles().stream()
+                                .filter(companyRole -> companyRole.getMemberDiscordIds().contains(user.getDiscordId()))
+                                .findAny().get().getPayout();
+                        user.setBalance(user.getBalance() + payout);
+                        totalPayouts.set(totalPayouts.get() + payout);
                         userController.updateUser(user);
-                        payouts.incrementAndGet();
                     });
 
-                    company.setBalance(company.getBalance() - (payouts.get() * 2500));
+                    company.setBalance(company.getBalance() - (totalPayouts.get()));
                     companyController.updateCompany(company);
                 });
                 System.out.println("Payouts were paid");
@@ -161,7 +162,7 @@ public class SpedcordServer {
         server.endpoint("/invite/:id", HandlerType.GET, new InviteEndpoint(inviteAuthController, joinLinkController));
 
         server.endpoint("/user/register", HandlerType.GET, new RegisterEndpoint(registerAuthController));
-        server.endpoint("/user/register/discord", HandlerType.GET, new RegisterDiscordEndpoint(registerAuthController, userController));
+        server.endpoint("/user/register/discord", HandlerType.GET, new RegisterDiscordEndpoint(registerAuthController, userController, statsController));
         server.endpoint("/user/info/:discordId", HandlerType.GET, new UserInfoEndpoint(config, userController));
         server.endpoint("/user/get/:discordId", HandlerType.GET, new UserGetEndpoint(userController, config));
         server.endpoint("/user/jobs/:discordId", HandlerType.GET, new UserJobsEndpoint(userController, jobController));
@@ -172,15 +173,16 @@ public class SpedcordServer {
         server.endpoint("/user/listmods", HandlerType.GET, new UserListModsEndpoint());
 
         server.endpoint("/company/info", HandlerType.GET, new CompanyInfoEndpoint(companyController, userController, jobController));
-        server.endpoint("/company/register", HandlerType.POST, new CompanyRegisterEndpoint(companyController, userController));
+        server.endpoint("/company/register", HandlerType.POST, new CompanyRegisterEndpoint(companyController, userController, statsController));
         server.endpoint("/company/kickmember", HandlerType.POST, new CompanyKickMemberEndpoint(companyController, userController));
         server.endpoint("/company/createjoinlink/:companyId", HandlerType.POST, new CreateJoinLinkEndpoint(joinLinkController,
                 config.get("host"), Integer.parseInt(config.get("port"))));
         //server.endpoint("/company/shop", HandlerType.POST, new ShopBuyItemEndpoint(companyController, joinLinkController));
         server.endpoint("/company/list/:sortMode", HandlerType.GET, new CompanyListEndpoint(companyController, userController));
+        server.endpoint("/company/role/update", HandlerType.POST, new CompanyUpdateRoleEndpoint(companyController, userController));
 
         server.endpoint("/job/start", HandlerType.POST, new JobStartEndpoint(jobController, userController));
-        server.endpoint("/job/end", HandlerType.POST, new JobEndEndpoint(jobController, userController, companyController));
+        server.endpoint("/job/end", HandlerType.POST, new JobEndEndpoint(jobController, userController, companyController, statsController));
         server.endpoint("/job/cancel", HandlerType.POST, new JobCancelEndpoint(jobController, userController));
         server.endpoint("/job/listunverified", HandlerType.GET, new JobListUnverifiedEndpoint(jobController, userController));
         server.endpoint("/job/verify", HandlerType.POST, new JobVerifyEndpoint(jobController, userController));

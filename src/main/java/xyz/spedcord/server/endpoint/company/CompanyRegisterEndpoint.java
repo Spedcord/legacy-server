@@ -9,6 +9,8 @@ import xyz.spedcord.server.company.CompanyController;
 import xyz.spedcord.server.company.CompanyRole;
 import xyz.spedcord.server.endpoint.RestrictedEndpoint;
 import xyz.spedcord.server.response.Responses;
+import xyz.spedcord.server.statistics.Statistics;
+import xyz.spedcord.server.statistics.StatisticsController;
 import xyz.spedcord.server.user.User;
 import xyz.spedcord.server.user.UserController;
 
@@ -18,10 +20,12 @@ public class CompanyRegisterEndpoint extends RestrictedEndpoint {
 
     private final CompanyController companyController;
     private final UserController userController;
+    private final StatisticsController statsController;
 
-    public CompanyRegisterEndpoint(CompanyController companyController, UserController userController) {
+    public CompanyRegisterEndpoint(CompanyController companyController, UserController userController, StatisticsController statsController) {
         this.companyController = companyController;
         this.userController = userController;
+        this.statsController = statsController;
     }
 
     @Override
@@ -65,6 +69,10 @@ public class CompanyRegisterEndpoint extends RestrictedEndpoint {
         companyController.createCompany(company);
         user.setCompanyId(company.getId());
         userController.updateUser(user);
+
+        Statistics statistics = statsController.getStatistics();
+        statistics.setTotalCompanies(statistics.getTotalCompanies() + 1);
+        statsController.update();
 
         Responses.success("Company was registered").respondTo(context);
     }

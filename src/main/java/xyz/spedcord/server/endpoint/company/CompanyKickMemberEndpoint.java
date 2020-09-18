@@ -4,6 +4,8 @@ import com.google.gson.JsonObject;
 import io.javalin.http.Context;
 import xyz.spedcord.server.company.Company;
 import xyz.spedcord.server.company.CompanyController;
+import xyz.spedcord.server.company.CompanyRole;
+import xyz.spedcord.server.endpoint.Endpoint;
 import xyz.spedcord.server.endpoint.RestrictedEndpoint;
 import xyz.spedcord.server.response.Responses;
 import xyz.spedcord.server.user.User;
@@ -12,7 +14,7 @@ import xyz.spedcord.server.util.WebhookUtil;
 
 import java.util.Optional;
 
-public class CompanyKickMemberEndpoint extends RestrictedEndpoint {
+public class CompanyKickMemberEndpoint extends Endpoint {
 
     private final CompanyController companyController;
     private final UserController userController;
@@ -23,7 +25,7 @@ public class CompanyKickMemberEndpoint extends RestrictedEndpoint {
     }
 
     @Override
-    protected void handleFurther(Context context) {
+    public void handle(Context context) {
         Optional<Long> companyDiscordIdOptional = getQueryParamAsLong("companyDiscordId", context);
         if (companyDiscordIdOptional.isEmpty()) {
             Responses.error("Invalid companyDiscordId param").respondTo(context);
@@ -36,14 +38,26 @@ public class CompanyKickMemberEndpoint extends RestrictedEndpoint {
             return;
         }
 
-        Optional<User> optional = getUserFromQuery("userDiscordId", false, context, userController);
-        if (optional.isEmpty()) {
+        Optional<User> kickerOptional = getUserFromQuery("kickerDiscordId", !RestrictedEndpoint.isAuthorized(context), context, userController);
+        if (kickerOptional.isEmpty()) {
             Responses.error("Unknown user / Invalid request").respondTo(context);
             return;
         }
 
-        User user = optional.get();
+        Optional<User> userToBeKickedOptional = getUserFromQuery("userDiscordId", false, context, userController);
+        if (userToBeKickedOptional.isEmpty()) {
+            Responses.error("Unknown user / Invalid request").respondTo(context);
+            return;
+        }
+
+        User kicker = kickerOptional.get();
+        User user = userToBeKickedOptional.get();
         Company company = companyOptional.get();
+
+        if(!company.hasPermission(kicker.getDiscordId(), CompanyRole.Permission.MANAGE_MEMBERS)) {
+            Responses.error("Insufficient permissions").respondTo(context);
+            return;
+        }
 
         if (!company.getMemberDiscordIds().contains(user.getDiscordId())) {
             Responses.error("User is not a member of the company").respondTo(context);
