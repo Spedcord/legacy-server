@@ -5,13 +5,11 @@ import com.mongodb.reactivestreams.client.MongoCollection;
 import xyz.spedcord.common.mongodb.CallbackSubscriber;
 import xyz.spedcord.common.mongodb.MongoDBService;
 import xyz.spedcord.server.util.CarelessSubscriber;
-import xyz.spedcord.server.util.StringUtil;
 
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class JoinLinkController {
 
@@ -22,30 +20,30 @@ public class JoinLinkController {
 
     public JoinLinkController(MongoDBService mongoDBService) {
         this.mongoDBService = mongoDBService;
-        init();
+        this.init();
     }
 
     private void init() {
-        joinLinkCollection = mongoDBService.getDatabase().getCollection("join_links", JoinLink.class);
-        load();
+        this.joinLinkCollection = this.mongoDBService.getDatabase().getCollection("join_links", JoinLink.class);
+        this.load();
     }
 
     private void load() {
         CallbackSubscriber<JoinLink> subscriber = new CallbackSubscriber<>();
-        subscriber.doOnNext(joinLinks::add);
+        subscriber.doOnNext(this.joinLinks::add);
 
-        joinLinkCollection.find().subscribe(subscriber);
+        this.joinLinkCollection.find().subscribe(subscriber);
     }
 
     public int getCompanyId(String joinId) {
-        return joinLinks.stream()
+        return this.joinLinks.stream()
                 .filter(joinLink -> joinLink.getId().equals(joinId))
                 .map(JoinLink::getCompanyId)
                 .findAny().orElse(-1);
     }
 
     public void joinLinkUsed(String id) {
-        Optional<JoinLink> optional = joinLinks.stream()
+        Optional<JoinLink> optional = this.joinLinks.stream()
                 .filter(joinLink -> joinLink.getId().equals(id))
                 .findAny();
         if (optional.isEmpty()) {
@@ -56,30 +54,30 @@ public class JoinLinkController {
         joinLink.setUses(joinLink.getUses() + 1);
 
         if (joinLink.getUses() >= joinLink.getMaxUses() && joinLink.getMaxUses() != -1) {
-            removeJoinLink(id);
+            this.removeJoinLink(id);
             return;
         }
 
-        joinLinkCollection.replaceOne(Filters.eq("_id", joinLink.getId()), joinLink).subscribe(new CarelessSubscriber<>());
+        this.joinLinkCollection.replaceOne(Filters.eq("_id", joinLink.getId()), joinLink).subscribe(new CarelessSubscriber<>());
     }
 
     public void removeJoinLink(String id) {
-        new HashSet<>(joinLinks).stream()
+        new HashSet<>(this.joinLinks).stream()
                 .filter(joinLink -> joinLink.getId().equals(id))
                 .findAny()
-                .ifPresent(joinLinks::remove);
-        joinLinkCollection.deleteOne(Filters.eq("id", id)).subscribe(new CarelessSubscriber<>());
+                .ifPresent(this.joinLinks::remove);
+        this.joinLinkCollection.deleteOne(Filters.eq("id", id)).subscribe(new CarelessSubscriber<>());
     }
 
     public String addCustomLink(String str, int companyId, int maxUses) {
         JoinLink joinLink = new JoinLink(str, companyId, maxUses, 0, System.currentTimeMillis());
-        joinLinks.add(joinLink);
-        joinLinkCollection.insertOne(joinLink).subscribe(new CarelessSubscriber<>());
+        this.joinLinks.add(joinLink);
+        this.joinLinkCollection.insertOne(joinLink).subscribe(new CarelessSubscriber<>());
         return str;
     }
 
     public String generateNewLink(int companyId, int maxUses) {
-        return addCustomLink(UUID.randomUUID().toString().replace("-", ""), companyId, maxUses);
+        return this.addCustomLink(UUID.randomUUID().toString().replace("-", ""), companyId, maxUses);
     }
 
 }

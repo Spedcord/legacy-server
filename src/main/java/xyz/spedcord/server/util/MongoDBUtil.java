@@ -19,7 +19,8 @@ public class MongoDBUtil {
         subscriber.doOnComplete(() -> finished.set(true));
 
         collection.countDocuments().subscribe(subscriber);
-        while (!finished.get()) ;
+        while (!finished.get()) {
+        }
 
         return size.get();
     }

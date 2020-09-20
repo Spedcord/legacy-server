@@ -1,11 +1,8 @@
 package xyz.spedcord.server.response;
 
-import com.google.gson.JsonParser;
 import dev.lukaesebrot.jal.responses.ResponseBuilder;
 import dev.lukaesebrot.jal.responses.ResponseType;
 import org.eclipse.jetty.http.HttpStatus;
-
-import java.util.stream.Collectors;
 
 public class Responses {
 

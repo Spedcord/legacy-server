@@ -2,6 +2,7 @@ package xyz.spedcord.server;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 import com.google.gson.LongSerializationPolicy;
 import dev.lukaesebrot.jal.endpoints.HttpServer;
 import dev.lukaesebrot.jal.ratelimiting.RateLimiter;
@@ -56,7 +57,7 @@ public class SpedcordServer {
     private Config config;
 
     public void start() throws IOException {
-        config = new Config(new File("config.cfg"), new String[]{
+        this.config = new Config(new File("config.cfg"), new String[]{
                 "host", "localhost",
                 "port", "5670",
                 "requests-per-minute", "120",
@@ -72,7 +73,7 @@ public class SpedcordServer {
                 "db", "spedcord"
         });
 
-        KEY = config.get("key");
+        KEY = this.config.get("key");
 
         WebhookUtil.loadWebhooks();
 
@@ -82,34 +83,34 @@ public class SpedcordServer {
                 mongoConfig.get("db")
         );
 
-        inviteAuthController = new InviteAuthController(
-                config.get("oauth-clientid"),
-                config.get("oauth-clientsecret")
+        this.inviteAuthController = new InviteAuthController(
+                this.config.get("oauth-clientid"),
+                this.config.get("oauth-clientsecret")
         );
-        registerAuthController = new RegisterAuthController(
-                config.get("oauth-clientid"),
-                config.get("oauth-clientsecret")
+        this.registerAuthController = new RegisterAuthController(
+                this.config.get("oauth-clientid"),
+                this.config.get("oauth-clientsecret")
         );
-        joinLinkController = new JoinLinkController(mongoDBService);
-        userController = new UserController(mongoDBService);
-        jobController = new JobController(mongoDBService);
-        companyController = new CompanyController(mongoDBService);
-        statsController = new StatisticsController(mongoDBService);
+        this.joinLinkController = new JoinLinkController(mongoDBService);
+        this.userController = new UserController(mongoDBService);
+        this.jobController = new JobController(mongoDBService);
+        this.companyController = new CompanyController(mongoDBService);
+        this.statsController = new StatisticsController(mongoDBService);
 
-        System.out.println(userController.getUsers().size() + " users");
-        System.out.println(companyController.getCompanies().size() + " companies");
+        System.out.println(this.userController.getUsers().size() + " users");
+        System.out.println(this.companyController.getCompanies().size() + " companies");
 
-        Javalin app = Javalin.create().start(config.get("host"), Integer.parseInt(config.get("port")));
-        RateLimiter rateLimiter = new RateLimiter(Integer.parseInt(config.get("requests-per-minute")), ctx ->
+        Javalin app = Javalin.create().start(this.config.get("host"), Integer.parseInt(this.config.get("port")));
+        RateLimiter rateLimiter = new RateLimiter(Integer.parseInt(this.config.get("requests-per-minute")), ctx ->
                 Responses.error(HttpStatus.TOO_MANY_REQUESTS_429, "Too many requests").respondTo(ctx));
         HttpServer server = new HttpServer(app, rateLimiter);
 
-        registerEndpoints(server);
-        startPayoutTimer();
+        this.registerEndpoints(server);
+        this.startPayoutTimer();
     }
 
     private void startPayoutTimer() {
-        String lastPayoutStr = config.get("lastPayout");
+        String lastPayoutStr = this.config.get("lastPayout");
         if (lastPayoutStr == null) {
             lastPayoutStr = "0";
         }
@@ -119,37 +120,46 @@ public class SpedcordServer {
         executorService.scheduleAtFixedRate(() -> {
             if (System.currentTimeMillis() - lastPayout.get() >= TimeUnit.DAYS.toMillis(7)) {
                 lastPayout.set(System.currentTimeMillis());
-                config.set("lastPayout", lastPayout.get() + "");
+                this.config.set("lastPayout", lastPayout.get() + "");
                 try {
-                    config.save();
+                    this.config.save();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
 
-                companyController.getCompanies().forEach(company -> {
+                this.companyController.getCompanies().forEach(company -> {
+                    if (company.getBalance() <= 0) {
+                        JsonObject dataObj = new JsonObject();
+                        dataObj.addProperty("company", company.getId());
+                        dataObj.addProperty("msg", "The company has a negative balance. Company members can not be paid.");
+
+                        WebhookUtil.callWebhooks(-1, dataObj, "WARN");
+                        return;
+                    }
+
                     AtomicReference<Double> totalPayouts = new AtomicReference<>(0D);
                     company.getMemberDiscordIds().forEach(memberId -> {
-                        userController.getUser(memberId).ifPresent(user -> {
+                        this.userController.getUser(memberId).ifPresent(user -> {
                             double payout = company.getRoles().stream()
                                     .filter(companyRole -> companyRole.getMemberDiscordIds().contains(memberId))
                                     .findAny().get().getPayout();
                             user.setBalance(user.getBalance() + payout);
                             totalPayouts.set(totalPayouts.get() + payout);
-                            userController.updateUser(user);
+                            this.userController.updateUser(user);
                         });
                     });
 
-                    userController.getUser(company.getOwnerDiscordId()).ifPresent(user -> {
+                    this.userController.getUser(company.getOwnerDiscordId()).ifPresent(user -> {
                         double payout = company.getRoles().stream()
                                 .filter(companyRole -> companyRole.getMemberDiscordIds().contains(user.getDiscordId()))
                                 .findAny().get().getPayout();
                         user.setBalance(user.getBalance() + payout);
                         totalPayouts.set(totalPayouts.get() + payout);
-                        userController.updateUser(user);
+                        this.userController.updateUser(user);
                     });
 
                     company.setBalance(company.getBalance() - (totalPayouts.get()));
-                    companyController.updateCompany(company);
+                    this.companyController.updateCompany(company);
                 });
                 System.out.println("Payouts were paid");
             }
@@ -159,36 +169,37 @@ public class SpedcordServer {
     }
 
     private void registerEndpoints(HttpServer server) {
-        server.endpoint("/invite/discord", HandlerType.GET, new DiscordEndpoint(inviteAuthController, joinLinkController, userController, companyController));
-        server.endpoint("/invite/:id", HandlerType.GET, new InviteEndpoint(inviteAuthController, joinLinkController));
+        server.endpoint("/invite/discord", HandlerType.GET, new DiscordEndpoint(this.inviteAuthController, this.joinLinkController, this.userController, this.companyController));
+        server.endpoint("/invite/:id", HandlerType.GET, new InviteEndpoint(this.inviteAuthController, this.joinLinkController));
 
-        server.endpoint("/user/register", HandlerType.GET, new RegisterEndpoint(registerAuthController));
-        server.endpoint("/user/register/discord", HandlerType.GET, new RegisterDiscordEndpoint(config.get("bot-token"), registerAuthController, userController, statsController));
-        server.endpoint("/user/info/:discordId", HandlerType.GET, new UserInfoEndpoint(config, userController));
-        server.endpoint("/user/get/:discordId", HandlerType.GET, new UserGetEndpoint(userController, config));
-        server.endpoint("/user/jobs/:discordId", HandlerType.GET, new UserJobsEndpoint(userController, jobController));
-        server.endpoint("/user/changekey", HandlerType.POST, new UserChangekeyEndpoint(userController));
-        server.endpoint("/user/checkauth", HandlerType.POST, new UserCheckAuthEndpoint(userController));
-        server.endpoint("/user/cheater", HandlerType.POST, new UserCheaterEndpoint(userController));
-        server.endpoint("/user/leavecompany", HandlerType.POST, new UserLeaveCompanyEndpoint(userController, companyController));
+        server.endpoint("/user/register", HandlerType.GET, new RegisterEndpoint(this.registerAuthController));
+        server.endpoint("/user/register/discord", HandlerType.GET, new RegisterDiscordEndpoint(this.config.get("bot-token"), this.registerAuthController, this.userController, this.statsController));
+        server.endpoint("/user/info/:discordId", HandlerType.GET, new UserInfoEndpoint(this.config, this.userController));
+        server.endpoint("/user/get/:discordId", HandlerType.GET, new UserGetEndpoint(this.userController, this.config));
+        server.endpoint("/user/jobs/:discordId", HandlerType.GET, new UserJobsEndpoint(this.userController, this.jobController));
+        server.endpoint("/user/changekey", HandlerType.POST, new UserChangekeyEndpoint(this.userController));
+        server.endpoint("/user/checkauth", HandlerType.POST, new UserCheckAuthEndpoint(this.userController));
+        server.endpoint("/user/cheater", HandlerType.POST, new UserCheaterEndpoint(this.userController));
+        server.endpoint("/user/leavecompany", HandlerType.POST, new UserLeaveCompanyEndpoint(this.userController, this.companyController));
         server.endpoint("/user/listmods", HandlerType.GET, new UserListModsEndpoint());
 
-        server.endpoint("/company/info", HandlerType.GET, new CompanyInfoEndpoint(companyController, userController, jobController));
-        server.endpoint("/company/register", HandlerType.POST, new CompanyRegisterEndpoint(companyController, userController, statsController));
-        server.endpoint("/company/kickmember", HandlerType.POST, new CompanyKickMemberEndpoint(companyController, userController));
-        server.endpoint("/company/createjoinlink/:companyId", HandlerType.POST, new CreateJoinLinkEndpoint(joinLinkController,
-                config.get("host"), Integer.parseInt(config.get("port"))));
+        server.endpoint("/company/info", HandlerType.GET, new CompanyInfoEndpoint(this.companyController, this.userController, this.jobController));
+        server.endpoint("/company/register", HandlerType.POST, new CompanyRegisterEndpoint(this.companyController, this.userController, this.statsController));
+        server.endpoint("/company/edit", HandlerType.POST, new CompanyEditEndpoint(this.userController, this.companyController));
+        server.endpoint("/company/createjoinlink/:companyId", HandlerType.POST, new CreateJoinLinkEndpoint(this.joinLinkController,
+                this.config.get("host"), Integer.parseInt(this.config.get("port"))));
         //server.endpoint("/company/shop", HandlerType.POST, new ShopBuyItemEndpoint(companyController, joinLinkController));
-        server.endpoint("/company/list/:sortMode", HandlerType.GET, new CompanyListEndpoint(companyController, userController));
-        server.endpoint("/company/role/update", HandlerType.POST, new CompanyUpdateRoleEndpoint(companyController, userController));
-        server.endpoint("/company/member/update", HandlerType.POST, new CompanyUpdateMemberEndpoint(companyController, userController));
+        server.endpoint("/company/list/:sortMode", HandlerType.GET, new CompanyListEndpoint(this.companyController, this.userController));
+        server.endpoint("/company/role/update", HandlerType.POST, new CompanyUpdateRoleEndpoint(this.companyController, this.userController));
+        server.endpoint("/company/member/kick", HandlerType.POST, new CompanyKickMemberEndpoint(this.companyController, this.userController));
+        server.endpoint("/company/member/update", HandlerType.POST, new CompanyUpdateMemberEndpoint(this.companyController, this.userController));
 
-        server.endpoint("/job/start", HandlerType.POST, new JobStartEndpoint(jobController, userController));
-        server.endpoint("/job/end", HandlerType.POST, new JobEndEndpoint(jobController, userController, companyController, statsController));
-        server.endpoint("/job/cancel", HandlerType.POST, new JobCancelEndpoint(jobController, userController));
-        server.endpoint("/job/listunverified", HandlerType.GET, new JobListUnverifiedEndpoint(jobController, userController));
-        server.endpoint("/job/verify", HandlerType.POST, new JobVerifyEndpoint(jobController, userController));
-        server.endpoint("/job/pos", HandlerType.POST, new JobPositionEndpoint(userController, jobController));
+        server.endpoint("/job/start", HandlerType.POST, new JobStartEndpoint(this.jobController, this.userController));
+        server.endpoint("/job/end", HandlerType.POST, new JobEndEndpoint(this.jobController, this.userController, this.companyController, this.statsController));
+        server.endpoint("/job/cancel", HandlerType.POST, new JobCancelEndpoint(this.jobController, this.userController));
+        server.endpoint("/job/listunverified", HandlerType.GET, new JobListUnverifiedEndpoint(this.jobController, this.userController));
+        server.endpoint("/job/verify", HandlerType.POST, new JobVerifyEndpoint(this.jobController, this.userController));
+        server.endpoint("/job/pos", HandlerType.POST, new JobPositionEndpoint(this.userController, this.jobController));
     }
 
 }

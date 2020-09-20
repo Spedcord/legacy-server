@@ -30,42 +30,42 @@ public class JobEndEndpoint extends Endpoint {
 
     @Override
     public void handle(Context ctx) {
-        Optional<Double> payOptional = getQueryParamAsDouble("pay", ctx);
+        Optional<Double> payOptional = this.getQueryParamAsDouble("pay", ctx);
         if (payOptional.isEmpty()) {
             Responses.error("Invalid pay param").respondTo(ctx);
             return;
         }
         double pay = payOptional.get();
 
-        Optional<User> optional = getUserFromQuery("discordId", true, ctx, userController);
+        Optional<User> optional = this.getUserFromQuery("discordId", true, ctx, this.userController);
         if (optional.isEmpty()) {
             Responses.error("Unknown user / Invalid request").respondTo(ctx);
             return;
         }
         User user = optional.get();
 
-        if (jobController.getPendingJob(user.getDiscordId()) == null) {
+        if (this.jobController.getPendingJob(user.getDiscordId()) == null) {
             Responses.error("You don't have a pending job").respondTo(ctx);
             return;
         }
 
-        Job job = jobController.getPendingJob(user.getDiscordId());
-        jobController.endJob(user.getDiscordId(), pay);
+        Job job = this.jobController.getPendingJob(user.getDiscordId());
+        this.jobController.endJob(user.getDiscordId(), pay);
 
         user.getJobList().add(job.getId());
-        userController.updateUser(user);
+        this.userController.updateUser(user);
 
-        Statistics statistics = statsController.getStatistics();
+        Statistics statistics = this.statsController.getStatistics();
         statistics.setTotalJobs(statistics.getTotalJobs() + 1);
         statistics.setTotalMoneyMade(statistics.getTotalMoneyMade() + pay);
-        statsController.update();
+        this.statsController.update();
 
         double companyPay = pay * (35d / 100d);
-        Optional<Company> companyOptional = companyController.getCompany(user.getCompanyId());
+        Optional<Company> companyOptional = this.companyController.getCompany(user.getCompanyId());
         if (companyOptional.isPresent()) {
             Company company = companyOptional.get();
             company.setBalance(company.getBalance() + companyPay);
-            companyController.updateCompany(company);
+            this.companyController.updateCompany(company);
         }
 
         Responses.success("Job ended").respondTo(ctx);

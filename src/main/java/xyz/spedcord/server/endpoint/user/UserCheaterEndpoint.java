@@ -23,13 +23,13 @@ public class UserCheaterEndpoint extends Endpoint {
 
     @Override
     public void handle(Context context) {
-        Optional<Long> cheaterIdOptional = getQueryParamAsLong("cheaterId", context);
+        Optional<Long> cheaterIdOptional = this.getQueryParamAsLong("cheaterId", context);
         if (cheaterIdOptional.isEmpty()) {
             Responses.error("Invalid cheaterId param").respondTo(context);
             return;
         }
 
-        Optional<User> optional = getUserFromQuery("userId", true, context, userController);
+        Optional<User> optional = this.getUserFromQuery("userId", true, context, this.userController);
         if (optional.isEmpty()) {
             Responses.error(HttpStatus.UNAUTHORIZED_401, "Unauthorized").respondTo(context);
             return;
@@ -42,19 +42,19 @@ public class UserCheaterEndpoint extends Endpoint {
         }
 
         long cheaterId = cheaterIdOptional.get();
-        Optional<User> cheaterOptional = userController.getUser(cheaterId);
+        Optional<User> cheaterOptional = this.userController.getUser(cheaterId);
         if (cheaterOptional.isEmpty()) {
             Responses.error("Unknown user").respondTo(context);
             return;
         }
 
         User cheater = cheaterOptional.get();
-        cheater.setFlags(new ArrayList<>(){
+        cheater.setFlags(new ArrayList<>() {
             {
-                add(Flag.CHEATER);
+                this.add(Flag.CHEATER);
             }
         });
-        userController.updateUser(cheater);
+        this.userController.updateUser(cheater);
 
         Responses.success("User was flagged as cheater").respondTo(context);
     }

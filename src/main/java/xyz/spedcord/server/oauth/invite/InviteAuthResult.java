@@ -20,19 +20,19 @@ public class InviteAuthResult {
     }
 
     public Response getResponse() {
-        return response;
+        return this.response;
     }
 
     public User getUser() {
-        return user;
+        return this.user;
     }
 
     public int getCompanyId() {
-        return companyId;
+        return this.companyId;
     }
 
     public String getJoinId() {
-        return joinId;
+        return this.joinId;
     }
 
 }

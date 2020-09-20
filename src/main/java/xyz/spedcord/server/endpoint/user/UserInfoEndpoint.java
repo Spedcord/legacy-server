@@ -25,7 +25,7 @@ public class UserInfoEndpoint extends Endpoint {
 
     @Override
     public void handle(Context context) {
-        Optional<User> optional = getUserFromPath("discordId", false, context, userController);
+        Optional<User> optional = this.getUserFromPath("discordId", false, context, this.userController);
         if (optional.isEmpty()) {
             Responses.error("Unknown user / Invalid request").respondTo(context);
             return;
@@ -40,8 +40,8 @@ public class UserInfoEndpoint extends Endpoint {
         jsonObj.remove("tokenExpires");
 
         OAuthBuilder oAuthBuilder = new OAuthBuilder(
-                config.get("oauth-clientid"),
-                config.get("oauth-clientsecret"),
+                this.config.get("oauth-clientid"),
+                this.config.get("oauth-clientsecret"),
                 user.getAccessToken(),
                 user.getRefreshToken()
         ).setRedirectURI("https://api.spedcord.xyz/user/register/discord");
@@ -58,7 +58,7 @@ public class UserInfoEndpoint extends Endpoint {
                 user.setAccessToken(oAuthBuilder.getAccess_token());
                 user.setRefreshToken(oAuthBuilder.getRefresh_token());
                 user.setTokenExpires(System.currentTimeMillis() + (oAuthBuilder.getTokenExpiresIn() * 1000));
-                userController.updateUser(user);
+                this.userController.updateUser(user);
             } else {
                 try {
                     discordUser = oAuthBuilder.getUser();
@@ -69,7 +69,7 @@ public class UserInfoEndpoint extends Endpoint {
 
                         user.setAccessToken(oAuthBuilder.getAccess_token());
                         user.setRefreshToken(oAuthBuilder.getRefresh_token());
-                        userController.updateUser(user);
+                        this.userController.updateUser(user);
                     } catch (Exception exception) {
                         discordUser = null;
                     }

@@ -16,18 +16,18 @@ public class StatisticsController {
 
     public StatisticsController(MongoDBService mongoDBService) {
         this.mongoDBService = mongoDBService;
-        init();
+        this.init();
     }
 
     private void init() {
-        statsCollection = mongoDBService.getDatabase().getCollection("statistics", Statistics.class);
+        this.statsCollection = this.mongoDBService.getDatabase().getCollection("statistics", Statistics.class);
 
-        long docs = MongoDBUtil.countDocuments(statsCollection);
+        long docs = MongoDBUtil.countDocuments(this.statsCollection);
         if (docs == 0) {
-            statistics = new Statistics(0, 0, 0, 0, 0);
-            statsCollection.insertOne(statistics).subscribe(new CarelessSubscriber<>());
+            this.statistics = new Statistics(0, 0, 0, 0, 0);
+            this.statsCollection.insertOne(this.statistics).subscribe(new CarelessSubscriber<>());
         } else {
-            statsCollection.find().subscribe(new Subscriber<>() {
+            this.statsCollection.find().subscribe(new Subscriber<>() {
                 @Override
                 public void onSubscribe(Subscription s) {
                     s.request(1);
@@ -50,11 +50,11 @@ public class StatisticsController {
     }
 
     public void update() {
-        statsCollection.replaceOne(Filters.eq("obligatoryId", statistics.getObligatoryId()), statistics).subscribe(new CarelessSubscriber<>());
+        this.statsCollection.replaceOne(Filters.eq("obligatoryId", this.statistics.getObligatoryId()), this.statistics).subscribe(new CarelessSubscriber<>());
     }
 
     public Statistics getStatistics() {
-        return statistics;
+        return this.statistics;
     }
 
 }

@@ -24,22 +24,22 @@ public class InviteAuthController {
     }
 
     public String getNewAuthLink(int companyId, String joinId) {
-        OAuthBuilder oAuthBuilder = new OAuthBuilder(clientId, clientSecret)
+        OAuthBuilder oAuthBuilder = new OAuthBuilder(this.clientId, this.clientSecret)
                 .setScopes(new String[]{"identify"})
                 .setRedirectURI((SpedcordServer.DEV ? "http://localhost:81" : "https://api.spedcord.xyz") + "/invite/discord");
 
         String state = UUID.randomUUID().toString();
-        authMap.put(state, oAuthBuilder);
-        companyIdMap.put(state, companyId);
-        joinIdMap.put(state, joinId);
+        this.authMap.put(state, oAuthBuilder);
+        this.companyIdMap.put(state, companyId);
+        this.joinIdMap.put(state, joinId);
 
         return oAuthBuilder.getAuthorizationUrl(state);
     }
 
     public InviteAuthResult exchangeCode(String code, String state) {
-        OAuthBuilder oAuthBuilder = authMap.remove(state);
-        Integer companyId = companyIdMap.remove(state);
-        String joinId = joinIdMap.remove(state);
+        OAuthBuilder oAuthBuilder = this.authMap.remove(state);
+        Integer companyId = this.companyIdMap.remove(state);
+        String joinId = this.joinIdMap.remove(state);
         if (oAuthBuilder == null || companyId == null || joinId == null) {
             return InviteAuthResult.ERROR;
         }

@@ -25,15 +25,15 @@ public class JobController {
 
     public JobController(MongoDBService mongoDBService) {
         this.mongoDBService = mongoDBService;
-        init();
+        this.init();
     }
 
     private void init() {
-        jobCollection = mongoDBService.getDatabase().getCollection("jobs", Job.class);
+        this.jobCollection = this.mongoDBService.getDatabase().getCollection("jobs", Job.class);
     }
 
     public void startJob(long discordId, String fromCity, String toCity, String truck, String cargo, double cargoWeight) {
-        pendingJobs.put(discordId, new Job(
+        this.pendingJobs.put(discordId, new Job(
                 -1,
                 System.currentTimeMillis(),
                 -1,
@@ -47,23 +47,23 @@ public class JobController {
                 0
         ));
 
-        JsonObject jsonObject = SpedcordServer.GSON.toJsonTree(pendingJobs.get(discordId)).getAsJsonObject();
+        JsonObject jsonObject = SpedcordServer.GSON.toJsonTree(this.pendingJobs.get(discordId)).getAsJsonObject();
         jsonObject.addProperty("state", "START");
         WebhookUtil.callWebhooks(discordId, jsonObject, "JOB");
     }
 
     public void endJob(long discordId, double pay) {
-        Job job = pendingJobs.remove(discordId);
+        Job job = this.pendingJobs.remove(discordId);
         if (job == null) {
             return;
         }
 
-        long docs = MongoDBUtil.countDocuments(jobCollection);
+        long docs = MongoDBUtil.countDocuments(this.jobCollection);
         job.setId(Long.valueOf(docs).intValue());
         job.setEndedAt(System.currentTimeMillis());
         job.setPay(pay);
 
-        jobCollection.insertOne(job).subscribe(new CarelessSubscriber<>());
+        this.jobCollection.insertOne(job).subscribe(new CarelessSubscriber<>());
 
         JsonObject jsonObject = SpedcordServer.GSON.toJsonTree(job).getAsJsonObject();
         jsonObject.addProperty("state", "END");
@@ -71,18 +71,18 @@ public class JobController {
     }
 
     public void cancelJob(long discordId) {
-        Job job = pendingJobs.remove(discordId);
+        Job job = this.pendingJobs.remove(discordId);
         JsonObject jsonObject = SpedcordServer.GSON.toJsonTree(job).getAsJsonObject();
         jsonObject.addProperty("state", "CANCEL");
         WebhookUtil.callWebhooks(discordId, jsonObject, "JOB");
     }
 
     public Job getPendingJob(long discordId) {
-        return pendingJobs.get(discordId);
+        return this.pendingJobs.get(discordId);
     }
 
     public List<Job> getJobs(List<Integer> collection) {
-        return getJobs(collection.stream().mapToInt(value -> value).toArray());
+        return this.getJobs(collection.stream().mapToInt(value -> value).toArray());
     }
 
     public List<Job> getJobs(Company company, UserController userController) {
@@ -90,7 +90,7 @@ public class JobController {
                 .map(userController::getUser)
                 .map(user -> user.orElse(null))
                 .filter(Objects::nonNull)
-                .flatMap(user -> getJobs(user.getJobList()).stream())
+                .flatMap(user -> this.getJobs(user.getJobList()).stream())
                 .sorted(Comparator.comparingLong(value -> ((Job) value).getEndedAt()).reversed())
                 .collect(Collectors.toList());
     }
@@ -108,18 +108,19 @@ public class JobController {
         subscriber.doOnComplete(() -> finished.set(true));
 
         // Thanks bson
-        jobCollection.find(Filters.all("_id", Arrays.stream(ids).boxed().collect(Collectors.toList()))).subscribe(subscriber);
-        while (!finished.get()) ;
+        this.jobCollection.find(Filters.all("_id", Arrays.stream(ids).boxed().collect(Collectors.toList()))).subscribe(subscriber);
+        while (!finished.get()) {
+        }
 
         return list;
     }
 
     public Job getJob(int id) {
-        return getJobs(id).stream().findAny().orElse(null);
+        return this.getJobs(id).stream().findAny().orElse(null);
     }
 
     public void updateJob(Job job) {
-        jobCollection.replaceOne(Filters.eq("id", job.getId()), job);
+        this.jobCollection.replaceOne(Filters.eq("id", job.getId()), job);
     }
 
     public List<Job> getUnverifiedJobs() {
@@ -130,15 +131,16 @@ public class JobController {
         subscriber.doOnNext(list::add);
         subscriber.doOnComplete(() -> finished.set(true));
 
-        jobCollection.find(Filters.eq("verifyState", 0)).subscribe(subscriber);
-        while (!finished.get()) ;
+        this.jobCollection.find(Filters.eq("verifyState", 0)).subscribe(subscriber);
+        while (!finished.get()) {
+        }
 
         list.sort(Comparator.comparingLong(Job::getEndedAt));
         return list;
     }
 
     public boolean canStartJob(long discordId) {
-        return !pendingJobs.containsKey(discordId);
+        return !this.pendingJobs.containsKey(discordId);
     }
 
 }

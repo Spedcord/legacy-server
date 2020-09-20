@@ -1,9 +1,8 @@
 package xyz.spedcord.server.endpoint.user;
 
-import com.google.gson.Gson;
+import io.javalin.http.Context;
 import xyz.spedcord.server.SpedcordServer;
 import xyz.spedcord.server.endpoint.Endpoint;
-import io.javalin.http.Context;
 import xyz.spedcord.server.job.Job;
 import xyz.spedcord.server.job.JobController;
 import xyz.spedcord.server.response.Responses;
@@ -18,8 +17,8 @@ import java.util.stream.Collectors;
 
 public class UserJobsEndpoint extends Endpoint {
 
-    private UserController userController;
-    private JobController jobController;
+    private final UserController userController;
+    private final JobController jobController;
 
     public UserJobsEndpoint(UserController userController, JobController jobController) {
         this.userController = userController;
@@ -28,7 +27,7 @@ public class UserJobsEndpoint extends Endpoint {
 
     @Override
     public void handle(Context context) {
-        Optional<User> optional = getUserFromPath("discordId", false, context, userController);
+        Optional<User> optional = this.getUserFromPath("discordId", false, context, this.userController);
         if (optional.isEmpty()) {
             Responses.error("Unknown user / Invalid request").respondTo(context);
             return;
@@ -36,7 +35,7 @@ public class UserJobsEndpoint extends Endpoint {
         User user = optional.get();
 
         List<Job> jobs = new ArrayList<>(user.getJobList()).stream()
-                .map(id -> jobController.getJob(id))
+                .map(id -> this.jobController.getJob(id))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 

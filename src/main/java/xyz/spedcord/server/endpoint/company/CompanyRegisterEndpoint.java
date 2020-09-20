@@ -47,8 +47,13 @@ public class CompanyRegisterEndpoint extends RestrictedEndpoint {
             return;
         }
 
+        if (company.getName().length() >= 24 || company.getName().length() <= 4) {
+            Responses.error("The name has an invalid length (4 - 24 chars)").respondTo(context);
+            return;
+        }
+
         long ownerDiscordId = company.getOwnerDiscordId();
-        Optional<User> optional = userController.getUser(ownerDiscordId);
+        Optional<User> optional = this.userController.getUser(ownerDiscordId);
         if (optional.isEmpty()) {
             Responses.error("Owner is not registered",
                     "Hint: Did the owner register their Discord account?").respondTo(context);
@@ -66,13 +71,13 @@ public class CompanyRegisterEndpoint extends RestrictedEndpoint {
                 .findAny().ifPresent(companyRole ->
                 companyRole.getMemberDiscordIds().add(ownerDiscordId));
 
-        companyController.createCompany(company);
+        this.companyController.createCompany(company);
         user.setCompanyId(company.getId());
-        userController.updateUser(user);
+        this.userController.updateUser(user);
 
-        Statistics statistics = statsController.getStatistics();
+        Statistics statistics = this.statsController.getStatistics();
         statistics.setTotalCompanies(statistics.getTotalCompanies() + 1);
-        statsController.update();
+        this.statsController.update();
 
         Responses.success("Company was registered").respondTo(context);
     }

@@ -24,7 +24,7 @@ public class UserGetEndpoint extends RestrictedEndpoint {
 
     @Override
     public void handleFurther(Context context) {
-        Optional<User> optional = getUserFromPath("discordId", false, context, userController);
+        Optional<User> optional = this.getUserFromPath("discordId", false, context, this.userController);
         if (optional.isEmpty()) {
             Responses.error("Unknown user / Invalid request").respondTo(context);
             return;
@@ -34,8 +34,8 @@ public class UserGetEndpoint extends RestrictedEndpoint {
         JsonObject jsonObj = SpedcordServer.GSON.toJsonTree(user).getAsJsonObject();
 
         OAuthBuilder oAuthBuilder = new OAuthBuilder(
-                config.get("oauth-clientid"),
-                config.get("oauth-clientsecret"),
+                this.config.get("oauth-clientid"),
+                this.config.get("oauth-clientsecret"),
                 user.getAccessToken(),
                 user.getRefreshToken()
         ).setRedirectURI("https://api.spedcord.xyz/user/register/discord");
@@ -51,7 +51,7 @@ public class UserGetEndpoint extends RestrictedEndpoint {
 
                 user.setAccessToken(oAuthBuilder.getAccess_token());
                 user.setRefreshToken(oAuthBuilder.getRefresh_token());
-                userController.updateUser(user);
+                this.userController.updateUser(user);
             }
 
             oAuthObj.addProperty("name", discordUser.getUsername());

@@ -6,11 +6,11 @@ import bell.oauth.discord.main.Response;
 public class RegisterAuthResult {
     public static final RegisterAuthResult ERROR = new RegisterAuthResult(Response.ERROR, null, null, null, -1);
 
-    private Response response;
-    private User user;
-    private String accessToken;
-    private String refreshToken;
-    private long tokenExpires;
+    private final Response response;
+    private final User user;
+    private final String accessToken;
+    private final String refreshToken;
+    private final long tokenExpires;
 
     public RegisterAuthResult(Response response, User user, String accessToken, String refreshToken, long tokenExpires) {
         this.response = response;
@@ -21,22 +21,22 @@ public class RegisterAuthResult {
     }
 
     public Response getResponse() {
-        return response;
+        return this.response;
     }
 
     public User getUser() {
-        return user;
+        return this.user;
     }
 
     public String getAccessToken() {
-        return accessToken;
+        return this.accessToken;
     }
 
     public String getRefreshToken() {
-        return refreshToken;
+        return this.refreshToken;
     }
 
     public long getTokenExpires() {
-        return tokenExpires;
+        return this.tokenExpires;
     }
 }

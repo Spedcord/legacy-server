@@ -1,6 +1,5 @@
 package xyz.spedcord.server.endpoint.job;
 
-import com.google.gson.Gson;
 import io.javalin.http.Context;
 import org.eclipse.jetty.http.HttpStatus;
 import xyz.spedcord.server.SpedcordServer;
@@ -38,7 +37,7 @@ public class JobStartEndpoint extends Endpoint {
             return;
         }
 
-        Optional<User> userOptional = userController.getUser(jobStartBody.discordId);
+        Optional<User> userOptional = this.userController.getUser(jobStartBody.discordId);
         if (userOptional.isEmpty()) {
             Responses.error("Unknown user").respondTo(ctx);
             return;
@@ -50,12 +49,12 @@ public class JobStartEndpoint extends Endpoint {
             return;
         }
 
-        if(!jobController.canStartJob(jobStartBody.discordId)) {
+        if (!this.jobController.canStartJob(jobStartBody.discordId)) {
             Responses.error("You already have a pending job").respondTo(ctx);
             return;
         }
 
-        jobController.startJob(
+        this.jobController.startJob(
                 jobStartBody.discordId,
                 jobStartBody.fromCity,
                 jobStartBody.toCity,
@@ -86,8 +85,8 @@ public class JobStartEndpoint extends Endpoint {
         }
 
         public boolean verify() {
-            return discordId != null && key != null && fromCity != null && toCity != null &&
-                    truck != null && cargo != null && cargoWeight != null;
+            return this.discordId != null && this.key != null && this.fromCity != null && this.toCity != null &&
+                    this.truck != null && this.cargo != null && this.cargoWeight != null;
         }
     }
 }

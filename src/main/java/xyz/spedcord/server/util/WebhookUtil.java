@@ -1,7 +1,6 @@
 package xyz.spedcord.server.util;
 
 import com.google.gson.JsonObject;
-import org.jetbrains.annotations.NotNull;
 import xyz.spedcord.server.SpedcordServer;
 
 import java.io.File;
@@ -15,7 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 import java.util.stream.Collectors;
 
 public class WebhookUtil {

@@ -38,7 +38,7 @@ public class User {
     }
 
     public int getId() {
-        return id;
+        return this.id;
     }
 
     public void setId(int id) {
@@ -46,11 +46,11 @@ public class User {
     }
 
     public long getDiscordId() {
-        return discordId;
+        return this.discordId;
     }
 
     public String getKey() {
-        return key;
+        return this.key;
     }
 
     public void setKey(String key) {
@@ -58,7 +58,7 @@ public class User {
     }
 
     public int getCompanyId() {
-        return companyId;
+        return this.companyId;
     }
 
     public void setCompanyId(int companyId) {
@@ -66,7 +66,7 @@ public class User {
     }
 
     public double getBalance() {
-        return balance;
+        return this.balance;
     }
 
     public void setBalance(double balance) {
@@ -74,11 +74,11 @@ public class User {
     }
 
     public List<Integer> getJobList() {
-        return jobList;
+        return this.jobList;
     }
 
     public String getAccessToken() {
-        return accessToken;
+        return this.accessToken;
     }
 
     public void setAccessToken(String accessToken) {
@@ -86,7 +86,7 @@ public class User {
     }
 
     public String getRefreshToken() {
-        return refreshToken;
+        return this.refreshToken;
     }
 
     public void setRefreshToken(String refreshToken) {
@@ -94,7 +94,7 @@ public class User {
     }
 
     public long getTokenExpires() {
-        return tokenExpires;
+        return this.tokenExpires;
     }
 
     public void setTokenExpires(long tokenExpires) {
@@ -102,7 +102,7 @@ public class User {
     }
 
     public List<Flag> getFlags() {
-        return flags;
+        return this.flags;
     }
 
     public void setFlags(List<Flag> flags) {

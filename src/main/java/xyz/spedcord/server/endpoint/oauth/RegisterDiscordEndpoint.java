@@ -10,7 +10,8 @@ import xyz.spedcord.server.statistics.StatisticsController;
 import xyz.spedcord.server.user.User;
 import xyz.spedcord.server.user.UserController;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -46,7 +47,7 @@ public class RegisterDiscordEndpoint extends Endpoint {
             return;
         }
 
-        RegisterAuthResult authResult = authController.exchangeCode(code, state);
+        RegisterAuthResult authResult = this.authController.exchangeCode(code, state);
         if (authResult.getResponse() == Response.ERROR) {
             //Responses.error("Failed").respondTo(context);
             context.redirect("https://www.spedcord.xyz/error/user/1");
@@ -58,7 +59,7 @@ public class RegisterDiscordEndpoint extends Endpoint {
             return;
         }
 
-        Optional<User> optional = userController.getUser(Long.parseLong(authResult.getUser().getId()));
+        Optional<User> optional = this.userController.getUser(Long.parseLong(authResult.getUser().getId()));
         if (optional.isPresent()) {
             //Responses.error("This Discord account is already registered").respondTo(context);
             context.redirect("https://www.spedcord.xyz/error/user/3");
@@ -66,13 +67,13 @@ public class RegisterDiscordEndpoint extends Endpoint {
         }
 
         long tokenExpires = System.currentTimeMillis() + (authResult.getTokenExpires() * 1000);
-        userController.createUser(Long.parseLong(authResult.getUser().getId()), authResult.getAccessToken(), authResult.getRefreshToken(), tokenExpires);
+        this.userController.createUser(Long.parseLong(authResult.getUser().getId()), authResult.getAccessToken(), authResult.getRefreshToken(), tokenExpires);
 
-        joinGuild(authResult.getUser(), authResult.getAccessToken());
+        this.joinGuild(authResult.getUser(), authResult.getAccessToken());
 
-        Statistics statistics = statsController.getStatistics();
+        Statistics statistics = this.statsController.getStatistics();
         statistics.setTotalRegistrations(statistics.getTotalRegistrations() + 1);
-        statsController.update();
+        this.statsController.update();
 
         //Responses.success("Your Discord account was successfully registered").respondTo(context);
         context.redirect("https://www.spedcord.xyz/success/user/1");
@@ -85,7 +86,7 @@ public class RegisterDiscordEndpoint extends Endpoint {
             connection.setRequestMethod("PUT");
             connection.setRequestProperty("Content-Type", "application/json");
             connection.setRequestProperty("User-Agent", "Spedcord Server");
-            connection.setRequestProperty("Authorization", "Bot " + botToken);
+            connection.setRequestProperty("Authorization", "Bot " + this.botToken);
 
             connection.setDoOutput(true);
 

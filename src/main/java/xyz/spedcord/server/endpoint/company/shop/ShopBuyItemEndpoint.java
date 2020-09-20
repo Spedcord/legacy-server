@@ -23,7 +23,7 @@ public class ShopBuyItemEndpoint extends RestrictedEndpoint {
     protected void handleFurther(Context context) {
         System.out.println(0);
 
-        Optional<Long> paramOptional = getQueryParamAsLong("discordServerId", context);
+        Optional<Long> paramOptional = this.getQueryParamAsLong("discordServerId", context);
         if (paramOptional.isEmpty()) {
             Responses.error("Invalid discordServerId param").respondTo(context);
             return;
@@ -32,7 +32,7 @@ public class ShopBuyItemEndpoint extends RestrictedEndpoint {
 
         System.out.println(1);
 
-        Optional<Company> optional = companyController.getCompany(discordServerId);
+        Optional<Company> optional = this.companyController.getCompany(discordServerId);
         if (optional.isEmpty()) {
             Responses.error("Unknown company").respondTo(context);
             return;
@@ -41,7 +41,7 @@ public class ShopBuyItemEndpoint extends RestrictedEndpoint {
 
         System.out.println(2);
 
-        Optional<String> itemOptional = getQueryParam("item", context);
+        Optional<String> itemOptional = this.getQueryParam("item", context);
         if (itemOptional.isEmpty()) {
             Responses.error("Invalid item param").respondTo(context);
             return;
@@ -59,21 +59,21 @@ public class ShopBuyItemEndpoint extends RestrictedEndpoint {
                     return;
                 }
 
-                Optional<String> joinIdOptional = getQueryParam("joinId", context);
+                Optional<String> joinIdOptional = this.getQueryParam("joinId", context);
                 if (joinIdOptional.isEmpty()) {
                     Responses.error("Custom joinId is not present").respondTo(context);
                     return;
                 }
                 String joinId = joinIdOptional.get();
 
-                if (joinLinkController.getCompanyId(joinId) != -1) {
+                if (this.joinLinkController.getCompanyId(joinId) != -1) {
                     Responses.error("Custom joinId is already taken").respondTo(context);
                     return;
                 }
 
                 company.setBalance(company.getBalance() - price);
-                companyController.updateCompany(company);
-                joinLinkController.addCustomLink(joinId, company.getId(), -1);
+                this.companyController.updateCompany(company);
+                this.joinLinkController.addCustomLink(joinId, company.getId(), -1);
 
                 Responses.success("Item was purchased").respondTo(context);
                 break;

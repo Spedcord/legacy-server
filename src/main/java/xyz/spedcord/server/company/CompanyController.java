@@ -21,44 +21,44 @@ public class CompanyController {
 
     public CompanyController(MongoDBService mongoDBService) {
         this.mongoDBService = mongoDBService;
-        init();
+        this.init();
     }
 
     private void init() {
-        companyCollection = mongoDBService.getDatabase().getCollection("companies", Company.class);
-        load();
+        this.companyCollection = this.mongoDBService.getDatabase().getCollection("companies", Company.class);
+        this.load();
     }
 
     private void load() {
         CallbackSubscriber<Company> subscriber = new CallbackSubscriber<>();
-        subscriber.doOnNext(companies::add);
+        subscriber.doOnNext(this.companies::add);
 
-        companyCollection.find().subscribe(subscriber);
+        this.companyCollection.find().subscribe(subscriber);
     }
 
     public Optional<Company> getCompany(long discordServerId) {
-        return companies.stream().filter(company -> company.getDiscordServerId() == discordServerId).findAny();
+        return this.companies.stream().filter(company -> company.getDiscordServerId() == discordServerId).findAny();
     }
 
     public Optional<Company> getCompany(int id) {
-        return companies.stream().filter(company -> company.getId() == id).findAny();
+        return this.companies.stream().filter(company -> company.getId() == id).findAny();
     }
 
     public void createCompany(Company company) {
-        long docs = MongoDBUtil.countDocuments(companyCollection);
+        long docs = MongoDBUtil.countDocuments(this.companyCollection);
         company.setId(Long.valueOf(docs).intValue());
 
-        companies.add(company);
-        companyCollection.insertOne(company).subscribe(new CarelessSubscriber<>());
+        this.companies.add(company);
+        this.companyCollection.insertOne(company).subscribe(new CarelessSubscriber<>());
     }
 
     public void updateCompany(Company company) {
         company.getRoles().sort(Comparator.comparingDouble(value -> ((CompanyRole) value).getPayout()).reversed());
-        companyCollection.replaceOne(Filters.eq("_id", company.getId()), company).subscribe(new CarelessSubscriber<>());
+        this.companyCollection.replaceOne(Filters.eq("_id", company.getId()), company).subscribe(new CarelessSubscriber<>());
     }
 
     public Set<Company> getCompanies() {
-        return companies;
+        return this.companies;
     }
 
 }

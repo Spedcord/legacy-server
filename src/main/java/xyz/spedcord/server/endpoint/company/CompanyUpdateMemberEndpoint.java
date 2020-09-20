@@ -26,31 +26,31 @@ public class CompanyUpdateMemberEndpoint extends Endpoint {
 
     @Override
     public void handle(Context context) {
-        Optional<Long> companyDiscordIdOptional = getQueryParamAsLong("companyDiscordId", context);
+        Optional<Long> companyDiscordIdOptional = this.getQueryParamAsLong("companyDiscordId", context);
         if (companyDiscordIdOptional.isEmpty()) {
             Responses.error("Invalid companyDiscordId param").respondTo(context);
             return;
         }
 
-        Optional<Company> companyOptional = companyController.getCompany(companyDiscordIdOptional.get());
+        Optional<Company> companyOptional = this.companyController.getCompany(companyDiscordIdOptional.get());
         if (companyOptional.isEmpty()) {
             Responses.error("Company does not exist").respondTo(context);
             return;
         }
 
-        Optional<User> changerOptional = getUserFromQuery("changerDiscordId", !RestrictedEndpoint.isAuthorized(context), context, userController);
+        Optional<User> changerOptional = this.getUserFromQuery("changerDiscordId", !RestrictedEndpoint.isAuthorized(context), context, this.userController);
         if (changerOptional.isEmpty()) {
             Responses.error("Unknown user / Invalid request").respondTo(context);
             return;
         }
 
-        Optional<User> userOptional = getUserFromQuery("userDiscordId", false, context, userController);
+        Optional<User> userOptional = this.getUserFromQuery("userDiscordId", false, context, this.userController);
         if (userOptional.isEmpty()) {
             Responses.error("Unknown user / Invalid request").respondTo(context);
             return;
         }
 
-        Optional<String> roleNameOptional = getQueryParam("role", context);
+        Optional<String> roleNameOptional = this.getQueryParam("role", context);
         if (roleNameOptional.isEmpty()) {
             Responses.error("Invalid role param").respondTo(context);
             return;
@@ -95,7 +95,7 @@ public class CompanyUpdateMemberEndpoint extends Endpoint {
         company.getRole(user.getDiscordId()).ifPresent(_role ->
                 _role.getMemberDiscordIds().remove(user.getDiscordId()));
         companyRole.getMemberDiscordIds().add(user.getDiscordId());
-        companyController.updateCompany(company);
+        this.companyController.updateCompany(company);
 
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("company", company.getId());

@@ -31,11 +31,11 @@ public class CompanyRole {
     }
 
     public boolean hasPermission(Permission permission) {
-        return Permission.hasPermission(permissions, permission);
+        return Permission.hasPermission(this.permissions, permission);
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void setName(String name) {
@@ -43,7 +43,7 @@ public class CompanyRole {
     }
 
     public double getPayout() {
-        return payout;
+        return this.payout;
     }
 
     public void setPayout(double payout) {
@@ -51,11 +51,11 @@ public class CompanyRole {
     }
 
     public List<Long> getMemberDiscordIds() {
-        return memberDiscordIds;
+        return this.memberDiscordIds;
     }
 
     public int getPermissions() {
-        return permissions;
+        return this.permissions;
     }
 
     public void setPermissions(int permissions) {
@@ -76,7 +76,7 @@ public class CompanyRole {
         }
 
         public static boolean hasPermission(int permInt, Permission permission) {
-            if(permission != ADMINISTRATOR && hasPermission(permInt, ADMINISTRATOR)) {
+            if (permission != ADMINISTRATOR && hasPermission(permInt, ADMINISTRATOR)) {
                 return true;
             }
             return (permInt & permission.flag) == permission.flag;
@@ -91,7 +91,7 @@ public class CompanyRole {
         }
 
         public int getFlag() {
-            return flag;
+            return this.flag;
         }
     }
 

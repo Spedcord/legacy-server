@@ -9,8 +9,8 @@ public class JoinLink {
     private final String id;
     private final int companyId;
     private final int maxUses;
-    private int uses;
     private final long createdAt;
+    private int uses;
 
     @BsonCreator
     public JoinLink(@BsonId String id, @BsonProperty("companyId") int companyId, @BsonProperty("maxUses") int maxUses, @BsonProperty("uses") int uses, @BsonProperty("createdAt") long createdAt) {
@@ -22,27 +22,27 @@ public class JoinLink {
     }
 
     public String getId() {
-        return id;
+        return this.id;
     }
 
     public int getCompanyId() {
-        return companyId;
+        return this.companyId;
     }
 
     public int getMaxUses() {
-        return maxUses;
+        return this.maxUses;
     }
 
     public int getUses() {
-        return uses;
-    }
-
-    public long getCreatedAt() {
-        return createdAt;
+        return this.uses;
     }
 
     public void setUses(int uses) {
         this.uses = uses;
+    }
+
+    public long getCreatedAt() {
+        return this.createdAt;
     }
 
 }

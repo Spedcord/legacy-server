@@ -18,15 +18,15 @@ public class UserChangekeyEndpoint extends RestrictedEndpoint {
 
     @Override
     public void handleFurther(Context context) {
-        Optional<User> optional = getUserFromQuery("discordId", false, context, userController);
+        Optional<User> optional = this.getUserFromQuery("discordId", false, context, this.userController);
         if (optional.isEmpty()) {
             Responses.error("Unknown user / Invalid request").respondTo(context);
             return;
         }
         User user = optional.get();
 
-        userController.changeKey(user);
-        userController.updateUser(user);
+        this.userController.changeKey(user);
+        this.userController.updateUser(user);
 
         Responses.success(user.getKey()).respondTo(context);
     }

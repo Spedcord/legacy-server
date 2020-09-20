@@ -30,11 +30,11 @@ public class CompanyInfoEndpoint extends Endpoint {
 
     @Override
     public void handle(Context context) {
-        Optional<Long> paramOptional = getQueryParamAsLong("discordServerId", context);
+        Optional<Long> paramOptional = this.getQueryParamAsLong("discordServerId", context);
         if (paramOptional.isEmpty()) {
-            Optional<Integer> idOptional = getQueryParamAsInt("id", context);
+            Optional<Integer> idOptional = this.getQueryParamAsInt("id", context);
             if (idOptional.isPresent()) {
-                handleWithId(idOptional.get(), context);
+                this.handleWithId(idOptional.get(), context);
                 return;
             }
 
@@ -43,42 +43,42 @@ public class CompanyInfoEndpoint extends Endpoint {
         }
         long discordServerId = paramOptional.get();
 
-        handleWithDiscordId(discordServerId, context);
+        this.handleWithDiscordId(discordServerId, context);
     }
 
     private void handleWithDiscordId(long discordServerId, Context context) {
-        Optional<Company> optional = companyController.getCompany(discordServerId);
+        Optional<Company> optional = this.companyController.getCompany(discordServerId);
         if (optional.isEmpty()) {
             Responses.error("Invalid discordServerId param").respondTo(context);
             return;
         }
 
         Company company = optional.get();
-        handleFurther(company, context);
+        this.handleFurther(company, context);
     }
 
     private void handleWithId(int id, Context context) {
-        Optional<Company> optional = companyController.getCompany(id);
+        Optional<Company> optional = this.companyController.getCompany(id);
         if (optional.isEmpty()) {
             Responses.error("Invalid id param").respondTo(context);
             return;
         }
 
         Company company = optional.get();
-        handleFurther(company, context);
+        this.handleFurther(company, context);
     }
 
     private void handleFurther(Company company, Context context) {
         JsonObject jsonObj = SpedcordServer.GSON.toJsonTree(company).getAsJsonObject();
 
-        List<Company> sortedCompanies = companyController.getCompanies().stream()
+        List<Company> sortedCompanies = this.companyController.getCompanies().stream()
                 .sorted(Comparator.comparingDouble(value -> ((Company) value).getBalance()).reversed())
                 .collect(Collectors.toList());
         int rank = sortedCompanies.indexOf(company) + 1;
         jsonObj.addProperty("rank", rank);
 
         JsonArray logbook = new JsonArray();
-        jobController.getJobs(company, userController).forEach(job ->
+        this.jobController.getJobs(company, this.userController).forEach(job ->
                 logbook.add(SpedcordServer.GSON.toJsonTree(job)));
         jsonObj.add("logbook", logbook);
 

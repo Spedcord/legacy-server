@@ -25,13 +25,13 @@ public class JobVerifyEndpoint extends Endpoint {
 
     @Override
     public void handle(Context context) {
-        Optional<Integer> jobIdOptional = getQueryParamAsInt("jobId", context);
+        Optional<Integer> jobIdOptional = this.getQueryParamAsInt("jobId", context);
         if (jobIdOptional.isEmpty()) {
             Responses.error("Invalid jobId param").respondTo(context);
             return;
         }
 
-        Optional<User> optional = getUserFromQuery("userId", true, context, userController);
+        Optional<User> optional = this.getUserFromQuery("userId", true, context, this.userController);
         if (optional.isEmpty()) {
             Responses.error("Unknown user / Invalid request").respondTo(context);
             return;
@@ -43,12 +43,12 @@ public class JobVerifyEndpoint extends Endpoint {
             return;
         }
 
-        Optional<Boolean> verifyOptional = getQueryParamAsBoolean("verify", context);
+        Optional<Boolean> verifyOptional = this.getQueryParamAsBoolean("verify", context);
         boolean verify = verifyOptional.orElse(true);
 
-        Job job = jobController.getJob(jobIdOptional.get());
+        Job job = this.jobController.getJob(jobIdOptional.get());
         job.setVerifyState(verify ? 1 : 2);
-        jobController.updateJob(job);
+        this.jobController.updateJob(job);
 
         Responses.success("Job was " + (verify ? "" : "not ") + "verified").respondTo(context);
     }

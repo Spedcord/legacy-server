@@ -26,25 +26,25 @@ public class CompanyKickMemberEndpoint extends Endpoint {
 
     @Override
     public void handle(Context context) {
-        Optional<Long> companyDiscordIdOptional = getQueryParamAsLong("companyDiscordId", context);
+        Optional<Long> companyDiscordIdOptional = this.getQueryParamAsLong("companyDiscordId", context);
         if (companyDiscordIdOptional.isEmpty()) {
             Responses.error("Invalid companyDiscordId param").respondTo(context);
             return;
         }
 
-        Optional<Company> companyOptional = companyController.getCompany(companyDiscordIdOptional.get());
+        Optional<Company> companyOptional = this.companyController.getCompany(companyDiscordIdOptional.get());
         if (companyOptional.isEmpty()) {
             Responses.error("Company does not exist").respondTo(context);
             return;
         }
 
-        Optional<User> kickerOptional = getUserFromQuery("kickerDiscordId", !RestrictedEndpoint.isAuthorized(context), context, userController);
+        Optional<User> kickerOptional = this.getUserFromQuery("kickerDiscordId", !RestrictedEndpoint.isAuthorized(context), context, this.userController);
         if (kickerOptional.isEmpty()) {
             Responses.error("Unknown user / Invalid request").respondTo(context);
             return;
         }
 
-        Optional<User> userToBeKickedOptional = getUserFromQuery("userDiscordId", false, context, userController);
+        Optional<User> userToBeKickedOptional = this.getUserFromQuery("userDiscordId", false, context, this.userController);
         if (userToBeKickedOptional.isEmpty()) {
             Responses.error("Unknown user / Invalid request").respondTo(context);
             return;
@@ -76,8 +76,8 @@ public class CompanyKickMemberEndpoint extends Endpoint {
         company.getMemberDiscordIds().remove(user.getDiscordId());
         user.setCompanyId(-1);
 
-        companyController.updateCompany(company);
-        userController.updateUser(user);
+        this.companyController.updateCompany(company);
+        this.userController.updateUser(user);
 
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("company", company.getId());

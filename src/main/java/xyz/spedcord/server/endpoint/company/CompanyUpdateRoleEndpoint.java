@@ -25,7 +25,7 @@ public class CompanyUpdateRoleEndpoint extends Endpoint {
 
     @Override
     public void handle(Context context) {
-        Optional<Integer> modeOptional = getQueryParamAsInt("mode", context);
+        Optional<Integer> modeOptional = this.getQueryParamAsInt("mode", context);
         if (modeOptional.isEmpty()) {
             Responses.error("Invalid mode param").respondTo(context);
             return;
@@ -37,19 +37,19 @@ public class CompanyUpdateRoleEndpoint extends Endpoint {
             return;
         }
 
-        Optional<Integer> companyIdOptional = getQueryParamAsInt("companyId", context);
+        Optional<Integer> companyIdOptional = this.getQueryParamAsInt("companyId", context);
         if (companyIdOptional.isEmpty()) {
             Responses.error("Invalid companyId param").respondTo(context);
             return;
         }
 
-        Optional<Company> companyOptional = companyController.getCompany(companyIdOptional.get());
+        Optional<Company> companyOptional = this.companyController.getCompany(companyIdOptional.get());
         if (companyOptional.isEmpty()) {
             Responses.error("Company does not exist").respondTo(context);
             return;
         }
 
-        Optional<User> userOptional = getUserFromQuery("userDiscordId", !RestrictedEndpoint.isAuthorized(context), context, userController);
+        Optional<User> userOptional = this.getUserFromQuery("userDiscordId", !RestrictedEndpoint.isAuthorized(context), context, this.userController);
         if (userOptional.isEmpty()) {
             Responses.error("Unknown user / Invalid request").respondTo(context);
             return;
@@ -59,7 +59,7 @@ public class CompanyUpdateRoleEndpoint extends Endpoint {
             Responses.error("No body was supplied").respondTo(context);
             return;
         }
-        Optional<CompanyRole> companyRoleOptional = getCompanyRoleFromBody(context);
+        Optional<CompanyRole> companyRoleOptional = this.getCompanyRoleFromBody(context);
         if (companyRoleOptional.isEmpty()) {
             Responses.error("Invalid body").respondTo(context);
             return;
@@ -139,7 +139,7 @@ public class CompanyUpdateRoleEndpoint extends Endpoint {
                 break;
         }
 
-        companyController.updateCompany(company);
+        this.companyController.updateCompany(company);
         Responses.success(mode == 0 ? "Company role was updated" : mode == 1 ? "Company role was created" : "Company role was deleted").respondTo(context);
     }
 

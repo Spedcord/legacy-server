@@ -1,7 +1,6 @@
 package xyz.spedcord.server.endpoint.job;
 
 import io.javalin.http.Context;
-import org.eclipse.jetty.http.HttpStatus;
 import xyz.spedcord.server.endpoint.Endpoint;
 import xyz.spedcord.server.job.JobController;
 import xyz.spedcord.server.response.Responses;
@@ -22,19 +21,19 @@ public class JobCancelEndpoint extends Endpoint {
 
     @Override
     public void handle(Context ctx) {
-        Optional<User> optional = getUserFromQuery("discordId", true, ctx, userController);
+        Optional<User> optional = this.getUserFromQuery("discordId", true, ctx, this.userController);
         if (optional.isEmpty()) {
             Responses.error("Unknown user / Invalid request").respondTo(ctx);
             return;
         }
         User user = optional.get();
 
-        if(jobController.getPendingJob(user.getDiscordId()) == null) {
+        if (this.jobController.getPendingJob(user.getDiscordId()) == null) {
             Responses.error("You don't have a pending job").respondTo(ctx);
             return;
         }
 
-        jobController.cancelJob(user.getDiscordId());
+        this.jobController.cancelJob(user.getDiscordId());
         Responses.success("Job cancelled").respondTo(ctx);
     }
 

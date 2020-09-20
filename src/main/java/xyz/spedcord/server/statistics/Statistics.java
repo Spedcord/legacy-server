@@ -21,11 +21,11 @@ public class Statistics {
     }
 
     public int getObligatoryId() {
-        return obligatoryId;
+        return this.obligatoryId;
     }
 
     public long getTotalJobs() {
-        return totalJobs;
+        return this.totalJobs;
     }
 
     public void setTotalJobs(long totalJobs) {
@@ -33,7 +33,7 @@ public class Statistics {
     }
 
     public long getTotalRegistrations() {
-        return totalRegistrations;
+        return this.totalRegistrations;
     }
 
     public void setTotalRegistrations(long totalRegistrations) {
@@ -41,7 +41,7 @@ public class Statistics {
     }
 
     public long getTotalCompanies() {
-        return totalCompanies;
+        return this.totalCompanies;
     }
 
     public void setTotalCompanies(long totalCompanies) {
@@ -49,7 +49,7 @@ public class Statistics {
     }
 
     public double getTotalMoneyMade() {
-        return totalMoneyMade;
+        return this.totalMoneyMade;
     }
 
     public void setTotalMoneyMade(double totalMoneyMade) {

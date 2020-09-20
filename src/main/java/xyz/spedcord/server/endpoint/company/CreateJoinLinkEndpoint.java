@@ -11,8 +11,8 @@ import java.util.Optional;
 public class CreateJoinLinkEndpoint extends RestrictedEndpoint {
 
     private final JoinLinkController joinLinkController;
-    private String host;
     private final int port;
+    private String host;
 
     public CreateJoinLinkEndpoint(JoinLinkController joinLinkController, String host, int port) {
         this.joinLinkController = joinLinkController;
@@ -26,7 +26,7 @@ public class CreateJoinLinkEndpoint extends RestrictedEndpoint {
 
     @Override
     protected void handleFurther(Context context) {
-        Optional<Integer> paramOptional = getPathParamAsInt("companyId", context);
+        Optional<Integer> paramOptional = this.getPathParamAsInt("companyId", context);
         if (paramOptional.isEmpty()) {
             Responses.error("Invalid companyId param").respondTo(context);
             return;
@@ -44,9 +44,9 @@ public class CreateJoinLinkEndpoint extends RestrictedEndpoint {
             }
         }
 
-        String customId = getQueryParam("customId", context).orElse(null);
-        String id = (customId == null ? joinLinkController.generateNewLink(companyId, maxUses)
-                : joinLinkController.addCustomLink(customId, companyId, maxUses));
+        String customId = this.getQueryParam("customId", context).orElse(null);
+        String id = (customId == null ? this.joinLinkController.generateNewLink(companyId, maxUses)
+                : this.joinLinkController.addCustomLink(customId, companyId, maxUses));
         context.result(String.format((SpedcordServer.DEV ? "http://localhost:81" : "https://api.spedcord.xyz") + "/invite/%s", id)).status(200);
     }
 }

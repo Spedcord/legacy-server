@@ -2,7 +2,6 @@ package xyz.spedcord.server.endpoint.user;
 
 import io.javalin.http.Context;
 import xyz.spedcord.server.endpoint.Endpoint;
-import xyz.spedcord.server.response.Responses;
 import xyz.spedcord.server.user.User;
 import xyz.spedcord.server.user.UserController;
 
@@ -18,14 +17,14 @@ public class UserCheckAuthEndpoint extends Endpoint {
 
     @Override
     public void handle(Context ctx) {
-        Optional<Long> userDiscordIdOptional = getQueryParamAsLong("userDiscordId", ctx);
-        if(userDiscordIdOptional.isEmpty()) {
+        Optional<Long> userDiscordIdOptional = this.getQueryParamAsLong("userDiscordId", ctx);
+        if (userDiscordIdOptional.isEmpty()) {
             ctx.status(400);
             return;
         }
 
-        Optional<String> keyOptional = getQueryParam("key", ctx);
-        if(keyOptional.isEmpty()) {
+        Optional<String> keyOptional = this.getQueryParam("key", ctx);
+        if (keyOptional.isEmpty()) {
             ctx.status(400);
             return;
         }
@@ -33,8 +32,8 @@ public class UserCheckAuthEndpoint extends Endpoint {
         long userDiscordId = userDiscordIdOptional.get();
         String key = keyOptional.get();
 
-        Optional<User> userOptional = userController.getUser(userDiscordId);
-        if(userOptional.isEmpty()) {
+        Optional<User> userOptional = this.userController.getUser(userDiscordId);
+        if (userOptional.isEmpty()) {
             ctx.status(404);
             return;
         }

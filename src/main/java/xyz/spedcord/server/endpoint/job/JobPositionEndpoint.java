@@ -23,7 +23,7 @@ public class JobPositionEndpoint extends Endpoint {
 
     @Override
     public void handle(Context ctx) {
-        Optional<String> xzOptional = getQueryParam("xz", ctx);
+        Optional<String> xzOptional = this.getQueryParam("xz", ctx);
         if (xzOptional.isEmpty()) {
             Responses.error("Invalid xz param").respondTo(ctx);
             return;
@@ -40,19 +40,19 @@ public class JobPositionEndpoint extends Endpoint {
             return;
         }
 
-        Optional<User> optional = getUserFromQuery("discordId", true, ctx, userController);
+        Optional<User> optional = this.getUserFromQuery("discordId", true, ctx, this.userController);
         if (optional.isEmpty()) {
             Responses.error("Unknown user / Invalid request").respondTo(ctx);
             return;
         }
         User user = optional.get();
 
-        if (jobController.getPendingJob(user.getDiscordId()) == null) {
+        if (this.jobController.getPendingJob(user.getDiscordId()) == null) {
             Responses.error("You don't have a pending job").respondTo(ctx);
             return;
         }
 
-        Job pendingJob = jobController.getPendingJob(user.getDiscordId());
+        Job pendingJob = this.jobController.getPendingJob(user.getDiscordId());
         pendingJob.getPositions().add(new Location(x, 0, z));
 
         Responses.success("Position saved").respondTo(ctx);

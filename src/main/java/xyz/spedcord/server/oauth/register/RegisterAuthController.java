@@ -20,18 +20,18 @@ public class RegisterAuthController {
     }
 
     public String getNewAuthLink() {
-        OAuthBuilder oAuthBuilder = new OAuthBuilder(clientId, clientSecret)
+        OAuthBuilder oAuthBuilder = new OAuthBuilder(this.clientId, this.clientSecret)
                 .setScopes(new String[]{"identify", "guilds.join"})
                 .setRedirectURI((SpedcordServer.DEV ? "http://localhost:81" : "https://api.spedcord.xyz") + "/user/register/discord");
 
         String state = UUID.randomUUID().toString();
-        authMap.put(state, oAuthBuilder);
+        this.authMap.put(state, oAuthBuilder);
 
         return oAuthBuilder.getAuthorizationUrl(state);
     }
 
     public RegisterAuthResult exchangeCode(String code, String state) {
-        OAuthBuilder oAuthBuilder = authMap.remove(state);
+        OAuthBuilder oAuthBuilder = this.authMap.remove(state);
         if (oAuthBuilder == null) {
             return RegisterAuthResult.ERROR;
         }

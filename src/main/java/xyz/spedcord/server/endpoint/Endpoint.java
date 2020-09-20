@@ -3,7 +3,6 @@ package xyz.spedcord.server.endpoint;
 import io.javalin.http.Context;
 import xyz.spedcord.server.SpedcordServer;
 import xyz.spedcord.server.company.CompanyRole;
-import xyz.spedcord.server.response.Responses;
 import xyz.spedcord.server.user.User;
 import xyz.spedcord.server.user.UserController;
 
@@ -16,7 +15,7 @@ public abstract class Endpoint extends dev.lukaesebrot.jal.endpoints.Endpoint {
     }
 
     protected Optional<Integer> getPathParamAsInt(String key, Context context) {
-        Optional<String> param = getPathParam(key, context);
+        Optional<String> param = this.getPathParam(key, context);
         if (param.isEmpty()) {
             return Optional.empty();
         }
@@ -29,7 +28,7 @@ public abstract class Endpoint extends dev.lukaesebrot.jal.endpoints.Endpoint {
     }
 
     protected Optional<Long> getPathParamAsLong(String key, Context context) {
-        Optional<String> param = getPathParam(key, context);
+        Optional<String> param = this.getPathParam(key, context);
         if (param.isEmpty()) {
             return Optional.empty();
         }
@@ -42,7 +41,7 @@ public abstract class Endpoint extends dev.lukaesebrot.jal.endpoints.Endpoint {
     }
 
     protected Optional<Boolean> getPathParamAsBoolean(String key, Context context) {
-        Optional<String> param = getPathParam(key, context);
+        Optional<String> param = this.getPathParam(key, context);
         if (param.isEmpty()) {
             return Optional.empty();
         }
@@ -64,7 +63,7 @@ public abstract class Endpoint extends dev.lukaesebrot.jal.endpoints.Endpoint {
     }
 
     protected Optional<Integer> getQueryParamAsInt(String key, Context context) {
-        Optional<String> param = getQueryParam(key, context);
+        Optional<String> param = this.getQueryParam(key, context);
         if (param.isEmpty()) {
             return Optional.empty();
         }
@@ -77,7 +76,7 @@ public abstract class Endpoint extends dev.lukaesebrot.jal.endpoints.Endpoint {
     }
 
     protected Optional<Long> getQueryParamAsLong(String key, Context context) {
-        Optional<String> param = getQueryParam(key, context);
+        Optional<String> param = this.getQueryParam(key, context);
         if (param.isEmpty()) {
             return Optional.empty();
         }
@@ -90,7 +89,7 @@ public abstract class Endpoint extends dev.lukaesebrot.jal.endpoints.Endpoint {
     }
 
     protected Optional<Double> getQueryParamAsDouble(String key, Context context) {
-        Optional<String> param = getQueryParam(key, context);
+        Optional<String> param = this.getQueryParam(key, context);
         if (param.isEmpty()) {
             return Optional.empty();
         }
@@ -103,7 +102,7 @@ public abstract class Endpoint extends dev.lukaesebrot.jal.endpoints.Endpoint {
     }
 
     protected Optional<Boolean> getQueryParamAsBoolean(String key, Context context) {
-        Optional<String> param = getQueryParam(key, context);
+        Optional<String> param = this.getQueryParam(key, context);
         if (param.isEmpty()) {
             return Optional.empty();
         }
@@ -126,15 +125,15 @@ public abstract class Endpoint extends dev.lukaesebrot.jal.endpoints.Endpoint {
     }
 
     protected Optional<User> getUserFromQuery(String key, boolean passNeeded, Context context, UserController userController) {
-        return getUser(key, false, passNeeded, context, userController);
+        return this.getUser(key, false, passNeeded, context, userController);
     }
 
     protected Optional<User> getUserFromPath(String key, boolean passNeeded, Context context, UserController userController) {
-        return getUser(key, true, passNeeded, context, userController);
+        return this.getUser(key, true, passNeeded, context, userController);
     }
 
     private Optional<User> getUser(String key, boolean path, boolean passNeeded, Context context, UserController userController) {
-        Optional<Long> paramOptional = path ? getPathParamAsLong(key, context) : getQueryParamAsLong(key, context);
+        Optional<Long> paramOptional = path ? this.getPathParamAsLong(key, context) : this.getQueryParamAsLong(key, context);
         if (paramOptional.isEmpty()) {
             return Optional.empty();
         }
@@ -146,9 +145,9 @@ public abstract class Endpoint extends dev.lukaesebrot.jal.endpoints.Endpoint {
         }
 
         User user = optional.get();
-        if(passNeeded) {
-            Optional<String> providedKey = path ? getPathParam("key", context) : getQueryParam("key", context);
-            if(providedKey.isEmpty() || !providedKey.get().equals(user.getKey())) {
+        if (passNeeded) {
+            Optional<String> providedKey = path ? this.getPathParam("key", context) : this.getQueryParam("key", context);
+            if (providedKey.isEmpty() || !providedKey.get().equals(user.getKey())) {
                 return Optional.empty();
             }
         }

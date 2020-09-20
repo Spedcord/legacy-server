@@ -1,7 +1,7 @@
 package xyz.spedcord.server.endpoint.oauth;
 
-import xyz.spedcord.server.endpoint.Endpoint;
 import io.javalin.http.Context;
+import xyz.spedcord.server.endpoint.Endpoint;
 import xyz.spedcord.server.oauth.register.RegisterAuthController;
 
 public class RegisterEndpoint extends Endpoint {
@@ -14,6 +14,6 @@ public class RegisterEndpoint extends Endpoint {
 
     @Override
     public void handle(Context context) {
-        context.redirect(authController.getNewAuthLink());
+        context.redirect(this.authController.getNewAuthLink());
     }
 }

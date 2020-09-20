@@ -15,8 +15,8 @@ import java.util.stream.Collectors;
 
 public class CompanyListEndpoint extends Endpoint {
 
-    private final CompanyController companyController;
     private static UserController userController;
+    private final CompanyController companyController;
 
     public CompanyListEndpoint(CompanyController companyController, UserController userController) {
         this.companyController = companyController;
@@ -32,7 +32,7 @@ public class CompanyListEndpoint extends Endpoint {
             sortMode = SortMode.MOST_MONEY;
         }
 
-        List<Company> companies = companyController.getCompanies().stream()
+        List<Company> companies = this.companyController.getCompanies().stream()
                 .limit(5)
                 .sorted(sortMode.comparator.reversed())
                 .collect(Collectors.toList());
@@ -46,13 +46,13 @@ public class CompanyListEndpoint extends Endpoint {
             int jobs = 0;
             for (long id : c.getMemberDiscordIds()) {
                 Optional<User> user = userController.getUser(id);
-                if(user.isPresent()) {
+                if (user.isPresent()) {
                     jobs += user.get().getJobList().size();
                 }
             }
 
             Optional<User> user = userController.getUser(c.getOwnerDiscordId());
-            if(user.isPresent()) {
+            if (user.isPresent()) {
                 jobs += user.get().getJobList().size();
             }
 
@@ -66,7 +66,7 @@ public class CompanyListEndpoint extends Endpoint {
         }
 
         public Comparator<Company> getComparator() {
-            return comparator;
+            return this.comparator;
         }
 
     }

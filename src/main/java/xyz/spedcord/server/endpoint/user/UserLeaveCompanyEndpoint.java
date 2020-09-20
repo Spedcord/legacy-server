@@ -24,35 +24,37 @@ public class UserLeaveCompanyEndpoint extends RestrictedEndpoint {
 
     @Override
     protected void handleFurther(Context context) {
-        Optional<User> userOptional = getUserFromQuery("discordId", false, context, userController);
-        if(userOptional.isEmpty()) {
+        Optional<User> userOptional = this.getUserFromQuery("discordId", false, context, this.userController);
+        if (userOptional.isEmpty()) {
             Responses.error("Unknown user / Invalid request").respondTo(context);
             return;
         }
         User user = userOptional.get();
 
-        if(user.getCompanyId() == -1) {
+        if (user.getCompanyId() == -1) {
             Responses.error("The provided user is not in a company").respondTo(context);
             return;
         }
 
-        Optional<Company> companyOptional = companyController.getCompany(user.getCompanyId());
-        if(companyOptional.isEmpty()) {
+        Optional<Company> companyOptional = this.companyController.getCompany(user.getCompanyId());
+        if (companyOptional.isEmpty()) {
             Responses.error("Unknown company").respondTo(context);
             return;
         }
         Company company = companyOptional.get();
 
-        if(company.getOwnerDiscordId() == user.getDiscordId()) {
+        if (company.getOwnerDiscordId() == user.getDiscordId()) {
             Responses.error("The company owner cannot leave the company").respondTo(context);
             return;
         }
 
         user.setCompanyId(-1);
+        company.getRole(user.getDiscordId()).ifPresent(companyRole ->
+                companyRole.getMemberDiscordIds().remove(user.getDiscordId()));
         company.getMemberDiscordIds().remove(user.getDiscordId());
 
-        userController.updateUser(user);
-        companyController.updateCompany(company);
+        this.userController.updateUser(user);
+        this.companyController.updateCompany(company);
 
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("company", company.getId());

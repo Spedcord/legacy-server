@@ -27,7 +27,7 @@ public class JobListUnverifiedEndpoint extends Endpoint {
 
     @Override
     public void handle(Context context) {
-        Optional<User> optional = getUserFromQuery("userId", true, context, userController);
+        Optional<User> optional = this.getUserFromQuery("userId", true, context, this.userController);
         if (optional.isEmpty()) {
             Responses.error("Unknown user / Invalid request").respondTo(context);
             return;
@@ -40,9 +40,9 @@ public class JobListUnverifiedEndpoint extends Endpoint {
         }
 
         JsonArray array = new JsonArray();
-        for (Job job : jobController.getUnverifiedJobs()) {
+        for (Job job : this.jobController.getUnverifiedJobs()) {
             JsonObject obj = SpedcordServer.GSON.toJsonTree(job).getAsJsonObject();
-            obj.addProperty("userId", userController.getUserByJobId(job.getId()).orElse(User.EMPTY).getDiscordId());
+            obj.addProperty("userId", this.userController.getUserByJobId(job.getId()).orElse(User.EMPTY).getDiscordId());
             array.add(obj);
         }
 

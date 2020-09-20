@@ -31,29 +31,29 @@ public class Company {
     }
 
     public boolean changeDefaultRole(String newDefaultRole) {
-        Optional<CompanyRole> optional = roles.stream()
+        Optional<CompanyRole> optional = this.roles.stream()
                 .filter(companyRole -> companyRole.getName().equals(newDefaultRole))
                 .findAny();
         if (optional.isEmpty()) {
             return false;
         }
 
-        defaultRole = newDefaultRole;
+        this.defaultRole = newDefaultRole;
         return true;
     }
 
     public boolean hasPermission(long member, CompanyRole.Permission permission) {
-        return getRole(member).map(companyRole -> companyRole.hasPermission(permission)).orElse(false);
+        return this.getRole(member).map(companyRole -> companyRole.hasPermission(permission)).orElse(false);
     }
 
     public Optional<CompanyRole> getRole(long memberDiscordId) {
-        return roles.stream()
+        return this.roles.stream()
                 .filter(companyRole -> companyRole.getMemberDiscordIds().contains(memberDiscordId))
                 .findAny();
     }
 
     public int getId() {
-        return id;
+        return this.id;
     }
 
     public void setId(int id) {
@@ -61,11 +61,11 @@ public class Company {
     }
 
     public long getDiscordServerId() {
-        return discordServerId;
+        return this.discordServerId;
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void setName(String name) {
@@ -73,11 +73,11 @@ public class Company {
     }
 
     public long getOwnerDiscordId() {
-        return ownerDiscordId;
+        return this.ownerDiscordId;
     }
 
     public double getBalance() {
-        return balance;
+        return this.balance;
     }
 
     public void setBalance(double balance) {
@@ -85,15 +85,15 @@ public class Company {
     }
 
     public List<Long> getMemberDiscordIds() {
-        return memberDiscordIds;
+        return this.memberDiscordIds;
     }
 
     public List<CompanyRole> getRoles() {
-        return roles;
+        return this.roles;
     }
 
     public String getDefaultRole() {
-        return defaultRole;
+        return this.defaultRole;
     }
 
 }

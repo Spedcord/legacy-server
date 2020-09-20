@@ -8,16 +8,16 @@ import java.util.List;
 
 public class Job {
 
+    private final double cargoWeight;
+    private final String fromCity;
+    private final String cargo;
+    private final String truck;
+    private final List<Location> positions; // Will be used to track the player's position to prevent cheating
     private int id;
     private long startedAt;
     private long endedAt;
-    private double cargoWeight;
     private double pay;
-    private String fromCity;
     private String toCity;
-    private String cargo;
-    private String truck;
-    private List<Location> positions; // Will be used to track the player's position to prevent cheating
     private int verifyState;
 
     @BsonCreator
@@ -36,67 +36,67 @@ public class Job {
     }
 
     public int getId() {
-        return id;
+        return this.id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public long getStartedAt() {
-        return startedAt;
-    }
-
-    public long getEndedAt() {
-        return endedAt;
-    }
-
-    public double getCargoWeight() {
-        return cargoWeight;
-    }
-
-    public double getPay() {
-        return pay;
-    }
-
-    public String getFromCity() {
-        return fromCity;
-    }
-
-    public String getToCity() {
-        return toCity;
-    }
-
-    public String getCargo() {
-        return cargo;
-    }
-
-    public String getTruck() {
-        return truck;
-    }
-
-    public List<Location> getPositions() {
-        return positions;
-    }
-
-    public int getVerifyState() {
-        return verifyState;
+        return this.startedAt;
     }
 
     public void setStartedAt(long startedAt) {
         this.startedAt = startedAt;
     }
 
+    public long getEndedAt() {
+        return this.endedAt;
+    }
+
     public void setEndedAt(long endedAt) {
         this.endedAt = endedAt;
+    }
+
+    public double getCargoWeight() {
+        return this.cargoWeight;
+    }
+
+    public double getPay() {
+        return this.pay;
     }
 
     public void setPay(double pay) {
         this.pay = pay;
     }
 
+    public String getFromCity() {
+        return this.fromCity;
+    }
+
+    public String getToCity() {
+        return this.toCity;
+    }
+
     public void setToCity(String toCity) {
         this.toCity = toCity;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public String getCargo() {
+        return this.cargo;
+    }
+
+    public String getTruck() {
+        return this.truck;
+    }
+
+    public List<Location> getPositions() {
+        return this.positions;
+    }
+
+    public int getVerifyState() {
+        return this.verifyState;
     }
 
     public void setVerifyState(int verifyState) {
