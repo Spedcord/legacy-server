@@ -63,7 +63,8 @@ public class SpedcordServer {
                 "dev-mode", "false",
                 "key", "ENTER_A_SECRET_KEY",
                 "oauth-clientid", "ENTER_THE_CLIENTID",
-                "oauth-clientsecret", "ENTER_THE_CLIENTSECRET"
+                "oauth-clientsecret", "ENTER_THE_CLIENTSECRET",
+                "bot-token", "ENTER_THE_BOT_TOKEN"
         });
         Config mongoConfig = new Config(new File("mongo.cfg"), new String[]{
                 "host", "localhost",
@@ -162,7 +163,7 @@ public class SpedcordServer {
         server.endpoint("/invite/:id", HandlerType.GET, new InviteEndpoint(inviteAuthController, joinLinkController));
 
         server.endpoint("/user/register", HandlerType.GET, new RegisterEndpoint(registerAuthController));
-        server.endpoint("/user/register/discord", HandlerType.GET, new RegisterDiscordEndpoint(registerAuthController, userController, statsController));
+        server.endpoint("/user/register/discord", HandlerType.GET, new RegisterDiscordEndpoint(config.get("bot-token"), registerAuthController, userController, statsController));
         server.endpoint("/user/info/:discordId", HandlerType.GET, new UserInfoEndpoint(config, userController));
         server.endpoint("/user/get/:discordId", HandlerType.GET, new UserGetEndpoint(userController, config));
         server.endpoint("/user/jobs/:discordId", HandlerType.GET, new UserJobsEndpoint(userController, jobController));
@@ -180,12 +181,14 @@ public class SpedcordServer {
         //server.endpoint("/company/shop", HandlerType.POST, new ShopBuyItemEndpoint(companyController, joinLinkController));
         server.endpoint("/company/list/:sortMode", HandlerType.GET, new CompanyListEndpoint(companyController, userController));
         server.endpoint("/company/role/update", HandlerType.POST, new CompanyUpdateRoleEndpoint(companyController, userController));
+        server.endpoint("/company/member/update", HandlerType.POST, new CompanyUpdateMemberEndpoint(companyController, userController));
 
         server.endpoint("/job/start", HandlerType.POST, new JobStartEndpoint(jobController, userController));
         server.endpoint("/job/end", HandlerType.POST, new JobEndEndpoint(jobController, userController, companyController, statsController));
         server.endpoint("/job/cancel", HandlerType.POST, new JobCancelEndpoint(jobController, userController));
         server.endpoint("/job/listunverified", HandlerType.GET, new JobListUnverifiedEndpoint(jobController, userController));
         server.endpoint("/job/verify", HandlerType.POST, new JobVerifyEndpoint(jobController, userController));
+        server.endpoint("/job/pos", HandlerType.POST, new JobPositionEndpoint(userController, jobController));
     }
 
 }

@@ -37,7 +37,7 @@ public class JobEndEndpoint extends Endpoint {
         }
         double pay = payOptional.get();
 
-        Optional<User> optional = getUserFromPath("discordId", true, ctx, userController);
+        Optional<User> optional = getUserFromQuery("discordId", true, ctx, userController);
         if (optional.isEmpty()) {
             Responses.error("Unknown user / Invalid request").respondTo(ctx);
             return;
@@ -51,6 +51,7 @@ public class JobEndEndpoint extends Endpoint {
 
         Job job = jobController.getPendingJob(user.getDiscordId());
         jobController.endJob(user.getDiscordId(), pay);
+
         user.getJobList().add(job.getId());
         userController.updateUser(user);
 

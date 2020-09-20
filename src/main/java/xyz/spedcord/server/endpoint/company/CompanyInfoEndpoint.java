@@ -9,7 +9,6 @@ import xyz.spedcord.server.company.CompanyController;
 import xyz.spedcord.server.endpoint.Endpoint;
 import xyz.spedcord.server.job.JobController;
 import xyz.spedcord.server.response.Responses;
-import xyz.spedcord.server.user.User;
 import xyz.spedcord.server.user.UserController;
 
 import java.util.Comparator;
@@ -78,17 +77,9 @@ public class CompanyInfoEndpoint extends Endpoint {
         int rank = sortedCompanies.indexOf(company) + 1;
         jsonObj.addProperty("rank", rank);
 
-        JsonObject logbook = new JsonObject();
-        for (long memberDiscordId : company.getMemberDiscordIds()) {
-            Optional<User> userOptional = userController.getUser(memberDiscordId);
-            if (userOptional.isEmpty()) {
-                continue;
-            }
-
-            User user = userOptional.get();
-            JsonArray array = SpedcordServer.GSON.toJsonTree(jobController.getJobs(user.getJobList())).getAsJsonArray();
-            logbook.add(String.valueOf(user.getDiscordId()), array);
-        }
+        JsonArray logbook = new JsonArray();
+        jobController.getJobs(company, userController).forEach(job ->
+                logbook.add(SpedcordServer.GSON.toJsonTree(job)));
         jsonObj.add("logbook", logbook);
 
         context.result(SpedcordServer.GSON.toJson(jsonObj)).status(200);

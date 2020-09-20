@@ -54,7 +54,12 @@ public class CompanyKickMemberEndpoint extends Endpoint {
         User user = userToBeKickedOptional.get();
         Company company = companyOptional.get();
 
-        if(!company.hasPermission(kicker.getDiscordId(), CompanyRole.Permission.MANAGE_MEMBERS)) {
+        if (company.getId() != kicker.getCompanyId()) {
+            Responses.error("Kicker is not a member of the company").respondTo(context);
+            return;
+        }
+
+        if (!company.hasPermission(kicker.getDiscordId(), CompanyRole.Permission.MANAGE_MEMBERS)) {
             Responses.error("Insufficient permissions").respondTo(context);
             return;
         }

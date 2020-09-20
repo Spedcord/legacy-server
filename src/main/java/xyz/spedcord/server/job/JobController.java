@@ -6,15 +6,15 @@ import com.mongodb.reactivestreams.client.MongoCollection;
 import xyz.spedcord.common.mongodb.CallbackSubscriber;
 import xyz.spedcord.common.mongodb.MongoDBService;
 import xyz.spedcord.server.SpedcordServer;
+import xyz.spedcord.server.company.Company;
+import xyz.spedcord.server.user.UserController;
 import xyz.spedcord.server.util.CarelessSubscriber;
 import xyz.spedcord.server.util.MongoDBUtil;
 import xyz.spedcord.server.util.WebhookUtil;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 public class JobController {
 
@@ -44,7 +44,7 @@ public class JobController {
                 cargo,
                 truck,
                 new ArrayList<>(),
-                false
+                0
         ));
 
         JsonObject jsonObject = SpedcordServer.GSON.toJsonTree(pendingJobs.get(discordId)).getAsJsonObject();
@@ -85,6 +85,16 @@ public class JobController {
         return getJobs(collection.stream().mapToInt(value -> value).toArray());
     }
 
+    public List<Job> getJobs(Company company, UserController userController) {
+        return company.getMemberDiscordIds().stream()
+                .map(userController::getUser)
+                .map(user -> user.orElse(null))
+                .filter(Objects::nonNull)
+                .flatMap(user -> getJobs(user.getJobList()).stream())
+                .sorted(Comparator.comparingLong(value -> ((Job) value).getEndedAt()).reversed())
+                .collect(Collectors.toList());
+    }
+
     public List<Job> getJobs(int... ids) {
         List<Job> list = new ArrayList<>();
 
@@ -97,7 +107,8 @@ public class JobController {
         subscriber.doOnNext(list::add);
         subscriber.doOnComplete(() -> finished.set(true));
 
-        jobCollection.find(Filters.all("id", ids)).subscribe(subscriber);
+        // Thanks bson
+        jobCollection.find(Filters.all("_id", Arrays.stream(ids).boxed().collect(Collectors.toList()))).subscribe(subscriber);
         while (!finished.get()) ;
 
         return list;
@@ -114,11 +125,15 @@ public class JobController {
     public List<Job> getUnverifiedJobs() {
         List<Job> list = new ArrayList<>();
 
+        AtomicBoolean finished = new AtomicBoolean(false);
         CallbackSubscriber<Job> subscriber = new CallbackSubscriber<>();
         subscriber.doOnNext(list::add);
+        subscriber.doOnComplete(() -> finished.set(true));
 
-        jobCollection.find(Filters.eq("verified", false)).subscribe(subscriber);
+        jobCollection.find(Filters.eq("verifyState", 0)).subscribe(subscriber);
+        while (!finished.get()) ;
 
+        list.sort(Comparator.comparingLong(Job::getEndedAt));
         return list;
     }
 

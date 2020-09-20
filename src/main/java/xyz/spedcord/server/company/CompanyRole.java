@@ -24,6 +24,7 @@ public class CompanyRole {
     public static CompanyRole[] createDefaults() {
         return new CompanyRole[]{
                 new CompanyRole("Owner", 5000, new ArrayList<>(), Permission.calculate(Permission.ADMINISTRATOR)),
+                new CompanyRole("Co-Owner", 4500, new ArrayList<>(), Permission.calculate(Permission.EDIT_COMPANY, Permission.MANAGE_ROLES)),
                 new CompanyRole("Manager", 3000, new ArrayList<>(), Permission.calculate(Permission.MANAGE_MEMBERS)),
                 new CompanyRole("Driver", 1000, new ArrayList<>(), Permission.calculate())
         };
@@ -62,10 +63,10 @@ public class CompanyRole {
     }
 
     public enum Permission {
-        ADMINISTRATOR(0x01),
-        EDIT_COMPANY(0x02),
-        MANAGE_MEMBERS(0x04),
-        MANAGE_ROLES(0x08),
+        ADMINISTRATOR(0x0001),
+        EDIT_COMPANY(0x0002),
+        MANAGE_MEMBERS(0x0004),
+        MANAGE_ROLES(0x0008),
         ;
 
         private final int flag;

@@ -1,11 +1,8 @@
 package xyz.spedcord.server.util;
 
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import org.jetbrains.annotations.NotNull;
 import xyz.spedcord.server.SpedcordServer;
-import xyz.spedcord.server.job.Job;
-import xyz.spedcord.server.user.User;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,19 +20,7 @@ import java.util.stream.Collectors;
 
 public class WebhookUtil {
 
-    private static final ExecutorService executorService = Executors.newSingleThreadExecutor(new ThreadFactory() {
-        @Override
-        public Thread newThread(@NotNull Runnable r) {
-            Thread thread = new Thread(r);
-            thread.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-                @Override
-                public void uncaughtException(Thread t, Throwable e) {
-                    System.out.println("Exception: "+e.toString());
-                }
-            });
-            return thread;
-        }
-    });
+    private static final ExecutorService executorService = Executors.newCachedThreadPool();
     private static final List<String> webhooks = new ArrayList<>();
 
     private WebhookUtil() {
@@ -80,6 +65,7 @@ public class WebhookUtil {
 
                     OutputStream outputStream = connection.getOutputStream();
                     outputStream.write(object.toString().getBytes(StandardCharsets.UTF_8));
+                    outputStream.flush();
 
                     connection.getResponseCode();
                 } catch (IOException e) {

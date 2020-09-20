@@ -1,5 +1,9 @@
 package xyz.spedcord.server.job;
 
+import org.bson.codecs.pojo.annotations.BsonCreator;
+import org.bson.codecs.pojo.annotations.BsonId;
+import org.bson.codecs.pojo.annotations.BsonProperty;
+
 import java.util.List;
 
 public class Job {
@@ -14,9 +18,10 @@ public class Job {
     private String cargo;
     private String truck;
     private List<Location> positions; // Will be used to track the player's position to prevent cheating
-    private boolean verified;
+    private int verifyState;
 
-    public Job(int id, long startedAt, long endedAt, double cargoWeight, double pay, String fromCity, String toCity, String cargo, String truck, List<Location> positions, boolean verified) {
+    @BsonCreator
+    public Job(@BsonId int id, @BsonProperty("startedAt") long startedAt, @BsonProperty("endedAt") long endedAt, @BsonProperty("cargoWeight") double cargoWeight, @BsonProperty("pay") double pay, @BsonProperty("fromCity") String fromCity, @BsonProperty("toCity") String toCity, @BsonProperty("cargo") String cargo, @BsonProperty("truck") String truck, @BsonProperty("positions") List<Location> positions, @BsonProperty("verifyState") int verifyState) {
         this.id = id;
         this.startedAt = startedAt;
         this.endedAt = endedAt;
@@ -27,7 +32,7 @@ public class Job {
         this.cargo = cargo;
         this.truck = truck;
         this.positions = positions;
-        this.verified = verified;
+        this.verifyState = verifyState;
     }
 
     public int getId() {
@@ -70,8 +75,8 @@ public class Job {
         return positions;
     }
 
-    public boolean isVerified() {
-        return verified;
+    public int getVerifyState() {
+        return verifyState;
     }
 
     public void setStartedAt(long startedAt) {
@@ -94,8 +99,8 @@ public class Job {
         this.id = id;
     }
 
-    public void setVerified(boolean verified) {
-        this.verified = verified;
+    public void setVerifyState(int verifyState) {
+        this.verifyState = verifyState;
     }
 
 }

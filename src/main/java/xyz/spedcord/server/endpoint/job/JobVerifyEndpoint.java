@@ -47,7 +47,7 @@ public class JobVerifyEndpoint extends Endpoint {
         boolean verify = verifyOptional.orElse(true);
 
         Job job = jobController.getJob(jobIdOptional.get());
-        job.setVerified(verify);
+        job.setVerifyState(verify ? 1 : 2);
         jobController.updateJob(job);
 
         Responses.success("Job was " + (verify ? "" : "not ") + "verified").respondTo(context);

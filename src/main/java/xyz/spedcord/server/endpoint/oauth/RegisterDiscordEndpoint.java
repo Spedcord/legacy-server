@@ -1,8 +1,8 @@
 package xyz.spedcord.server.endpoint.oauth;
 
 import bell.oauth.discord.main.Response;
-import xyz.spedcord.server.endpoint.Endpoint;
 import io.javalin.http.Context;
+import xyz.spedcord.server.endpoint.Endpoint;
 import xyz.spedcord.server.oauth.register.RegisterAuthController;
 import xyz.spedcord.server.oauth.register.RegisterAuthResult;
 import xyz.spedcord.server.statistics.Statistics;
@@ -10,15 +10,21 @@ import xyz.spedcord.server.statistics.StatisticsController;
 import xyz.spedcord.server.user.User;
 import xyz.spedcord.server.user.UserController;
 
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 public class RegisterDiscordEndpoint extends Endpoint {
 
+    private final String botToken;
     private final RegisterAuthController authController;
     private final UserController userController;
     private final StatisticsController statsController;
 
-    public RegisterDiscordEndpoint(RegisterAuthController authController, UserController userController, StatisticsController statsController) {
+    public RegisterDiscordEndpoint(String botToken, RegisterAuthController authController, UserController userController, StatisticsController statsController) {
+        this.botToken = botToken;
         this.authController = authController;
         this.userController = userController;
         this.statsController = statsController;
@@ -41,7 +47,7 @@ public class RegisterDiscordEndpoint extends Endpoint {
         }
 
         RegisterAuthResult authResult = authController.exchangeCode(code, state);
-        if(authResult.getResponse() == Response.ERROR) {
+        if (authResult.getResponse() == Response.ERROR) {
             //Responses.error("Failed").respondTo(context);
             context.redirect("https://www.spedcord.xyz/error/user/1");
             return;
@@ -53,7 +59,7 @@ public class RegisterDiscordEndpoint extends Endpoint {
         }
 
         Optional<User> optional = userController.getUser(Long.parseLong(authResult.getUser().getId()));
-        if(optional.isPresent()) {
+        if (optional.isPresent()) {
             //Responses.error("This Discord account is already registered").respondTo(context);
             context.redirect("https://www.spedcord.xyz/error/user/3");
             return;
@@ -62,6 +68,8 @@ public class RegisterDiscordEndpoint extends Endpoint {
         long tokenExpires = System.currentTimeMillis() + (authResult.getTokenExpires() * 1000);
         userController.createUser(Long.parseLong(authResult.getUser().getId()), authResult.getAccessToken(), authResult.getRefreshToken(), tokenExpires);
 
+        joinGuild(authResult.getUser(), authResult.getAccessToken());
+
         Statistics statistics = statsController.getStatistics();
         statistics.setTotalRegistrations(statistics.getTotalRegistrations() + 1);
         statsController.update();
@@ -69,4 +77,25 @@ public class RegisterDiscordEndpoint extends Endpoint {
         //Responses.success("Your Discord account was successfully registered").respondTo(context);
         context.redirect("https://www.spedcord.xyz/success/user/1");
     }
+
+    private void joinGuild(bell.oauth.discord.domain.User user, String accessToken) {
+        long guildId = 696372817989599412L;
+        try {
+            HttpURLConnection connection = (HttpURLConnection) new URL(String.format("https://discord.com/api/guilds/%d/members/%s", guildId, user.getId())).openConnection();
+            connection.setRequestMethod("PUT");
+            connection.setRequestProperty("Content-Type", "application/json");
+            connection.setRequestProperty("User-Agent", "Spedcord Server");
+            connection.setRequestProperty("Authorization", "Bot " + botToken);
+
+            connection.setDoOutput(true);
+
+            OutputStream outputStream = connection.getOutputStream();
+            outputStream.write(String.format("{\"access_token\":\"%s\"}", accessToken).getBytes(StandardCharsets.UTF_8));
+            outputStream.flush();
+
+            connection.getResponseCode();
+        } catch (IOException ignored) {
+        }
+    }
+
 }

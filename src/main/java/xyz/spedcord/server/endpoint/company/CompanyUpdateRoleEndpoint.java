@@ -69,6 +69,11 @@ public class CompanyUpdateRoleEndpoint extends Endpoint {
         Company company = companyOptional.get();
         CompanyRole companyRole = companyRoleOptional.get();
 
+        if (user.getCompanyId() != company.getId()) {
+            Responses.error("User is not a member of the company").respondTo(context);
+            return;
+        }
+
         if (!company.hasPermission(user.getDiscordId(), CompanyRole.Permission.MANAGE_ROLES)) {
             Responses.error("Insufficient permissions").respondTo(context);
             return;
@@ -101,6 +106,10 @@ public class CompanyUpdateRoleEndpoint extends Endpoint {
                 if (company.getRoles().stream()
                         .anyMatch(_role -> _role.getName().equals(companyRole.getName()))) {
                     Responses.error("Role already exists").respondTo(context);
+                    return;
+                }
+                if (companyRole.getName().length() > 24 || companyRole.getName().length() < 4) {
+                    Responses.error("Role names have to be longer than 3 chars and shorter than 25 chars").respondTo(context);
                     return;
                 }
 

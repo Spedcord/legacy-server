@@ -27,7 +27,7 @@ public class JobListUnverifiedEndpoint extends Endpoint {
 
     @Override
     public void handle(Context context) {
-        Optional<User> optional = getUserFromPath("userId", true, context, userController);
+        Optional<User> optional = getUserFromQuery("userId", true, context, userController);
         if (optional.isEmpty()) {
             Responses.error("Unknown user / Invalid request").respondTo(context);
             return;

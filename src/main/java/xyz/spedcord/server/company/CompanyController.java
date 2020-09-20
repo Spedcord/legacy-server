@@ -7,11 +7,10 @@ import xyz.spedcord.common.mongodb.MongoDBService;
 import xyz.spedcord.server.util.CarelessSubscriber;
 import xyz.spedcord.server.util.MongoDBUtil;
 
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
 
 public class CompanyController {
 
@@ -54,6 +53,7 @@ public class CompanyController {
     }
 
     public void updateCompany(Company company) {
+        company.getRoles().sort(Comparator.comparingDouble(value -> ((CompanyRole) value).getPayout()).reversed());
         companyCollection.replaceOne(Filters.eq("_id", company.getId()), company).subscribe(new CarelessSubscriber<>());
     }
 

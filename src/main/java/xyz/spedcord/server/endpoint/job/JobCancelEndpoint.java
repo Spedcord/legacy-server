@@ -22,7 +22,7 @@ public class JobCancelEndpoint extends Endpoint {
 
     @Override
     public void handle(Context ctx) {
-        Optional<User> optional = getUserFromPath("discordId", true, ctx, userController);
+        Optional<User> optional = getUserFromQuery("discordId", true, ctx, userController);
         if (optional.isEmpty()) {
             Responses.error("Unknown user / Invalid request").respondTo(ctx);
             return;
