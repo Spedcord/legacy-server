@@ -94,7 +94,7 @@ public class UserController {
     public void createUser(long discordId, String accessToken, String refreshToken, long tokenExpires) {
         // Create user and save to database
         long docs = MongoDBUtil.countDocuments(this.userCollection);
-        User user = new User(Long.valueOf(docs).intValue(), discordId, StringUtil.generateKey(32), accessToken, refreshToken, tokenExpires, -1, 0, new ArrayList<>(), new ArrayList<>(), User.AccountType.USER.getVal());
+        User user = new User(Long.valueOf(docs).intValue(), discordId, StringUtil.generateKey(32), accessToken, refreshToken, tokenExpires, -1, 0, new ArrayList<>(), new ArrayList<>(), User.AccountType.USER);
         this.userCollection.insertOne(user).subscribe(new CarelessSubscriber<>());
         this.users.add(user);
 
