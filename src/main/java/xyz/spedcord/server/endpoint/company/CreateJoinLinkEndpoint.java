@@ -8,6 +8,11 @@ import xyz.spedcord.server.response.Responses;
 
 import java.util.Optional;
 
+/**
+ * @author Maximilian Dorn
+ * @version 2.0.0
+ * @since 1.0.0
+ */
 public class CreateJoinLinkEndpoint extends RestrictedEndpoint {
 
     private final JoinLinkController joinLinkController;

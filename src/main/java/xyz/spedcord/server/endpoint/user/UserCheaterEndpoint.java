@@ -13,6 +13,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Optional;
 
+/**
+ * @author Maximilian Dorn
+ * @version 2.0.0
+ * @since 1.0.0
+ */
 public class UserCheaterEndpoint extends Endpoint {
 
     private final UserController userController;

@@ -16,6 +16,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
+/**
+ * @author Maximilian Dorn
+ * @version 2.0.0
+ * @since 1.0.0
+ */
 public class WebhookUtil {
 
     private static final ExecutorService executorService = Executors.newCachedThreadPool();

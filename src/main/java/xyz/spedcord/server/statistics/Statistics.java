@@ -3,6 +3,11 @@ package xyz.spedcord.server.statistics;
 import org.bson.codecs.pojo.annotations.BsonCreator;
 import org.bson.codecs.pojo.annotations.BsonProperty;
 
+/**
+ * @author Maximilian Dorn
+ * @version 2.0.0
+ * @since 1.0.0
+ */
 public class Statistics {
 
     private final int obligatoryId;

@@ -4,6 +4,11 @@ import io.javalin.http.Context;
 import xyz.spedcord.server.SpedcordServer;
 import xyz.spedcord.server.endpoint.Endpoint;
 
+/**
+ * @author Maximilian Dorn
+ * @version 2.0.0
+ * @since 1.0.0
+ */
 public class UserListModsEndpoint extends Endpoint {
     @Override
     public void handle(Context ctx) {

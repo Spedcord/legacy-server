@@ -4,6 +4,11 @@ import dev.lukaesebrot.jal.responses.ResponseBuilder;
 import dev.lukaesebrot.jal.responses.ResponseType;
 import org.eclipse.jetty.http.HttpStatus;
 
+/**
+ * @author Maximilian Dorn
+ * @version 2.0.0
+ * @since 1.0.0
+ */
 public class Responses {
 
     private Responses() {

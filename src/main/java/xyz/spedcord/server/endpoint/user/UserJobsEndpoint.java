@@ -15,6 +15,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * @author Maximilian Dorn
+ * @version 2.0.0
+ * @since 1.0.0
+ */
 public class UserJobsEndpoint extends Endpoint {
 
     private final UserController userController;

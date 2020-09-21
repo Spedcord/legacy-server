@@ -4,6 +4,11 @@ import io.javalin.http.Context;
 import xyz.spedcord.server.endpoint.Endpoint;
 import xyz.spedcord.server.oauth.register.RegisterAuthController;
 
+/**
+ * @author Maximilian Dorn
+ * @version 2.0.0
+ * @since 1.0.0
+ */
 public class RegisterEndpoint extends Endpoint {
 
     private final RegisterAuthController authController;

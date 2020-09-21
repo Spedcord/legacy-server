@@ -3,6 +3,11 @@ package xyz.spedcord.server.util;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 
+/**
+ * @author Maximilian Dorn
+ * @version 2.0.0
+ * @since 1.0.0
+ */
 public class CarelessSubscriber<T> implements Subscriber<T> {
     @Override
     public void onSubscribe(Subscription s) {

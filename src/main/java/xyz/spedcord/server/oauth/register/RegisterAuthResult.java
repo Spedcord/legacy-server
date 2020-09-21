@@ -3,6 +3,11 @@ package xyz.spedcord.server.oauth.register;
 import bell.oauth.discord.domain.User;
 import bell.oauth.discord.main.Response;
 
+/**
+ * @author Maximilian Dorn
+ * @version 2.0.0
+ * @since 1.0.0
+ */
 public class RegisterAuthResult {
     public static final RegisterAuthResult ERROR = new RegisterAuthResult(Response.ERROR, null, null, null, -1);
 

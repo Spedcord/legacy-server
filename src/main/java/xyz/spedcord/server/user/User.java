@@ -8,6 +8,11 @@ import org.bson.codecs.pojo.annotations.BsonProperty;
 import java.util.List;
 
 @BsonDiscriminator
+/**
+ * @author Maximilian Dorn
+ * @version 2.0.0
+ * @since 1.0.0
+ */
 public class User {
 
     public static final User EMPTY = new User(-1, -1, null, null,

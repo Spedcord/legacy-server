@@ -3,6 +3,11 @@ package xyz.spedcord.server.oauth.invite;
 import bell.oauth.discord.domain.User;
 import bell.oauth.discord.main.Response;
 
+/**
+ * @author Maximilian Dorn
+ * @version 2.0.0
+ * @since 1.0.0
+ */
 public class InviteAuthResult {
 
     public static final InviteAuthResult ERROR = new InviteAuthResult(Response.ERROR, null, -1, null);
