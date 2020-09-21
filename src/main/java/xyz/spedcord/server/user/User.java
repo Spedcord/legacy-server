@@ -20,7 +20,7 @@ public class User {
             null, -1, -1, -1, null, null, AccountType.USER.val);
     private final long discordId;
     private final List<Integer> jobList;
-    private final int accountType;
+    private int accountType;
     private int id;
     private String key;
     private String accessToken;
@@ -119,6 +119,10 @@ public class User {
 
     public AccountType getAccountType() {
         return AccountType.fromVal(this.accountType);
+    }
+
+    public void setAccountType(AccountType accountType) {
+        this.accountType = accountType.getVal();
     }
 
     public enum AccountType {
