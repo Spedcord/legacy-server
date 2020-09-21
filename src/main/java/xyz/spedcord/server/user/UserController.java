@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * A controller that handles everything related to users
  *
  * @author Maximilian Dorn
- * @version 2.0.0
+ * @version 2.1.1
  * @since 1.0.0
  */
 public class UserController {
