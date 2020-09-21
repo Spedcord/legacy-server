@@ -49,7 +49,6 @@ public class SpedcordServer {
             .setPrettyPrinting()
             .setLongSerializationPolicy(LongSerializationPolicy.STRING)
             .create();
-    public static final long[] MODERATORS = {347018538713874444L, 332142165402714113L};
     public static String KEY = null;
 
     private InviteAuthController inviteAuthController;
@@ -153,7 +152,7 @@ public class SpedcordServer {
         server.endpoint("/user/checkauth", HandlerType.POST, new UserCheckAuthEndpoint(this.userController));
         server.endpoint("/user/cheater", HandlerType.POST, new UserCheaterEndpoint(this.userController));
         server.endpoint("/user/leavecompany", HandlerType.POST, new UserLeaveCompanyEndpoint(this.userController, this.companyController));
-        server.endpoint("/user/listmods", HandlerType.GET, new UserListModsEndpoint());
+        server.endpoint("/user/listmods", HandlerType.GET, new UserListModsEndpoint(this.userController));
         server.endpoint("/user/update", HandlerType.POST, new UserUpdateEndpoint(this.userController));
 
         // /company

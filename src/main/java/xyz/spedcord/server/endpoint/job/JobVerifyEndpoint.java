@@ -2,7 +2,6 @@ package xyz.spedcord.server.endpoint.job;
 
 import io.javalin.http.Context;
 import org.eclipse.jetty.http.HttpStatus;
-import xyz.spedcord.server.SpedcordServer;
 import xyz.spedcord.server.endpoint.Endpoint;
 import xyz.spedcord.server.job.Job;
 import xyz.spedcord.server.job.JobController;
@@ -10,7 +9,6 @@ import xyz.spedcord.server.response.Responses;
 import xyz.spedcord.server.user.User;
 import xyz.spedcord.server.user.UserController;
 
-import java.util.Arrays;
 import java.util.Optional;
 
 /**
@@ -48,7 +46,7 @@ public class JobVerifyEndpoint extends Endpoint {
         User user = optional.get();
 
         // Abort if user is not a mod
-        if (Arrays.stream(SpedcordServer.MODERATORS).noneMatch(l -> l == user.getDiscordId())) {
+        if (user.getAccountType() == User.AccountType.USER) {
             Responses.error(HttpStatus.UNAUTHORIZED_401, "Unauthorized").respondTo(context);
             return;
         }
