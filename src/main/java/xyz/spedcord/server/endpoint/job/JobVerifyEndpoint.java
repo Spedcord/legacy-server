@@ -14,6 +14,8 @@ import java.util.Arrays;
 import java.util.Optional;
 
 /**
+ * Handles job verifications
+ *
  * @author Maximilian Dorn
  * @version 2.0.0
  * @since 1.0.0
@@ -30,12 +32,14 @@ public class JobVerifyEndpoint extends Endpoint {
 
     @Override
     public void handle(Context context) {
+        // Get job id
         Optional<Integer> jobIdOptional = this.getQueryParamAsInt("jobId", context);
         if (jobIdOptional.isEmpty()) {
             Responses.error("Invalid jobId param").respondTo(context);
             return;
         }
 
+        // Get user
         Optional<User> optional = this.getUserFromQuery("userId", true, context, this.userController);
         if (optional.isEmpty()) {
             Responses.error("Unknown user / Invalid request").respondTo(context);
@@ -43,14 +47,17 @@ public class JobVerifyEndpoint extends Endpoint {
         }
         User user = optional.get();
 
+        // Abort if user is not a mod
         if (Arrays.stream(SpedcordServer.MODERATORS).noneMatch(l -> l == user.getDiscordId())) {
             Responses.error(HttpStatus.UNAUTHORIZED_401, "Unauthorized").respondTo(context);
             return;
         }
 
+        // Get verify bool
         Optional<Boolean> verifyOptional = this.getQueryParamAsBoolean("verify", context);
         boolean verify = verifyOptional.orElse(true);
 
+        // Update job
         Job job = this.jobController.getJob(jobIdOptional.get());
         job.setVerifyState(verify ? 1 : 2);
         this.jobController.updateJob(job);

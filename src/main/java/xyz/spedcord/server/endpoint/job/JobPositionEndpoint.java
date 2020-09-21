@@ -12,6 +12,8 @@ import xyz.spedcord.server.user.UserController;
 import java.util.Optional;
 
 /**
+ * Handles job positions
+ *
  * @author Maximilian Dorn
  * @version 2.0.0
  * @since 1.0.0
@@ -28,12 +30,15 @@ public class JobPositionEndpoint extends Endpoint {
 
     @Override
     public void handle(Context ctx) {
+        // Get x and z coords
         Optional<String> xzOptional = this.getQueryParam("xz", ctx);
         if (xzOptional.isEmpty()) {
             Responses.error("Invalid xz param").respondTo(ctx);
             return;
         }
         String xz = xzOptional.get();
+
+        // Parse coords
         long x;
         long z;
         try {
@@ -45,6 +50,7 @@ public class JobPositionEndpoint extends Endpoint {
             return;
         }
 
+        // Get user
         Optional<User> optional = this.getUserFromQuery("discordId", true, ctx, this.userController);
         if (optional.isEmpty()) {
             Responses.error("Unknown user / Invalid request").respondTo(ctx);
@@ -52,11 +58,13 @@ public class JobPositionEndpoint extends Endpoint {
         }
         User user = optional.get();
 
+        // Abort if user has no pending job
         if (this.jobController.getPendingJob(user.getDiscordId()) == null) {
             Responses.error("You don't have a pending job").respondTo(ctx);
             return;
         }
 
+        // Add position
         Job pendingJob = this.jobController.getPendingJob(user.getDiscordId());
         pendingJob.getPositions().add(new Location(x, 0, z));
 

@@ -16,6 +16,8 @@ import java.util.Arrays;
 import java.util.Optional;
 
 /**
+ * Lists unverified jobs
+ *
  * @author Maximilian Dorn
  * @version 2.0.0
  * @since 1.0.0
@@ -32,6 +34,7 @@ public class JobListUnverifiedEndpoint extends Endpoint {
 
     @Override
     public void handle(Context context) {
+        // Get user
         Optional<User> optional = this.getUserFromQuery("userId", true, context, this.userController);
         if (optional.isEmpty()) {
             Responses.error("Unknown user / Invalid request").respondTo(context);
@@ -39,6 +42,7 @@ public class JobListUnverifiedEndpoint extends Endpoint {
         }
         User user = optional.get();
 
+        // Abort if user is not a mod
         if (Arrays.stream(SpedcordServer.MODERATORS).noneMatch(l -> l == user.getDiscordId())) {
             Responses.error(HttpStatus.UNAUTHORIZED_401, "Unauthorized").respondTo(context);
             return;

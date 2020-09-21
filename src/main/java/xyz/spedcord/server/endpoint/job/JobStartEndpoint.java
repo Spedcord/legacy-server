@@ -12,6 +12,8 @@ import xyz.spedcord.server.user.UserController;
 import java.util.Optional;
 
 /**
+ * Handles job starts
+ *
  * @author Maximilian Dorn
  * @version 2.0.0
  * @since 1.0.0
@@ -28,6 +30,7 @@ public class JobStartEndpoint extends Endpoint {
 
     @Override
     public void handle(Context ctx) {
+        // Parse body
         String body = ctx.body();
         JobStartBody jobStartBody;
         try {
@@ -37,11 +40,13 @@ public class JobStartEndpoint extends Endpoint {
             return;
         }
 
+        // Abort on invalid body
         if (!jobStartBody.verify()) {
             Responses.error("Invalid request body").respondTo(ctx);
             return;
         }
 
+        //Get user
         Optional<User> userOptional = this.userController.getUser(jobStartBody.discordId);
         if (userOptional.isEmpty()) {
             Responses.error("Unknown user").respondTo(ctx);
@@ -49,11 +54,13 @@ public class JobStartEndpoint extends Endpoint {
         }
         User user = userOptional.get();
 
+        // Abort if key is wrong
         if (!user.getKey().equals(jobStartBody.key)) {
             Responses.error(HttpStatus.UNAUTHORIZED_401, "Unauthorized").respondTo(ctx);
             return;
         }
 
+        // Abort if user is already on a job
         if (!this.jobController.canStartJob(jobStartBody.discordId)) {
             Responses.error("You already have a pending job").respondTo(ctx);
             return;
@@ -70,6 +77,9 @@ public class JobStartEndpoint extends Endpoint {
         Responses.success("Job started").respondTo(ctx);
     }
 
+    /**
+     * Request body for job starts
+     */
     private static class JobStartBody {
         public Long discordId;
         public String key;

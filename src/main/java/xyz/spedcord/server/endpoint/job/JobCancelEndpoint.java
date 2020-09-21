@@ -10,6 +10,8 @@ import xyz.spedcord.server.user.UserController;
 import java.util.Optional;
 
 /**
+ * Handles job cancellations
+ *
  * @author Maximilian Dorn
  * @version 2.0.0
  * @since 1.0.0
@@ -26,6 +28,7 @@ public class JobCancelEndpoint extends Endpoint {
 
     @Override
     public void handle(Context ctx) {
+        // Get user
         Optional<User> optional = this.getUserFromQuery("discordId", true, ctx, this.userController);
         if (optional.isEmpty()) {
             Responses.error("Unknown user / Invalid request").respondTo(ctx);
@@ -33,6 +36,7 @@ public class JobCancelEndpoint extends Endpoint {
         }
         User user = optional.get();
 
+        // Abort if user has no pending job
         if (this.jobController.getPendingJob(user.getDiscordId()) == null) {
             Responses.error("You don't have a pending job").respondTo(ctx);
             return;
