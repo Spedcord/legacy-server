@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * A task that is designated to paying the company members
  *
  * @author Maximilian Dorn
- * @version %I%, %G%
+ * @version 2.0.0
  * @since 2.0.0
  */
 public class PayoutTask implements Runnable {
