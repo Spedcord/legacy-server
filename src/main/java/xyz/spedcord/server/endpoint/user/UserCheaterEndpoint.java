@@ -14,6 +14,8 @@ import java.util.Arrays;
 import java.util.Optional;
 
 /**
+ * Flags a user as a cheater
+ *
  * @author Maximilian Dorn
  * @version 2.0.0
  * @since 1.0.0
@@ -28,12 +30,14 @@ public class UserCheaterEndpoint extends Endpoint {
 
     @Override
     public void handle(Context context) {
+        // Get cheater Discord id
         Optional<Long> cheaterIdOptional = this.getQueryParamAsLong("cheaterId", context);
         if (cheaterIdOptional.isEmpty()) {
             Responses.error("Invalid cheaterId param").respondTo(context);
             return;
         }
 
+        // Get mod user
         Optional<User> optional = this.getUserFromQuery("userId", true, context, this.userController);
         if (optional.isEmpty()) {
             Responses.error(HttpStatus.UNAUTHORIZED_401, "Unauthorized").respondTo(context);
@@ -41,11 +45,13 @@ public class UserCheaterEndpoint extends Endpoint {
         }
         User user = optional.get();
 
+        // Abort if user is not a mod
         if (Arrays.stream(SpedcordServer.MODERATORS).noneMatch(l -> l == user.getDiscordId())) {
             Responses.error(HttpStatus.UNAUTHORIZED_401, "Unauthorized").respondTo(context);
             return;
         }
 
+        // Get cheater user
         long cheaterId = cheaterIdOptional.get();
         Optional<User> cheaterOptional = this.userController.getUser(cheaterId);
         if (cheaterOptional.isEmpty()) {
@@ -53,6 +59,7 @@ public class UserCheaterEndpoint extends Endpoint {
             return;
         }
 
+        // Set flag and update
         User cheater = cheaterOptional.get();
         cheater.setFlags(new ArrayList<>() {
             {

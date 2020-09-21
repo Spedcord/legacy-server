@@ -13,6 +13,8 @@ import xyz.spedcord.server.util.WebhookUtil;
 import java.util.Optional;
 
 /**
+ * Removes the user from the company
+ *
  * @author Maximilian Dorn
  * @version 2.0.0
  * @since 1.0.0
@@ -29,6 +31,7 @@ public class UserLeaveCompanyEndpoint extends RestrictedEndpoint {
 
     @Override
     protected void handleFurther(Context context) {
+        // Get internal user
         Optional<User> userOptional = this.getUserFromQuery("discordId", false, context, this.userController);
         if (userOptional.isEmpty()) {
             Responses.error("Unknown user / Invalid request").respondTo(context);
@@ -36,11 +39,13 @@ public class UserLeaveCompanyEndpoint extends RestrictedEndpoint {
         }
         User user = userOptional.get();
 
+        // Abort if user is not in a company
         if (user.getCompanyId() == -1) {
             Responses.error("The provided user is not in a company").respondTo(context);
             return;
         }
 
+        // Get company
         Optional<Company> companyOptional = this.companyController.getCompany(user.getCompanyId());
         if (companyOptional.isEmpty()) {
             Responses.error("Unknown company").respondTo(context);
@@ -48,11 +53,13 @@ public class UserLeaveCompanyEndpoint extends RestrictedEndpoint {
         }
         Company company = companyOptional.get();
 
+        // Abort if user is company owner
         if (company.getOwnerDiscordId() == user.getDiscordId()) {
             Responses.error("The company owner cannot leave the company").respondTo(context);
             return;
         }
 
+        // Update user and company
         user.setCompanyId(-1);
         company.getRole(user.getDiscordId()).ifPresent(companyRole ->
                 companyRole.getMemberDiscordIds().remove(user.getDiscordId()));
@@ -61,6 +68,7 @@ public class UserLeaveCompanyEndpoint extends RestrictedEndpoint {
         this.userController.updateUser(user);
         this.companyController.updateCompany(company);
 
+        // Notify webhooks
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("company", company.getId());
         WebhookUtil.callWebhooks(user.getDiscordId(), jsonObject, "USER_LEAVE_COMPANY");

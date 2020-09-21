@@ -13,6 +13,8 @@ import xyz.spedcord.server.user.UserController;
 import java.util.Optional;
 
 /**
+ * Retrieves user information (including sensitive informations)
+ *
  * @author Maximilian Dorn
  * @version 2.0.0
  * @since 1.0.0
@@ -29,6 +31,7 @@ public class UserGetEndpoint extends RestrictedEndpoint {
 
     @Override
     public void handleFurther(Context context) {
+        // Get internal user
         Optional<User> optional = this.getUserFromPath("discordId", false, context, this.userController);
         if (optional.isEmpty()) {
             Responses.error("Unknown user / Invalid request").respondTo(context);
@@ -36,8 +39,10 @@ public class UserGetEndpoint extends RestrictedEndpoint {
         }
         User user = optional.get();
 
+        // Serialize to json
         JsonObject jsonObj = SpedcordServer.GSON.toJsonTree(user).getAsJsonObject();
 
+        // Oauth stuff
         OAuthBuilder oAuthBuilder = new OAuthBuilder(
                 this.config.get("oauth-clientid"),
                 this.config.get("oauth-clientsecret"),
@@ -70,4 +75,5 @@ public class UserGetEndpoint extends RestrictedEndpoint {
 
         context.result(jsonObj.toString()).status(200);
     }
+
 }

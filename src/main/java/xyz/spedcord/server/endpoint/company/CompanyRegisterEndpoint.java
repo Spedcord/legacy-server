@@ -17,6 +17,8 @@ import xyz.spedcord.server.user.UserController;
 import java.util.Optional;
 
 /**
+ * Handles company registration
+ *
  * @author Maximilian Dorn
  * @version 2.0.0
  * @since 1.0.0
@@ -35,6 +37,7 @@ public class CompanyRegisterEndpoint extends RestrictedEndpoint {
 
     @Override
     protected void handleFurther(Context context) {
+        // Try to get company from request body
         Company company;
         try {
             JsonObject jsonObject = JsonParser.parseString(context.body()).getAsJsonObject();
@@ -47,16 +50,19 @@ public class CompanyRegisterEndpoint extends RestrictedEndpoint {
             return;
         }
 
+        // Abort if invalid
         if (company.getName() == null || company.getMemberDiscordIds() == null) {
             Responses.error("Invalid request body").respondTo(context);
             return;
         }
 
+        // Abort if name has invalid length
         if (company.getName().length() >= 24 || company.getName().length() <= 4) {
             Responses.error("The name has an invalid length (4 - 24 chars)").respondTo(context);
             return;
         }
 
+        // Get company owner
         long ownerDiscordId = company.getOwnerDiscordId();
         Optional<User> optional = this.userController.getUser(ownerDiscordId);
         if (optional.isEmpty()) {
@@ -65,25 +71,29 @@ public class CompanyRegisterEndpoint extends RestrictedEndpoint {
             return;
         }
 
+        // Abort if owner is in another company
         User user = optional.get();
         if (user.getCompanyId() != -1) {
             Responses.error("The owner is already in a company").respondTo(context);
             return;
         }
 
+        // Add user to first role with admin perms
         company.getRoles().stream()
-                .filter(companyRole -> companyRole.getName().equals("Owner"))
-                .findAny().ifPresent(companyRole ->
-                companyRole.getMemberDiscordIds().add(ownerDiscordId));
+                .filter(companyRole -> companyRole.hasPermission(CompanyRole.Permission.ADMINISTRATOR))
+                .findFirst().ifPresent(companyRole -> companyRole.getMemberDiscordIds().add(ownerDiscordId));
 
+        // Create company and update user
         this.companyController.createCompany(company);
         user.setCompanyId(company.getId());
         this.userController.updateUser(user);
 
+        // Update stats
         Statistics statistics = this.statsController.getStatistics();
         statistics.setTotalCompanies(statistics.getTotalCompanies() + 1);
         this.statsController.update();
 
         Responses.success("Company was registered").respondTo(context);
     }
+
 }

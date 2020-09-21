@@ -53,6 +53,19 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>de.cerus.linecount</groupId>
+                <artifactId>line-count-maven-plugin</artifactId>
+                <version>1.0.1</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>linecount</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
         <defaultGoal>clean package</defaultGoal>
         <resources>
@@ -62,6 +75,13 @@
             </resource>
         </resources>
     </build>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>cerus</id>
+            <url>https://maven.cerus-dev.de</url>
+        </pluginRepository>
+    </pluginRepositories>
 
     <properties>
         <maven.compiler.target>11</maven.compiler.target>

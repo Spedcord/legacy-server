@@ -15,6 +15,8 @@ import xyz.spedcord.server.util.WebhookUtil;
 import java.util.Optional;
 
 /**
+ * Updates a company member
+ *
  * @author Maximilian Dorn
  * @version 2.0.0
  * @since 1.0.0
@@ -31,30 +33,35 @@ public class CompanyUpdateMemberEndpoint extends Endpoint {
 
     @Override
     public void handle(Context context) {
+        // Get company Discord id
         Optional<Long> companyDiscordIdOptional = this.getQueryParamAsLong("companyDiscordId", context);
         if (companyDiscordIdOptional.isEmpty()) {
             Responses.error("Invalid companyDiscordId param").respondTo(context);
             return;
         }
 
+        // Get company
         Optional<Company> companyOptional = this.companyController.getCompany(companyDiscordIdOptional.get());
         if (companyOptional.isEmpty()) {
             Responses.error("Company does not exist").respondTo(context);
             return;
         }
 
+        // Get changer user
         Optional<User> changerOptional = this.getUserFromQuery("changerDiscordId", !RestrictedEndpoint.isAuthorized(context), context, this.userController);
         if (changerOptional.isEmpty()) {
             Responses.error("Unknown user / Invalid request").respondTo(context);
             return;
         }
 
+        // Get user
         Optional<User> userOptional = this.getUserFromQuery("userDiscordId", false, context, this.userController);
         if (userOptional.isEmpty()) {
             Responses.error("Unknown user / Invalid request").respondTo(context);
             return;
         }
 
+        // Get role name
         Optional<String> roleNameOptional = this.getQueryParam("role", context);
         if (roleNameOptional.isEmpty()) {
             Responses.error("Invalid role param").respondTo(context);
@@ -65,11 +72,13 @@ public class CompanyUpdateMemberEndpoint extends Endpoint {
         User user = userOptional.get();
         Company company = companyOptional.get();
 
+        // Abort if changer is not member of company
         if (company.getId() != changer.getCompanyId()) {
             Responses.error("Changer is not a member of the company").respondTo(context);
             return;
         }
 
+        // Abort on insufficient permissions
         if (!company.hasPermission(changer.getDiscordId(), CompanyRole.Permission.MANAGE_MEMBERS)
                 || (company.hasPermission(user.getDiscordId(), CompanyRole.Permission.ADMINISTRATOR)
                 && !company.hasPermission(changer.getDiscordId(), CompanyRole.Permission.ADMINISTRATOR))) {
@@ -77,11 +86,13 @@ public class CompanyUpdateMemberEndpoint extends Endpoint {
             return;
         }
 
+        // Abort if user is not member of company
         if (!company.getMemberDiscordIds().contains(user.getDiscordId())) {
             Responses.error("User is not a member of the company").respondTo(context);
             return;
         }
 
+        // Get company role
         Optional<CompanyRole> roleOptional = company.getRoles().stream()
                 .filter(companyRole -> companyRole.getName().equals(roleNameOptional.get()))
                 .findAny();
@@ -90,6 +101,7 @@ public class CompanyUpdateMemberEndpoint extends Endpoint {
             return;
         }
 
+        // Abort on insufficient permissions again
         CompanyRole companyRole = roleOptional.get();
         if (companyRole.hasPermission(CompanyRole.Permission.ADMINISTRATOR)
                 && !company.hasPermission(changer.getDiscordId(), CompanyRole.Permission.ADMINISTRATOR)) {
@@ -97,11 +109,13 @@ public class CompanyUpdateMemberEndpoint extends Endpoint {
             return;
         }
 
+        // Update company
         company.getRole(user.getDiscordId()).ifPresent(_role ->
                 _role.getMemberDiscordIds().remove(user.getDiscordId()));
         companyRole.getMemberDiscordIds().add(user.getDiscordId());
         this.companyController.updateCompany(company);
 
+        // Notify webhooks
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("company", company.getId());
         jsonObject.addProperty("role", companyRole.getName());

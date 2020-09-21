@@ -9,6 +9,8 @@ import xyz.spedcord.server.response.Responses;
 import java.util.Optional;
 
 /**
+ * Handles join link creation
+ *
  * @author Maximilian Dorn
  * @version 2.0.0
  * @since 1.0.0
@@ -31,6 +33,7 @@ public class CreateJoinLinkEndpoint extends RestrictedEndpoint {
 
     @Override
     protected void handleFurther(Context context) {
+        // Get company id
         Optional<Integer> paramOptional = this.getPathParamAsInt("companyId", context);
         if (paramOptional.isEmpty()) {
             Responses.error("Invalid companyId param").respondTo(context);
@@ -38,6 +41,7 @@ public class CreateJoinLinkEndpoint extends RestrictedEndpoint {
         }
         int companyId = paramOptional.get();
 
+        // Parse max uses
         int maxUses = 1;
         String rawMaxUses = context.queryParam("maxUses");
         if (rawMaxUses != null) {
@@ -49,9 +53,11 @@ public class CreateJoinLinkEndpoint extends RestrictedEndpoint {
             }
         }
 
+        // Determine id
         String customId = this.getQueryParam("customId", context).orElse(null);
         String id = (customId == null ? this.joinLinkController.generateNewLink(companyId, maxUses)
                 : this.joinLinkController.addCustomLink(customId, companyId, maxUses));
         context.result(String.format((SpedcordServer.DEV ? "http://localhost:81" : "https://api.spedcord.xyz") + "/invite/%s", id)).status(200);
     }
+
 }

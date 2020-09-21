@@ -9,6 +9,8 @@ import xyz.spedcord.server.user.UserController;
 import java.util.Optional;
 
 /**
+ * Changes the users secret key
+ *
  * @author Maximilian Dorn
  * @version 2.0.0
  * @since 1.0.0
@@ -23,6 +25,7 @@ public class UserChangekeyEndpoint extends RestrictedEndpoint {
 
     @Override
     public void handleFurther(Context context) {
+        // Get the internal user
         Optional<User> optional = this.getUserFromQuery("discordId", false, context, this.userController);
         if (optional.isEmpty()) {
             Responses.error("Unknown user / Invalid request").respondTo(context);
@@ -30,6 +33,7 @@ public class UserChangekeyEndpoint extends RestrictedEndpoint {
         }
         User user = optional.get();
 
+        // Change key and update user
         this.userController.changeKey(user);
         this.userController.updateUser(user);
 

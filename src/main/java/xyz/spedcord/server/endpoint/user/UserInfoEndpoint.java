@@ -1,7 +1,6 @@
 package xyz.spedcord.server.endpoint.user;
 
 import bell.oauth.discord.main.OAuthBuilder;
-import bell.oauth.discord.main.Response;
 import com.google.gson.JsonObject;
 import io.javalin.http.Context;
 import xyz.spedcord.common.config.Config;
@@ -14,6 +13,8 @@ import xyz.spedcord.server.user.UserController;
 import java.util.Optional;
 
 /**
+ * Retrieves public user information
+ *
  * @author Maximilian Dorn
  * @version 2.0.0
  * @since 1.0.0
@@ -30,6 +31,7 @@ public class UserInfoEndpoint extends Endpoint {
 
     @Override
     public void handle(Context context) {
+        // Get internal user
         Optional<User> optional = this.getUserFromPath("discordId", false, context, this.userController);
         if (optional.isEmpty()) {
             Responses.error("Unknown user / Invalid request").respondTo(context);
@@ -37,6 +39,7 @@ public class UserInfoEndpoint extends Endpoint {
         }
         User user = optional.get();
 
+        // Remove sensitive information
         JsonObject jsonObj = SpedcordServer.GSON.toJsonTree(user).getAsJsonObject();
         jsonObj.remove("key");
         jsonObj.remove("jobList");
@@ -44,6 +47,7 @@ public class UserInfoEndpoint extends Endpoint {
         jsonObj.remove("refreshToken");
         jsonObj.remove("tokenExpires");
 
+        // Construct oauth builder
         OAuthBuilder oAuthBuilder = new OAuthBuilder(
                 this.config.get("oauth-clientid"),
                 this.config.get("oauth-clientsecret"),
@@ -51,13 +55,12 @@ public class UserInfoEndpoint extends Endpoint {
                 user.getRefreshToken()
         ).setRedirectURI("https://api.spedcord.xyz/user/register/discord");
 
+        // Try to obtain Discord information
         JsonObject oAuthObj = new JsonObject();
         try {
             bell.oauth.discord.domain.User discordUser;
             if (user.getTokenExpires() <= System.currentTimeMillis()) {
-                Response refreshResponse = oAuthBuilder.refresh();
-                System.out.println(refreshResponse.name());
-
+                oAuthBuilder.refresh();
                 discordUser = oAuthBuilder.getUser();
 
                 user.setAccessToken(oAuthBuilder.getAccess_token());
@@ -96,4 +99,5 @@ public class UserInfoEndpoint extends Endpoint {
 
         context.result(jsonObj.toString()).status(200);
     }
+
 }

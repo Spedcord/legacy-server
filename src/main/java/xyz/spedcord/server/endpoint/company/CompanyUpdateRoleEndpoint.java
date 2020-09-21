@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.Optional;
 
 /**
+ * Updates a company role
+ *
  * @author Maximilian Dorn
  * @version 2.0.0
  * @since 1.0.0
@@ -30,36 +32,42 @@ public class CompanyUpdateRoleEndpoint extends Endpoint {
 
     @Override
     public void handle(Context context) {
+        // Get update mode
         Optional<Integer> modeOptional = this.getQueryParamAsInt("mode", context);
         if (modeOptional.isEmpty()) {
             Responses.error("Invalid mode param").respondTo(context);
             return;
         }
 
+        // Check if invalid
         int mode = modeOptional.get();
         if (mode > 2 || mode < 0) {
             Responses.error("Invalid mode param").respondTo(context);
             return;
         }
 
+        // Get company id
         Optional<Integer> companyIdOptional = this.getQueryParamAsInt("companyId", context);
         if (companyIdOptional.isEmpty()) {
             Responses.error("Invalid companyId param").respondTo(context);
             return;
         }
 
+        // Get company
         Optional<Company> companyOptional = this.companyController.getCompany(companyIdOptional.get());
         if (companyOptional.isEmpty()) {
             Responses.error("Company does not exist").respondTo(context);
             return;
         }
 
+        // Get user
         Optional<User> userOptional = this.getUserFromQuery("userDiscordId", !RestrictedEndpoint.isAuthorized(context), context, this.userController);
         if (userOptional.isEmpty()) {
             Responses.error("Unknown user / Invalid request").respondTo(context);
             return;
         }
 
+        // Get company role from body
         if (context.body().equals("")) {
             Responses.error("No body was supplied").respondTo(context);
             return;
@@ -74,11 +82,13 @@ public class CompanyUpdateRoleEndpoint extends Endpoint {
         Company company = companyOptional.get();
         CompanyRole companyRole = companyRoleOptional.get();
 
+        // Abort if user is not member of company
         if (user.getCompanyId() != company.getId()) {
             Responses.error("User is not a member of the company").respondTo(context);
             return;
         }
 
+        // Abort if user has insufficient permissions
         if (!company.hasPermission(user.getDiscordId(), CompanyRole.Permission.MANAGE_ROLES)) {
             Responses.error("Insufficient permissions").respondTo(context);
             return;

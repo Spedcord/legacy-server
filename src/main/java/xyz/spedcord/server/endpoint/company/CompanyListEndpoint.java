@@ -5,12 +5,11 @@ import xyz.spedcord.server.SpedcordServer;
 import xyz.spedcord.server.company.Company;
 import xyz.spedcord.server.company.CompanyController;
 import xyz.spedcord.server.endpoint.Endpoint;
-import xyz.spedcord.server.user.User;
+import xyz.spedcord.server.job.JobController;
 import xyz.spedcord.server.user.UserController;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -21,15 +20,18 @@ import java.util.stream.Collectors;
 public class CompanyListEndpoint extends Endpoint {
 
     private static UserController userController;
+    private static JobController jobController;
     private final CompanyController companyController;
 
-    public CompanyListEndpoint(CompanyController companyController, UserController userController) {
+    public CompanyListEndpoint(CompanyController companyController, UserController userController, JobController jobController) {
         this.companyController = companyController;
         CompanyListEndpoint.userController = userController;
+        CompanyListEndpoint.jobController = jobController;
     }
 
     @Override
     public void handle(Context ctx) {
+        // Determine sort mode
         SortMode sortMode;
         try {
             sortMode = SortMode.valueOf(ctx.pathParam("sortMode"));
@@ -37,6 +39,7 @@ public class CompanyListEndpoint extends Endpoint {
             sortMode = SortMode.MOST_MONEY;
         }
 
+        // Respond with top 5 companies
         List<Company> companies = this.companyController.getCompanies().stream()
                 .limit(5)
                 .sorted(sortMode.comparator.reversed())
@@ -44,25 +47,13 @@ public class CompanyListEndpoint extends Endpoint {
         ctx.status(200).result(SpedcordServer.GSON.toJson(companies));
     }
 
+    /**
+     * The different sort modes
+     */
     public enum SortMode {
         MOST_MONEY(Comparator.comparingDouble(Company::getBalance)),
         MOST_MEMBERS(Comparator.comparingInt(c -> c.getMemberDiscordIds().size())),
-        MOST_JOBS(Comparator.comparingInt(c -> {
-            int jobs = 0;
-            for (long id : c.getMemberDiscordIds()) {
-                Optional<User> user = userController.getUser(id);
-                if (user.isPresent()) {
-                    jobs += user.get().getJobList().size();
-                }
-            }
-
-            Optional<User> user = userController.getUser(c.getOwnerDiscordId());
-            if (user.isPresent()) {
-                jobs += user.get().getJobList().size();
-            }
-
-            return jobs;
-        }));
+        MOST_JOBS(Comparator.comparingInt(c -> jobController.getJobs(c, userController).size()));
 
         private final Comparator<Company> comparator;
 
@@ -73,6 +64,6 @@ public class CompanyListEndpoint extends Endpoint {
         public Comparator<Company> getComparator() {
             return this.comparator;
         }
-
     }
+
 }

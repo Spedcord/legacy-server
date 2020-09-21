@@ -4,7 +4,7 @@
     <parent>
         <artifactId>spedcord</artifactId>
         <groupId>xyz.spedcord</groupId>
-        <version>1.0.0</version>
+        <version>2.0.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>server</artifactId>
@@ -54,6 +54,19 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>de.cerus.linecount</groupId>
+                <artifactId>line-count-maven-plugin</artifactId>
+                <version>1.0.1</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>linecount</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
     <repositories>
@@ -66,6 +79,12 @@
             <url>https://maven.spedcord.xyz/</url>
         </repository>
     </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>cerus</id>
+            <url>https://maven.cerus-dev.de</url>
+        </pluginRepository>
+    </pluginRepositories>
     <properties>
         <maven.compiler.target>11</maven.compiler.target>
         <maven.compiler.source>11</maven.compiler.source>

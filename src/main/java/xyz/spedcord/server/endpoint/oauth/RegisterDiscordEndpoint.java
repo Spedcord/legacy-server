@@ -18,6 +18,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 /**
+ * Handles the Discord registration callback
+ *
  * @author Maximilian Dorn
  * @version 2.0.0
  * @since 1.0.0
@@ -38,6 +40,7 @@ public class RegisterDiscordEndpoint extends Endpoint {
 
     @Override
     public void handle(Context context) {
+        // Get Discord code
         String code = context.queryParam("code");
         if (code == null) {
             //context.status(400);
@@ -45,6 +48,7 @@ public class RegisterDiscordEndpoint extends Endpoint {
             return;
         }
 
+        // Get unique state
         String state = context.queryParam("state");
         if (state == null) {
             //context.status(400);
@@ -52,18 +56,22 @@ public class RegisterDiscordEndpoint extends Endpoint {
             return;
         }
 
+        // Exchange code for response
         RegisterAuthResult authResult = this.authController.exchangeCode(code, state);
         if (authResult.getResponse() == Response.ERROR) {
             //Responses.error("Failed").respondTo(context);
             context.redirect("https://www.spedcord.xyz/error/user/1");
             return;
         }
+
+        // Abort if user is bot
         if (authResult.getUser().isBot()) {
             //Responses.error(HttpStatus.FORBIDDEN_403, "You're a bot o.0").respondTo(context);
             context.redirect("https://www.spedcord.xyz/error/user/2");
             return;
         }
 
+        // Try to get internal user
         Optional<User> optional = this.userController.getUser(Long.parseLong(authResult.getUser().getId()));
         if (optional.isPresent()) {
             //Responses.error("This Discord account is already registered").respondTo(context);
@@ -71,11 +79,14 @@ public class RegisterDiscordEndpoint extends Endpoint {
             return;
         }
 
+        // Create
         long tokenExpires = System.currentTimeMillis() + (authResult.getTokenExpires() * 1000);
         this.userController.createUser(Long.parseLong(authResult.getUser().getId()), authResult.getAccessToken(), authResult.getRefreshToken(), tokenExpires);
 
+        // Join the user to the Spedcord server
         this.joinGuild(authResult.getUser(), authResult.getAccessToken());
 
+        // Update stats
         Statistics statistics = this.statsController.getStatistics();
         statistics.setTotalRegistrations(statistics.getTotalRegistrations() + 1);
         this.statsController.update();
