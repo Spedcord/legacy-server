@@ -5,20 +5,22 @@ import org.bson.codecs.pojo.annotations.BsonDiscriminator;
 import org.bson.codecs.pojo.annotations.BsonId;
 import org.bson.codecs.pojo.annotations.BsonProperty;
 
+import java.util.Arrays;
 import java.util.List;
 
-@BsonDiscriminator
 /**
  * @author Maximilian Dorn
  * @version 2.0.0
  * @since 1.0.0
  */
+@BsonDiscriminator
 public class User {
 
     public static final User EMPTY = new User(-1, -1, null, null,
-            null, -1, -1, -1, null, null);
+            null, -1, -1, -1, null, null, AccountType.USER.val);
     private final long discordId;
     private final List<Integer> jobList;
+    private final int accountType;
     private int id;
     private String key;
     private String accessToken;
@@ -29,7 +31,7 @@ public class User {
     private List<Flag> flags;
 
     @BsonCreator
-    public User(@BsonId int id, @BsonProperty("discordId") long discordId, @BsonProperty("key") String key, @BsonProperty("accessToken") String accessToken, @BsonProperty("refreshToken") String refreshToken, @BsonProperty("tokenExpires") long tokenExpires, @BsonProperty("companyId") int companyId, @BsonProperty("balance") double balance, @BsonProperty("jobList") List<Integer> jobList, @BsonProperty("flags") List<Flag> flags) {
+    public User(@BsonId int id, @BsonProperty("discordId") long discordId, @BsonProperty("key") String key, @BsonProperty("accessToken") String accessToken, @BsonProperty("refreshToken") String refreshToken, @BsonProperty("tokenExpires") long tokenExpires, @BsonProperty("companyId") int companyId, @BsonProperty("balance") double balance, @BsonProperty("jobList") List<Integer> jobList, @BsonProperty("flags") List<Flag> flags, @BsonProperty("accountType") int accountType) {
         this.id = id;
         this.discordId = discordId;
         this.key = key;
@@ -40,6 +42,7 @@ public class User {
         this.balance = balance;
         this.jobList = jobList;
         this.flags = flags;
+        this.accountType = accountType;
     }
 
     public int getId() {
@@ -114,4 +117,27 @@ public class User {
         this.flags = flags;
     }
 
+    public AccountType getAccountType() {
+        return AccountType.fromVal(this.accountType);
+    }
+
+    public enum AccountType {
+        USER(0),
+        MOD(1),
+        ADMIN(2);
+
+        private final int val;
+
+        AccountType(int val) {
+            this.val = val;
+        }
+
+        public static AccountType fromVal(int val) {
+            return Arrays.stream(values()).filter(t -> t.val == val).findAny().orElse(null);
+        }
+
+        public int getVal() {
+            return this.val;
+        }
+    }
 }
