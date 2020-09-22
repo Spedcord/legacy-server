@@ -17,7 +17,7 @@ import java.util.Optional;
  * Updates a company role
  *
  * @author Maximilian Dorn
- * @version 2.0.0
+ * @version 2.1.3
  * @since 1.0.0
  */
 public class CompanyUpdateRoleEndpoint extends Endpoint {
@@ -149,6 +149,10 @@ public class CompanyUpdateRoleEndpoint extends Endpoint {
                     Responses.error("At least one role with administrator access has to exist").respondTo(context);
                     return;
                 }
+
+                company.getRoles().stream()
+                        .filter(_role -> _role.getName().equals(company.getDefaultRole()))
+                        .findAny().ifPresent(_role -> _role.getMemberDiscordIds().addAll(role.getMemberDiscordIds()));
 
                 company.getRoles().remove(role);
                 break;
