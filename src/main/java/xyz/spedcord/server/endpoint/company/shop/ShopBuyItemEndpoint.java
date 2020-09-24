@@ -9,7 +9,6 @@ import xyz.spedcord.server.company.CompanyController;
 import xyz.spedcord.server.company.shop.CompanyShop;
 import xyz.spedcord.server.company.shop.ShopItem;
 import xyz.spedcord.server.endpoint.RestrictedEndpoint;
-import xyz.spedcord.server.joinlink.JoinLinkController;
 import xyz.spedcord.server.response.Responses;
 
 import java.util.Optional;
@@ -22,11 +21,9 @@ import java.util.Optional;
 public class ShopBuyItemEndpoint extends RestrictedEndpoint {
 
     private final CompanyController companyController;
-    private final JoinLinkController joinLinkController;
 
-    public ShopBuyItemEndpoint(CompanyController companyController, JoinLinkController joinLinkController) {
+    public ShopBuyItemEndpoint(CompanyController companyController) {
         this.companyController = companyController;
-        this.joinLinkController = joinLinkController;
     }
 
     @Override
