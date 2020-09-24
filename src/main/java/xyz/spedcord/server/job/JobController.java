@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
  * A controller that handles everything related to jobs
  *
  * @author Maximilian Dorn
- * @version 2.1.4
+ * @version 2.1.8
  * @since 1.0.0
  */
 public class JobController {
@@ -198,7 +198,7 @@ public class JobController {
      * @param job The job
      */
     public void updateJob(Job job) {
-        this.jobCollection.replaceOne(Filters.eq("id", job.getId()), job);
+        this.jobCollection.replaceOne(Filters.eq("_id", job.getId()), job).subscribe(new CarelessSubscriber<>());
     }
 
     // Returns a list containing every job that was not verified yet

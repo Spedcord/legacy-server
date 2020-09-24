@@ -1,19 +1,22 @@
 package xyz.spedcord.server.endpoint.user;
 
+import com.google.gson.JsonObject;
 import io.javalin.http.Context;
 import org.eclipse.jetty.http.HttpStatus;
 import xyz.spedcord.server.endpoint.Endpoint;
 import xyz.spedcord.server.response.Responses;
 import xyz.spedcord.server.user.User;
 import xyz.spedcord.server.user.UserController;
+import xyz.spedcord.server.util.WebhookUtil;
 
+import java.awt.*;
 import java.util.Optional;
 
 /**
  * Handles user updates
  *
  * @author Maximilian Dorn
- * @version 2.1.0
+ * @version 2.1.8
  * @since 2.1.0
  */
 public class UserUpdateEndpoint extends Endpoint {
@@ -66,7 +69,13 @@ public class UserUpdateEndpoint extends Endpoint {
         otherUser.setAccountType(accountType);
 
         this.userController.updateUser(user);
-        Responses.success("User was updates").respondTo(context);
+        Responses.success("User was updated").respondTo(context);
+
+        JsonObject data = new JsonObject();
+        data.addProperty("msg", "Rank update for user #"
+                + otherUser.getId() + ": rank=" + accountType.name());
+        data.addProperty("color", new Color(127, 180, 233).getRGB());
+        WebhookUtil.callWebhooks(user.getDiscordId(), data, "MOD_LOG");
     }
 
 }

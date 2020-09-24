@@ -17,7 +17,7 @@ import java.util.Optional;
  * (Un)Flags a user
  *
  * @author Maximilian Dorn
- * @version 2.1.7
+ * @version 2.1.8
  * @since 1.0.0
  */
 public class UserFlagEndpoint extends Endpoint {
@@ -91,6 +91,13 @@ public class UserFlagEndpoint extends Endpoint {
                 + user.getId() + ": flag=" + flag.name() + ", remove=" + del);
         data.addProperty("color", new Color(127, 180, 233).getRGB());
         WebhookUtil.callWebhooks(mod.getDiscordId(), data, "MOD_LOG");
+
+        if (flag == Flag.CHEATER && !del) {
+            data = new JsonObject();
+            data.addProperty("msg", "CHEATER");
+            data.addProperty("company", user.getCompanyId());
+            WebhookUtil.callWebhooks(user.getDiscordId(), data, "WARN");
+        }
     }
 
 }
