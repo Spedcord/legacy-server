@@ -8,7 +8,7 @@ import xyz.spedcord.server.joinlink.JoinLinkController;
  * Shop item implementation for custom invites
  *
  * @author Maximilian Dorn
- * @version 2.1.9
+ * @version 2.1.10
  * @since 2.1.9
  */
 public class CustomInviteItem extends ShopItem {
@@ -21,8 +21,16 @@ public class CustomInviteItem extends ShopItem {
     }
 
     @Override
-    public void postPurchase(Company company, Object... args) {
+    public boolean activate(Company company, Object[] args) {
+        if (args.length != 1) {
+            return false;
+        }
+        if (!(args[0] instanceof String)) {
+            return false;
+        }
+
         this.joinLinkController.addCustomLink((String) args[0], company.getId(), -1);
+        return true;
     }
 
     @Override

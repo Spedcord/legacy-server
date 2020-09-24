@@ -6,7 +6,7 @@ import xyz.spedcord.server.company.Company;
  * Represents the base class for shop items
  *
  * @author Maximilian Dorn
- * @version 2.1.9
+ * @version 2.1.10
  * @since 2.1.9
  */
 public abstract class ShopItem {
@@ -22,11 +22,12 @@ public abstract class ShopItem {
     }
 
     /**
-     * Gets called right after the purchase was completed
+     * Gets called when the item is purchased
+     * If this returns false the purchase will be cancelled
      *
      * @param company The company
      */
-    public abstract void postPurchase(Company company, Object... args);
+    public abstract boolean activate(Company company, Object... args);
 
     /**
      * Calculates the price for the provided company

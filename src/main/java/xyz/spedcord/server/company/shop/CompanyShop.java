@@ -7,12 +7,13 @@ import xyz.spedcord.server.joinlink.JoinLinkController;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Functions as some sort of registry for shop items
  *
  * @author Maximilian Dorn
- * @version 2.1.9
+ * @version 2.1.10
  * @since 2.1.9
  */
 public class CompanyShop {
@@ -29,6 +30,10 @@ public class CompanyShop {
 
     public static List<ShopItem> getItems() {
         return Collections.unmodifiableList(items);
+    }
+
+    public static Optional<ShopItem> getShopItemById(int id) {
+        return items.stream().filter(shopItem -> shopItem.getId() == id).findAny();
     }
 
 }

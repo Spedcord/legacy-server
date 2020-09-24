@@ -7,7 +7,7 @@ import xyz.spedcord.server.company.shop.ShopItem;
  * Shop item implementation for increasing member limits
  *
  * @author Maximilian Dorn
- * @version 2.1.9
+ * @version 2.1.10
  * @since 2.1.9
  */
 public class IncreaseMemberLimitItem extends ShopItem {
@@ -17,8 +17,9 @@ public class IncreaseMemberLimitItem extends ShopItem {
     }
 
     @Override
-    public void postPurchase(Company company, Object... args) {
+    public boolean activate(Company company, Object[] args) {
         company.setMemberLimit(company.getMemberLimit() + 1);
+        return true;
     }
 
     @Override
