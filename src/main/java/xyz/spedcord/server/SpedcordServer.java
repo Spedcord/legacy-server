@@ -12,6 +12,8 @@ import xyz.spedcord.common.config.Config;
 import xyz.spedcord.common.mongodb.MongoDBService;
 import xyz.spedcord.server.company.CompanyController;
 import xyz.spedcord.server.endpoint.company.*;
+import xyz.spedcord.server.endpoint.company.shop.ShopBuyItemEndpoint;
+import xyz.spedcord.server.endpoint.company.shop.ShopListItemsEndpoint;
 import xyz.spedcord.server.endpoint.job.*;
 import xyz.spedcord.server.endpoint.oauth.InviteDiscordEndpoint;
 import xyz.spedcord.server.endpoint.oauth.InviteEndpoint;
@@ -38,7 +40,7 @@ import java.util.concurrent.TimeUnit;
  * Server main class
  *
  * @author Maximilian Dorn
- * @version 2.1.5
+ * @version 2.1.11
  * @since 1.0.0
  */
 public class SpedcordServer {
@@ -161,11 +163,12 @@ public class SpedcordServer {
         server.endpoint("/company/edit", HandlerType.POST, new CompanyEditEndpoint(this.userController, this.companyController));
         server.endpoint("/company/createjoinlink/:companyId", HandlerType.POST, new CreateJoinLinkEndpoint(this.joinLinkController,
                 this.config.get("host"), Integer.parseInt(this.config.get("port"))));
-        //server.endpoint("/company/shop", HandlerType.POST, new ShopBuyItemEndpoint(companyController, joinLinkController));
         server.endpoint("/company/list/:sortMode", HandlerType.GET, new CompanyListEndpoint(this.companyController, this.userController, this.jobController));
         server.endpoint("/company/role/update", HandlerType.POST, new CompanyUpdateRoleEndpoint(this.companyController, this.userController));
         server.endpoint("/company/member/kick", HandlerType.POST, new CompanyKickMemberEndpoint(this.companyController, this.userController));
         server.endpoint("/company/member/update", HandlerType.POST, new CompanyUpdateMemberEndpoint(this.companyController, this.userController));
+        server.endpoint("/company/shop/buy", HandlerType.POST, new ShopBuyItemEndpoint(this.companyController));
+        server.endpoint("/company/shop/list", HandlerType.GET, new ShopListItemsEndpoint(this.companyController));
 
         // /job
         server.endpoint("/job/start", HandlerType.POST, new JobStartEndpoint(this.jobController, this.userController));
