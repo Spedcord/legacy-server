@@ -1,5 +1,6 @@
 package xyz.spedcord.server.endpoint.user;
 
+import com.google.gson.JsonObject;
 import io.javalin.http.Context;
 import org.eclipse.jetty.http.HttpStatus;
 import xyz.spedcord.server.endpoint.Endpoint;
@@ -7,14 +8,16 @@ import xyz.spedcord.server.response.Responses;
 import xyz.spedcord.server.user.Flag;
 import xyz.spedcord.server.user.User;
 import xyz.spedcord.server.user.UserController;
+import xyz.spedcord.server.util.WebhookUtil;
 
+import java.awt.*;
 import java.util.Optional;
 
 /**
  * (Un)Flags a user
  *
  * @author Maximilian Dorn
- * @version 2.1.5
+ * @version 2.1.7
  * @since 1.0.0
  */
 public class UserFlagEndpoint extends Endpoint {
@@ -82,6 +85,12 @@ public class UserFlagEndpoint extends Endpoint {
         this.userController.updateUser(user);
 
         Responses.success("User was " + (del ? "un" : "") + "flagged").respondTo(context);
+
+        JsonObject data = new JsonObject();
+        data.addProperty("msg", "User flag update for user #"
+                + user.getId() + ": flag=" + flag.name() + ", remove=" + del);
+        data.addProperty("color", new Color(127, 180, 233).getRGB());
+        WebhookUtil.callWebhooks(mod.getDiscordId(), data, "MOD_LOG");
     }
 
 }

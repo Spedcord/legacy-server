@@ -1,5 +1,6 @@
 package xyz.spedcord.server.endpoint.job;
 
+import com.google.gson.JsonObject;
 import io.javalin.http.Context;
 import org.eclipse.jetty.http.HttpStatus;
 import xyz.spedcord.server.endpoint.Endpoint;
@@ -8,14 +9,16 @@ import xyz.spedcord.server.job.JobController;
 import xyz.spedcord.server.response.Responses;
 import xyz.spedcord.server.user.User;
 import xyz.spedcord.server.user.UserController;
+import xyz.spedcord.server.util.WebhookUtil;
 
+import java.awt.*;
 import java.util.Optional;
 
 /**
  * Handles job verifications
  *
  * @author Maximilian Dorn
- * @version 2.1.2
+ * @version 2.1.7
  * @since 1.0.0
  */
 public class JobVerifyEndpoint extends Endpoint {
@@ -61,5 +64,10 @@ public class JobVerifyEndpoint extends Endpoint {
         this.jobController.updateJob(job);
 
         Responses.success("Job was " + (verify ? "" : "not ") + "verified").respondTo(context);
+
+        JsonObject data = new JsonObject();
+        data.addProperty("msg", "Verification state change for job #" + job.getId() + ": verified=" + verify);
+        data.addProperty("color", new Color(127, 180, 233).getRGB());
+        WebhookUtil.callWebhooks(user.getDiscordId(), data, "MOD_LOG");
     }
 }
