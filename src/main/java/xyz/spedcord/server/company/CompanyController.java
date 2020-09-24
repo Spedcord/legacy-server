@@ -78,8 +78,7 @@ public class CompanyController {
      */
     public void createCompany(Company company) {
         // Set id
-        long docs = MongoDBUtil.countDocuments(this.companyCollection);
-        company.setId(Long.valueOf(docs).intValue());
+        company.setId(MongoDBUtil.findFirstFreeId(this.companyCollection));
 
         // Save to database
         this.companies.add(company);

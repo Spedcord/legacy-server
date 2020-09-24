@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
  * A controller that handles everything related to jobs
  *
  * @author Maximilian Dorn
- * @version 2.0.0
+ * @version 2.1.4
  * @since 1.0.0
  */
 public class JobController {
@@ -93,8 +93,7 @@ public class JobController {
         }
 
         // Set job id, end timestamp and pay
-        long docs = MongoDBUtil.countDocuments(this.jobCollection);
-        job.setId(Long.valueOf(docs).intValue());
+        job.setId(MongoDBUtil.findFirstFreeId(this.jobCollection));
         job.setEndedAt(System.currentTimeMillis());
         job.setPay(pay);
 
