@@ -11,6 +11,7 @@ import org.eclipse.jetty.http.HttpStatus;
 import xyz.spedcord.common.config.Config;
 import xyz.spedcord.common.mongodb.MongoDBService;
 import xyz.spedcord.server.company.CompanyController;
+import xyz.spedcord.server.company.shop.CompanyShop;
 import xyz.spedcord.server.endpoint.company.*;
 import xyz.spedcord.server.endpoint.company.shop.ShopBuyItemEndpoint;
 import xyz.spedcord.server.endpoint.company.shop.ShopListItemsEndpoint;
@@ -118,6 +119,9 @@ public class SpedcordServer {
         RateLimiter rateLimiter = new RateLimiter(Integer.parseInt(this.config.get("requests-per-minute")), ctx ->
                 Responses.error(HttpStatus.TOO_MANY_REQUESTS_429, "Too many requests").respondTo(ctx));
         HttpServer server = new HttpServer(javalin, rateLimiter);
+
+        // Init company shop
+        CompanyShop.init(this.joinLinkController);
 
         // Register endpoints and start payout task
         this.registerEndpoints(server);
