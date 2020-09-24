@@ -9,24 +9,28 @@ import java.util.Optional;
 
 /**
  * @author Maximilian Dorn
- * @version 2.0.0
+ * @version 2.1.9
  * @since 1.0.0
  */
 public class Company {
+
+    public static final int DEFAULT_MEMBER_LIMIT = 10;
 
     private final long discordServerId;
     private final long ownerDiscordId;
     private final List<Long> memberDiscordIds;
     private final List<CompanyRole> roles;
     private int id;
+    private int memberLimit;
     private String name;
     private double balance;
     private String defaultRole;
 
     @BsonCreator
-    public Company(@BsonId int id, @BsonProperty("discordServerId") long discordServerId, @BsonProperty("name") String name, @BsonProperty("ownerDiscordId") long ownerDiscordId, @BsonProperty("balance") double balance, @BsonProperty("memberDiscordIds") List<Long> memberDiscordIds, @BsonProperty("roles") List<CompanyRole> roles, @BsonProperty("defaultRole") String defaultRole) {
+    public Company(@BsonId int id, @BsonProperty("discordServerId") long discordServerId, @BsonProperty("memberLimit") int memberLimit, @BsonProperty("name") String name, @BsonProperty("ownerDiscordId") long ownerDiscordId, @BsonProperty("balance") double balance, @BsonProperty("memberDiscordIds") List<Long> memberDiscordIds, @BsonProperty("roles") List<CompanyRole> roles, @BsonProperty("defaultRole") String defaultRole) {
         this.id = id;
         this.discordServerId = discordServerId;
+        this.memberLimit = memberLimit;
         this.name = name;
         this.ownerDiscordId = ownerDiscordId;
         this.balance = balance;
@@ -99,6 +103,14 @@ public class Company {
 
     public String getDefaultRole() {
         return this.defaultRole;
+    }
+
+    public int getMemberLimit() {
+        return this.memberLimit;
+    }
+
+    public void setMemberLimit(int memberLimit) {
+        this.memberLimit = memberLimit;
     }
 
 }
