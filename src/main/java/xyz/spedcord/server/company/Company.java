@@ -19,6 +19,7 @@ public class Company {
     private final long discordServerId;
     private final long ownerDiscordId;
     private final List<Long> memberDiscordIds;
+    private final List<Integer> purchasedItems;
     private final List<CompanyRole> roles;
     private int id;
     private int memberLimit;
@@ -27,7 +28,7 @@ public class Company {
     private String defaultRole;
 
     @BsonCreator
-    public Company(@BsonId int id, @BsonProperty("discordServerId") long discordServerId, @BsonProperty("memberLimit") int memberLimit, @BsonProperty("name") String name, @BsonProperty("ownerDiscordId") long ownerDiscordId, @BsonProperty("balance") double balance, @BsonProperty("memberDiscordIds") List<Long> memberDiscordIds, @BsonProperty("roles") List<CompanyRole> roles, @BsonProperty("defaultRole") String defaultRole) {
+    public Company(@BsonId int id, @BsonProperty("discordServerId") long discordServerId, @BsonProperty("memberLimit") int memberLimit, @BsonProperty("name") String name, @BsonProperty("ownerDiscordId") long ownerDiscordId, @BsonProperty("balance") double balance, @BsonProperty("memberDiscordIds") List<Long> memberDiscordIds, @BsonProperty("purchasedItems") List<Integer> purchasedItems, @BsonProperty("roles") List<CompanyRole> roles, @BsonProperty("defaultRole") String defaultRole) {
         this.id = id;
         this.discordServerId = discordServerId;
         this.memberLimit = memberLimit;
@@ -35,6 +36,7 @@ public class Company {
         this.ownerDiscordId = ownerDiscordId;
         this.balance = balance;
         this.memberDiscordIds = memberDiscordIds;
+        this.purchasedItems = purchasedItems;
         this.roles = roles;
         this.defaultRole = defaultRole;
     }
@@ -111,6 +113,10 @@ public class Company {
 
     public void setMemberLimit(int memberLimit) {
         this.memberLimit = memberLimit;
+    }
+
+    public List<Integer> getPurchasedItems() {
+        return this.purchasedItems;
     }
 
 }

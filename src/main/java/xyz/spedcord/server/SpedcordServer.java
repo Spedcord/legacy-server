@@ -41,7 +41,7 @@ import java.util.concurrent.TimeUnit;
  * Server main class
  *
  * @author Maximilian Dorn
- * @version 2.1.11
+ * @version 2.1.12
  * @since 1.0.0
  */
 public class SpedcordServer {
@@ -171,7 +171,7 @@ public class SpedcordServer {
         server.endpoint("/company/role/update", HandlerType.POST, new CompanyUpdateRoleEndpoint(this.companyController, this.userController));
         server.endpoint("/company/member/kick", HandlerType.POST, new CompanyKickMemberEndpoint(this.companyController, this.userController));
         server.endpoint("/company/member/update", HandlerType.POST, new CompanyUpdateMemberEndpoint(this.companyController, this.userController));
-        server.endpoint("/company/shop/buy", HandlerType.POST, new ShopBuyItemEndpoint(this.companyController));
+        server.endpoint("/company/shop/buy", HandlerType.POST, new ShopBuyItemEndpoint(this.companyController, this.userController));
         server.endpoint("/company/shop/list", HandlerType.GET, new ShopListItemsEndpoint(this.companyController));
 
         // /job
