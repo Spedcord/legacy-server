@@ -61,4 +61,3 @@ public class CreateJoinLinkEndpoint extends RestrictedEndpoint {
     }
 
 }
-\
