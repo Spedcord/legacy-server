@@ -1,6 +1,8 @@
 package xyz.spedcord.server.job;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.mongodb.client.model.Filters;
 import com.mongodb.reactivestreams.client.MongoCollection;
 import xyz.spedcord.common.mongodb.CallbackSubscriber;
@@ -12,6 +14,11 @@ import xyz.spedcord.server.util.CarelessSubscriber;
 import xyz.spedcord.server.util.MongoDBUtil;
 import xyz.spedcord.server.util.WebhookUtil;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -20,7 +27,7 @@ import java.util.stream.Collectors;
  * A controller that handles everything related to jobs
  *
  * @author Maximilian Dorn
- * @version 2.1.8
+ * @version 2.1.13
  * @since 1.0.0
  */
 public class JobController {
@@ -46,6 +53,9 @@ public class JobController {
     private void init() {
         // Fetches the collection
         this.jobCollection = this.mongoDBService.getDatabase().getCollection("jobs", Job.class);
+
+        // Recover jobs that were in progress when server shut down
+        this.readTempFile();
     }
 
     /**
@@ -199,6 +209,56 @@ public class JobController {
      */
     public void updateJob(Job job) {
         this.jobCollection.replaceOne(Filters.eq("_id", job.getId()), job).subscribe(new CarelessSubscriber<>());
+    }
+
+    private void readTempFile() {
+        File file = new File(".temp-jobs");
+        if (!file.exists()) {
+            return;
+        }
+
+        try {
+            String fileContent = Files.readString(file.toPath());
+            JsonArray array = JsonParser.parseString(fileContent).getAsJsonArray();
+            array.forEach(element -> {
+                JsonObject object = element.getAsJsonObject();
+                long user = object.get("user").getAsLong();
+                Job job = SpedcordServer.GSON.fromJson(object.get("job"), Job.class);
+
+                this.pendingJobs.put(user, job);
+            });
+
+            file.delete();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Recovered " + this.pendingJobs.size() + " pending jobs");
+    }
+
+    public void shutdown() {
+        if (this.pendingJobs.isEmpty()) {
+            return;
+        }
+
+        try {
+            File file = new File(".temp-jobs");
+            file.createNewFile();
+
+            JsonArray array = new JsonArray();
+            this.pendingJobs.forEach((user, job) -> {
+                JsonObject object = new JsonObject();
+                object.addProperty("user", user);
+                object.add("job", SpedcordServer.GSON.toJsonTree(job));
+                array.add(object);
+            });
+
+            FileOutputStream out = new FileOutputStream(file);
+            out.write(array.toString().getBytes(StandardCharsets.UTF_8));
+            out.flush();
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     // Returns a list containing every job that was not verified yet

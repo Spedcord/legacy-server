@@ -41,7 +41,7 @@ import java.util.concurrent.TimeUnit;
  * Server main class
  *
  * @author Maximilian Dorn
- * @version 2.1.12
+ * @version 2.1.13
  * @since 1.0.0
  */
 public class SpedcordServer {
@@ -122,6 +122,8 @@ public class SpedcordServer {
 
         // Init company shop
         CompanyShop.init(this.joinLinkController);
+
+        Runtime.getRuntime().addShutdownHook(new Thread(this.jobController::shutdown));
 
         // Register endpoints and start payout task
         this.registerEndpoints(server);

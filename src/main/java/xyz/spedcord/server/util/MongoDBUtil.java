@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author Maximilian Dorn
- * @version 2.1.4
+ * @version 2.1.13
  * @since 1.0.0
  */
 public class MongoDBUtil {
@@ -47,8 +47,8 @@ public class MongoDBUtil {
      */
     public static int findFirstFreeId(MongoCollection<?> collection) {
         for (int i = 0; i < Integer.MAX_VALUE; i++) {
-            AtomicBoolean found = new AtomicBoolean(false);
             AtomicBoolean finished = new AtomicBoolean(false);
+            AtomicBoolean found = new AtomicBoolean(false);
             collection.find(Filters.eq("_id", i)).subscribe(new Subscriber<Object>() {
                 @Override
                 public void onSubscribe(Subscription s) {
@@ -58,10 +58,12 @@ public class MongoDBUtil {
                 @Override
                 public void onNext(Object o) {
                     found.set(true);
+                    finished.set(true);
                 }
 
                 @Override
                 public void onError(Throwable t) {
+                    finished.set(true);
                 }
 
                 @Override
