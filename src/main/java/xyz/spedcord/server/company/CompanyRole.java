@@ -8,7 +8,7 @@ import java.util.List;
 
 /**
  * @author Maximilian Dorn
- * @version 2.0.0
+ * @version 2.1.12
  * @since 1.0.0
  */
 public class CompanyRole {
@@ -72,7 +72,7 @@ public class CompanyRole {
         EDIT_COMPANY(0x0002),
         MANAGE_MEMBERS(0x0004),
         MANAGE_ROLES(0x0008),
-        ;
+        BUY_ITEMS(0x0010);
 
         private final int flag;
 
@@ -82,6 +82,10 @@ public class CompanyRole {
 
         public static boolean hasPermission(int permInt, Permission permission) {
             if (permission != ADMINISTRATOR && hasPermission(permInt, ADMINISTRATOR)) {
+                return true;
+            }
+            if ((permission == MANAGE_MEMBERS || permission == MANAGE_ROLES || permission == BUY_ITEMS)
+                    && hasPermission(permInt, EDIT_COMPANY)) {
                 return true;
             }
             return (permInt & permission.flag) == permission.flag;

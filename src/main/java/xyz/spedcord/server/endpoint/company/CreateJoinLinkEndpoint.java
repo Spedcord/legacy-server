@@ -57,7 +57,7 @@ public class CreateJoinLinkEndpoint extends RestrictedEndpoint {
         String customId = this.getQueryParam("customId", context).orElse(null);
         String id = (customId == null ? this.joinLinkController.generateNewLink(companyId, maxUses)
                 : this.joinLinkController.addCustomLink(customId, companyId, maxUses));
-        context.result(String.format((SpedcordServer.DEV ? "http://localhost:81" : "https://api.spedcord.xyz") + "/invite/%s", id)).status(200);
+        context.result(String.format((SpedcordServer.DEV ? "http://localhost:81/invite" : "https://i.spedcord.xyz") + "/%s", id)).status(200);
     }
 
 }

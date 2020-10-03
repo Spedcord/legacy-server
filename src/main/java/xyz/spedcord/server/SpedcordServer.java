@@ -11,7 +11,10 @@ import org.eclipse.jetty.http.HttpStatus;
 import xyz.spedcord.common.config.Config;
 import xyz.spedcord.common.mongodb.MongoDBService;
 import xyz.spedcord.server.company.CompanyController;
+import xyz.spedcord.server.company.shop.CompanyShop;
 import xyz.spedcord.server.endpoint.company.*;
+import xyz.spedcord.server.endpoint.company.shop.ShopBuyItemEndpoint;
+import xyz.spedcord.server.endpoint.company.shop.ShopListItemsEndpoint;
 import xyz.spedcord.server.endpoint.job.*;
 import xyz.spedcord.server.endpoint.oauth.InviteDiscordEndpoint;
 import xyz.spedcord.server.endpoint.oauth.InviteEndpoint;
@@ -38,7 +41,7 @@ import java.util.concurrent.TimeUnit;
  * Server main class
  *
  * @author Maximilian Dorn
- * @version 2.0.0
+ * @version 2.1.13
  * @since 1.0.0
  */
 public class SpedcordServer {
@@ -49,7 +52,6 @@ public class SpedcordServer {
             .setPrettyPrinting()
             .setLongSerializationPolicy(LongSerializationPolicy.STRING)
             .create();
-    public static final long[] MODERATORS = {347018538713874444L, 332142165402714113L};
     public static String KEY = null;
 
     private InviteAuthController inviteAuthController;
@@ -118,6 +120,11 @@ public class SpedcordServer {
                 Responses.error(HttpStatus.TOO_MANY_REQUESTS_429, "Too many requests").respondTo(ctx));
         HttpServer server = new HttpServer(javalin, rateLimiter);
 
+        // Init company shop
+        CompanyShop.init(this.joinLinkController);
+
+        Runtime.getRuntime().addShutdownHook(new Thread(this.jobController::shutdown));
+
         // Register endpoints and start payout task
         this.registerEndpoints(server);
         this.startPayoutTask();
@@ -151,9 +158,9 @@ public class SpedcordServer {
         server.endpoint("/user/jobs/:discordId", HandlerType.GET, new UserJobsEndpoint(this.userController, this.jobController));
         server.endpoint("/user/changekey", HandlerType.POST, new UserChangekeyEndpoint(this.userController));
         server.endpoint("/user/checkauth", HandlerType.POST, new UserCheckAuthEndpoint(this.userController));
-        server.endpoint("/user/cheater", HandlerType.POST, new UserCheaterEndpoint(this.userController));
+        server.endpoint("/user/flag", HandlerType.POST, new UserFlagEndpoint(this.userController));
         server.endpoint("/user/leavecompany", HandlerType.POST, new UserLeaveCompanyEndpoint(this.userController, this.companyController));
-        server.endpoint("/user/listmods", HandlerType.GET, new UserListModsEndpoint());
+        server.endpoint("/user/listmods", HandlerType.GET, new UserListModsEndpoint(this.userController));
         server.endpoint("/user/update", HandlerType.POST, new UserUpdateEndpoint(this.userController));
 
         // /company
@@ -162,11 +169,12 @@ public class SpedcordServer {
         server.endpoint("/company/edit", HandlerType.POST, new CompanyEditEndpoint(this.userController, this.companyController));
         server.endpoint("/company/createjoinlink/:companyId", HandlerType.POST, new CreateJoinLinkEndpoint(this.joinLinkController,
                 this.config.get("host"), Integer.parseInt(this.config.get("port"))));
-        //server.endpoint("/company/shop", HandlerType.POST, new ShopBuyItemEndpoint(companyController, joinLinkController));
         server.endpoint("/company/list/:sortMode", HandlerType.GET, new CompanyListEndpoint(this.companyController, this.userController, this.jobController));
         server.endpoint("/company/role/update", HandlerType.POST, new CompanyUpdateRoleEndpoint(this.companyController, this.userController));
         server.endpoint("/company/member/kick", HandlerType.POST, new CompanyKickMemberEndpoint(this.companyController, this.userController));
         server.endpoint("/company/member/update", HandlerType.POST, new CompanyUpdateMemberEndpoint(this.companyController, this.userController));
+        server.endpoint("/company/shop/buy", HandlerType.POST, new ShopBuyItemEndpoint(this.companyController, this.userController));
+        server.endpoint("/company/shop/list", HandlerType.GET, new ShopListItemsEndpoint(this.companyController));
 
         // /job
         server.endpoint("/job/start", HandlerType.POST, new JobStartEndpoint(this.jobController, this.userController));

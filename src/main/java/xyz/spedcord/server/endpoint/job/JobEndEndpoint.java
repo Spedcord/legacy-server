@@ -18,7 +18,7 @@ import java.util.Optional;
  * Handles job ends
  *
  * @author Maximilian Dorn
- * @version 2.0.0
+ * @version 2.1.4
  * @since 1.0.0
  */
 public class JobEndEndpoint extends Endpoint {
@@ -67,8 +67,6 @@ public class JobEndEndpoint extends Endpoint {
             company.setBalance(company.getBalance() + companyPay);
             this.companyController.updateCompany(company);
         }
-
-        System.out.println("DEBUG: " + pay + " - " + companyPay);
 
         // End job
         Job job = this.jobController.getPendingJob(user.getDiscordId());

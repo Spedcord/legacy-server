@@ -20,7 +20,7 @@ import java.util.Optional;
  * Handles company registration
  *
  * @author Maximilian Dorn
- * @version 2.0.0
+ * @version 2.1.9
  * @since 1.0.0
  */
 public class CompanyRegisterEndpoint extends RestrictedEndpoint {
@@ -44,6 +44,7 @@ public class CompanyRegisterEndpoint extends RestrictedEndpoint {
             jsonObject.addProperty("id", -1);
             jsonObject.add("roles", SpedcordServer.GSON.toJsonTree(CompanyRole.createDefaults()));
             jsonObject.addProperty("defaultRole", "Driver");
+            jsonObject.addProperty("memberLimit", Company.DEFAULT_MEMBER_LIMIT);
             company = SpedcordServer.GSON.fromJson(jsonObject, Company.class);
         } catch (Exception ignored) {
             Responses.error("Invalid request body").respondTo(context);

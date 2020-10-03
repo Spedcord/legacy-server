@@ -12,14 +12,13 @@ import xyz.spedcord.server.response.Responses;
 import xyz.spedcord.server.user.User;
 import xyz.spedcord.server.user.UserController;
 
-import java.util.Arrays;
 import java.util.Optional;
 
 /**
  * Lists unverified jobs
  *
  * @author Maximilian Dorn
- * @version 2.0.0
+ * @version 2.1.2
  * @since 1.0.0
  */
 public class JobListUnverifiedEndpoint extends Endpoint {
@@ -43,7 +42,7 @@ public class JobListUnverifiedEndpoint extends Endpoint {
         User user = optional.get();
 
         // Abort if user is not a mod
-        if (Arrays.stream(SpedcordServer.MODERATORS).noneMatch(l -> l == user.getDiscordId())) {
+        if (user.getAccountType() == User.AccountType.USER) {
             Responses.error(HttpStatus.UNAUTHORIZED_401, "Unauthorized").respondTo(context);
             return;
         }

@@ -19,7 +19,7 @@ import java.util.Optional;
  * Handles the Discord callback for registrations
  *
  * @author Maximilian Dorn
- * @version 2.0.0
+ * @version 2.1.9
  * @since 1.0.0
  */
 public class InviteDiscordEndpoint extends Endpoint {
@@ -93,6 +93,12 @@ public class InviteDiscordEndpoint extends Endpoint {
                 || company.getOwnerDiscordId() == user.getDiscordId()) {
             //Responses.error(HttpStatus.FORBIDDEN_403, "You're already a member of this company").respondTo(context);
             context.redirect("https://www.spedcord.xyz/error/invite/3");
+            return;
+        }
+
+        // Abort if member limit was reached
+        if (company.getMemberDiscordIds().size() >= company.getMemberLimit()) {
+            context.redirect("https://www.spedcord.xyz/error/invite/5");
             return;
         }
 

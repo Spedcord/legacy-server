@@ -72,7 +72,7 @@ public class WebhookUtil {
 
                     connection.getResponseCode();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    System.err.println("Failed to connect to webhook " + s + ": " + e.getMessage());
                 }
             });
         });
